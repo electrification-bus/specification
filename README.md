@@ -16,7 +16,7 @@ This repository holds the eBus specification documents.
 | Document | Status |
 |---|---|
 | Framework spec | Draft, in progress (see [`wip/framework`](../../tree/wip/framework) branch) |
-| `data-models/distribution-enclosure.md` | Planned (forthcoming) |
+| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.1 (2026-05-17) |
 | `data-models/bess.md` | Planned |
 | `data-models/mid.md` | Planned |
 | `registries/device-types.md` | Planned |
