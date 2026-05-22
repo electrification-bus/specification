@@ -19,8 +19,10 @@ This repository holds the eBus specification documents.
 | [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.1 (2026-05-17) |
 | `data-models/bess.md` | Planned |
 | `data-models/mid.md` | Planned |
-| `registries/device-types.md` | Planned |
-| `registries/capability-types.md` | Planned |
+| [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.1 (2026-05-22) |
+| [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.1 (2026-05-22) |
+| `registries/circuit-tags.md` | **Exploratory — very preliminary** (see [`wip/circuit-tags`](../../tree/wip/circuit-tags) branch). Major rethinking pending; do not rely on the content. |
+| `registries/external-id-schemes.md` | **Exploratory — very preliminary** (see [`wip/external-id-schemes`](../../tree/wip/external-id-schemes) branch). Major rethinking pending; do not rely on the content. |
 
 ## Long-term direction
 
