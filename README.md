@@ -4,6 +4,10 @@ The **Electrification Bus**, or **eBus**, is an open framework that enables Home
 
 This repository holds the eBus specification documents.
 
+## Relationship to Homie
+
+eBus is built on top of [Homie 5](https://homieiot.github.io/) (a general-purpose IoT convention) plus complementary conventions like mDNS and REST/OpenAPI, specialized for Home Energy Infrastructure (HEI). The eBus value-add is HEI specialization: HEI-specific device types (`energy.ebus.device.*`), capability types (`energy.ebus.capability.*`), and the property catalogs within them. Homie features (the parent-child device model, the `$state` lifecycle, the `$description` mutability rules, the `$settable` attribute, retained-message semantics) belong to Homie and are credited to Homie, not to eBus. Schema vocabulary defined by eBus is vendor-neutral; vendor trademarks and product-specific terminology are explicitly excluded from the schema. The Homie `name` string attribute on each property is implementation-defined and may carry vendor-specific labels — its contents are presentation, not part of the standard.
+
 ## What's in this repository
 
 - **Framework spec** — defines how devices participate in the bus: network architecture, discovery (mDNS), messaging (MQTT/Homie), credentials, security (TLS), updates, and adapter conventions. *Currently a working draft on the [`wip/framework`](../../tree/wip/framework) branch as `specification.md`; will land on `main` as `framework.md` when ready for review.*
