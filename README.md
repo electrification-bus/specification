@@ -20,6 +20,7 @@ eBus is built on top of [Homie 5](https://homieiot.github.io/) (a general-purpos
 | Document | Status |
 |---|---|
 | Framework spec | Draft, in progress (see [`wip/framework`](../../tree/wip/framework) branch) |
+| [`data-models/proxy.md`](data-models/proxy.md) | DRAFT v0.1 (2026-05-22) |
 | [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.1 (2026-05-17) |
 | `data-models/bess.md` | Planned |
 | `data-models/mid.md` | Planned |
