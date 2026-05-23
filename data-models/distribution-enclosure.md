@@ -426,6 +426,8 @@ Per the proxy model's general rule that [proxy-side knowledge stays on the proxy
 
 The DER child carries no `feed` property, no `relative-position` property, and no enclosure-↔-DER link-health property. A BESS device publishes its own `status/communication` property (the publisher's self-report of adapter-to-BESS communication) — that is a different signal from the enclosure-side link-health, published independently of the enclosure's view.
 
+> **Interim placement.** The next three subsections — *Proxied BESS Child*, *Proxied PV Child*, *Proxied EVSE Child* — are partial BESS / PV / EVSE data models, framed as "what the enclosure publishes when proxying." Rules they state, such as "a conformant BESS publisher MUST include a MID child device," are properly BESS-data-model statements, not enclosure-spec statements. They will move to `data-models/bess.md`, `data-models/pv.md`, and `data-models/evse.md` when those per-device data models land in this repository. The general proxy-publication conventions themselves already live in [`data-models/proxy.md`](proxy.md).
+
 ### Proxied BESS Child
 
 When no eBus-native BESS publisher is available, the enclosure proxies a BESS child device.
