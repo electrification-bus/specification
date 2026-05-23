@@ -44,16 +44,7 @@ The model does **not** cover:
 
 ## Design Principles
 
-1. **Homie devices represent physical things** — if it could maintain its own independent Homie representation, it is a Homie device.
-2. **Homie nodes represent capabilities** — what a Homie device can do (meter, switch, sense), not what physical component it is.
-3. **Publish what you have, omit what you don't** — absent properties mean "unknown" or "not applicable," not a sentinel-encoded value.
-4. **Parent aggregates children** — the enclosure device exposes system-level aggregates; per-component detail lives on the relevant child.
-5. **Standard capability types are reused** across device classes.
-6. **eBus is a vendor-independent industry standard for Home Energy Infrastructure (HEI) devices** — enclosures, BESSs, PV systems, EVSEs, MIDs, generators, and similar — built on top of Homie 5 (a general-purpose IoT convention) plus complementary conventions like mDNS and REST/OpenAPI. eBus's value-add over Homie is HEI specialization: HEI-specific device types (`energy.ebus.device.*`), capability types (`energy.ebus.capability.*`), and the property catalogs within them. Homie features (the parent-child device model, the `$state` lifecycle, the `$description` mutability rules, the `$settable` attribute, retained-message semantics) belong to Homie and are credited to Homie, not to eBus. Schema vocabulary defined by eBus MUST be vendor-neutral; vendor trademarks and product-specific terminology are explicitly excluded from the schema. The Homie `name` string attribute on each property is implementation-defined and may carry vendor-specific labels — its contents are presentation, not part of the standard.
-7. **Proxying is first-class.** eBus is new; in a future world where eBus is universal, HEI devices would publish themselves natively and there would be little need for proxying. Until then, eBus explicitly supports — as a peer to native publishing — *proxying*: an early adopter (typically an enclosure, gateway, or integration hub) may publish an eBus representation on behalf of a non-eBus-native device, populated from vendor-specific APIs, internal commissioning data, or other non-eBus integration paths. The consumer-facing surface is identical whether a device is proxied or self-publishing — consumers identify each device by its `$description.type` and capability set; the source of the data is transparent to them. When a device later becomes eBus-native, the proxy stops publishing and the native publisher takes over without re-modelling the device. The data model accommodates both forms by design: capability and property contracts are written so that any conformant publisher — native or proxy — can satisfy them.
-8. **Properties belong on the device that authoritatively knows them** — even when proxying makes other placements convenient. A property that could not be populated by a non-proxying publisher belongs elsewhere. This is a direct consequence of principle 7: the property contract must be satisfiable by *any* conformant publisher, native or proxy, and a property smuggled onto an adjacent device because only the enclosure happens to know it breaks the contract for the native publisher.
-9. **Forward compatibility is a design goal** — the data model defines slots for richer data than current implementations capture. Properties are MAY-level by default; datatypes are chosen for extensibility (open-vocabulary strings, not hardcoded enums where the value space is open); capabilities accept new properties additively. The model serves as a contract for the evolving ecosystem, not as a transcript of any one current feature set.
-10. **Multi-DER from the outset** — wiring relationships, connectivity records, and grid-forming identity are recorded per-device rather than via per-DER-class enclosure-level properties, so N-of-each-DER works without model changes.
+This data model follows the eBus data-model design principles — the Homie devices-vs-nodes split, parent aggregation, proxying as a first-class peer to native publishing, property placement on the authoritative device, forward compatibility, and multi-instance modeling. See **[Design Principles in data-models/README.md](README.md#design-principles)** for the canonical list.
 
 ---
 
@@ -424,41 +415,18 @@ An enclosure-side device that is itself an *electrical connection point* — eve
 
 ## Proxied DER Representation
 
-### Proxy Model
+This enclosure model proxies DER child devices (BESS, PV, EVSE) when those devices do not yet publish themselves on eBus. The general proxy model — what proxying is, how consumers disambiguate proxied from native representations, and the proxied-device ID convention — is defined in **[data-models/proxy.md](proxy.md)** and applies uniformly across all eBus data models. The remainder of this section covers the enclosure-specific proxy decisions: where enclosure-side knowledge lives, and the per-DER-class property tables.
 
-Some DERs do not yet represent themselves on eBus. An enclosure (or other early-adopter publisher) **proxies** these devices — it publishes child devices on their behalf, populated from internal data sources (vendor APIs, internal integrations, commissioning data).
+### Enclosure-side knowledge stays on the enclosure
 
-When a DER becomes available on eBus — either through a vendor adapter or natively — the proxy SHOULD stop publishing that device, leaving the eBus-native publisher as the sole representation. Determining when to proxy is publisher-implementation-specific; commissioning configuration is the typical source.
-
-During an adoption transition, both publishers may coexist (e.g., an enclosure proxies a Tesla Powerwall today; Tesla someday begins publishing the same Powerwall natively, and the enclosure publisher has not yet detected the new publisher and stopped proxying). This is expected and the data model accommodates it — see §"Disambiguating proxied from native publishers" below for how consumers identify and prefer the native representation. The proxy-suppression behavior above is an optimization to keep the eBus tree clean; it is not a hard contract guarantee against duplication.
-
-Consumers identify all DER children by the same `$description.type` regardless of whether the device is being proxied or self-representing. The distinction is transparent to consumers.
-
-### Disambiguating proxied from native publishers
-
-Typically a given physical device is published by exactly one publisher — either the vendor's own native publisher or a proxy — and consumers see one representation. During an adoption transition, it is possible for both publishers to coexist and present the consumer with two representations of the same physical device. eBus offers two mechanisms for consumers to disambiguate.
-
-**Implicit, via the Homie `root` reference and the root device's `$description.type` (primary mechanism).** Every Homie child device declares its `root`. A consumer that finds two BESS devices with the same `info/serial-number` can determine which is which by inspecting the type of each one's root device:
-
-- If the root device's `$description.type` is `energy.ebus.device.bess` — i.e., the BESS is its own root — this representation is the BESS publishing itself natively. (Equivalently: the BESS's `root` field is the BESS's own ID, or absent per Homie 5's convention for top-level devices.) The vendor identity is in the BESS's `info/vendor-name`.
-- If the root device's `$description.type` is anything other than `energy.ebus.device.bess` (e.g., `energy.ebus.device.distribution-enclosure` when the proxier is an enclosure), this representation is being proxied by that root device. The root's `info/vendor-name` identifies the proxy publisher.
-
-Per the eBus vendor-neutrality principle, vendors publishing BESS devices natively use the same `energy.ebus.device.bess` type as proxies — vendor identity lives in `info/vendor-name`, not in the device type string. The general heuristic is "prefer the native (vendor-published) representation over a proxied one." This works without any new property: every Homie 5 device already publishes `root`, and the consumer just inspects the root's existing `$description.type`.
-
-**Explicit, via an optional `proxied` boolean (secondary mechanism).** A publisher MAY publish a `proxied` boolean property on a device's `capability.info` for direct disambiguation:
-
-- `proxied = true` — this representation is proxied.
-- `proxied = false` — this representation is published natively (by the device or its vendor).
-- absent — no explicit signal; consumers fall back to the implicit-via-root mechanism above.
-
-`proxied` is MAY-level. The property is reserved here so that any publisher that wants to make the distinction unambiguous has a defined slot to use, rather than inventing its own ad-hoc property if and when the need arises.
-
-**Enclosure-side knowledge stays on the enclosure.** Two classes of information are enclosure-side facts that the DER child itself cannot publish (because a non-proxying eBus-native publisher would not have them), and so they live on enclosure-side surfaces rather than on the DER child:
+Per the proxy model's general rule that [proxy-side knowledge stays on the proxy](proxy.md#proxy-side-knowledge-stays-on-the-proxy), two classes of information are enclosure-side facts that the DER child itself cannot publish (because a non-proxying eBus-native publisher would not have them), and so they live on enclosure-side surfaces rather than on the DER child:
 
 - **The wiring relationship between the DER and the enclosure** — which circuit, lugs device, or MID is physically connected to the DER. Recorded on `capability.connection` of the enclosure-side connection-owner (see §"Connection Capability").
 - **The enclosure's view of communication-link health to the DER** — whether the enclosure's internal integration is currently reaching the DER. Recorded as `feeds-device-status` / `fed-by-device-status` on the same connection record.
 
 The DER child carries no `feed` property, no `relative-position` property, and no enclosure-↔-DER link-health property. A BESS device publishes its own `status/communication` property (the publisher's self-report of adapter-to-BESS communication) — that is a different signal from the enclosure-side link-health, published independently of the enclosure's view.
+
+> **Interim placement.** The next three subsections — *Proxied BESS Child*, *Proxied PV Child*, *Proxied EVSE Child* — are partial BESS / PV / EVSE data models, framed as "what the enclosure publishes when proxying." Rules they state, such as "a conformant BESS publisher MUST include a MID child device," are properly BESS-data-model statements, not enclosure-spec statements. They will move to `data-models/bess.md`, `data-models/pv.md`, and `data-models/evse.md` when those per-device data models land in this repository. The general proxy-publication conventions themselves already live in [`data-models/proxy.md`](proxy.md).
 
 ### Proxied BESS Child
 
@@ -570,9 +538,7 @@ The proxied EVSE child's wiring relationship to the enclosure — specifically, 
 | PV (proxied) | `{proxier-id}-{pv-id}` (where `{pv-id}` is the vendor serial when commissioned, or a publisher-assigned identifier such as `pv-1`, `pv-2`, …) | `ab-1234-c5d67-pv-1` |
 | EVSE (proxied) | `{proxier-id}-{evse-id}` (same convention as PV — vendor serial when known, otherwise a publisher-assigned identifier like `evse-1`, `evse-2`, …) | `ab-1234-c5d67-SD123456789` |
 
-**Proxied-device ID convention.** Every proxied device is named `{proxier-id}-{proxied-id}` — the publisher (proxier) prefixes its own device ID onto a stable identifier of the proxied device. For BESS, the proxied identifier is the BESS hardware serial — typically always known. For PV and EVSE, it is either the vendor's serial number (when commissioning has captured it) or a publisher-assigned identifier (`pv-1`, `pv-2`, …; `evse-1`, …). The publisher-assigned form covers cases where the proxied device does not expose a clean single canonical serial (e.g., an Enphase PV string of microinverters with no system-level serial).
-
-The convention prevents three collision scenarios: (1) when a vendor begins publishing the same physical device natively — its native publication uses the bare identifier, distinct from any proxy's prefixed form; (2) when multiple proxiers (e.g., multiple enclosures in a multi-enclosure install with a shared broker) each proxy the same physical device — each proxy's prefix makes its device ID unique; (3) when a single proxier hosts multiple instances of the same DER class (two PVs on one enclosure, two EVSEs, etc.) — the per-instance suffix disambiguates within a proxier. Consumers correlate proxies and native publishers of the same physical device by reading `info/serial-number` (or another vendor-stable identifier), not by device ID.
+Proxied DER IDs in this model follow the general [`{proxier-id}-{proxied-id}` convention](proxy.md#proxied-device-id-convention). The proxier prefix is the enclosure's serial number; the proxied identifier is the BESS hardware serial (typically always known), the PV or EVSE vendor serial when commissioning has captured it, or a publisher-assigned identifier (`pv-1`, `pv-2`, …; `evse-1`, …) otherwise.
 
 ### Device ID Stability
 
@@ -583,7 +549,7 @@ The convention prevents three collision scenarios: (1) when a vendor begins publ
 | Circuit | Yes | Yes | Implementation-defined |
 | BESS (proxied) | Yes | Yes | Yes (derived from proxier serial + BESS serial; both are stable) |
 
-**Stability across proxy/native transitions.** A proxied device's ID is **not** stable across a transition from proxied to natively-published — the proxied form is `{proxier-id}-{bess-serial}` and the native form is `{bess-serial}`. Consumers that need cross-transition stable identity use `info/serial-number` (or another vendor-stable identifier) rather than the Homie device ID.
+For stability across a proxy-to-native transition, see [proxy.md → ID stability across the proxy-to-native transition](proxy.md#id-stability-across-the-proxy-to-native-transition).
 
 ### Child Device Discovery
 
@@ -786,7 +752,7 @@ This install illustrates several aspects of the data model working together:
 - **UPSTREAM DER**: the Tesla PW is wired upstream of panel 1's main lugs. Panel 1's `lugs-up` device carries `connection/fed-by-device-id = "xy-0001-aaaaa-TG000000000001"` and `fed-by-device-type = energy.ebus.device.bess` — the only place in the enclosure tree where the BESS-as-upstream wiring is captured.
 - **IN_PANEL DER on a circuit**: the Enphase PV lands on a circuit in panel 1; that circuit's `connection/feeds-device-id = "xy-0001-aaaaa-pv-1"` records the link.
 - **Inter-panel chain via `lugs-dn` → `lugs-up`**: today, only the receiving end (each panel's `lugs-up/connection/fed-by-device-id`) records the inter-panel link. The downstream-side `feeds-*` triplet is not populated by current SPAN firmware; future commissioning may capture it. The chain is fully traversable from either end of any link.
-- **Same physical DER proxied by multiple enclosures**: each panel publishes its own view of the Tesla PW (from its own internal integration), under a distinct enclosure-prefixed device ID. The three proxies share the same `info/serial-number`. A consumer aggregating across brokers dedupes by serial number, not device ID. All three proxies are identifiable as proxies because their `root` is a `distribution-enclosure` device (not the BESS itself) — see §"Disambiguating proxied from native publishers."
+- **Same physical DER proxied by multiple enclosures**: each panel publishes its own view of the Tesla PW (from its own internal integration), under a distinct enclosure-prefixed device ID. The three proxies share the same `info/serial-number`. A consumer aggregating across brokers dedupes by serial number, not device ID. All three proxies are identifiable as proxies because their `root` is a `distribution-enclosure` device (not the BESS itself) — see [proxy.md → Disambiguating proxied from native publishers](proxy.md#disambiguating-proxied-from-native-publishers).
 - **Wiring authority lives on the enclosure that owns the wiring**: only panel 1 has `connection` records referencing the BESS and PV (because panel 1 is the enclosure physically wired to them). Panels 2 and 3 carry proxy children for those DERs but no `connection` records — that combination conveys "these enclosures know about the DERs but are not directly wired to them."
 
 ### Example 2 (SPAN panel implementation): single panel with Tesla Powerwall on a panel breaker
