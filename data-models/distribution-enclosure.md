@@ -259,10 +259,10 @@ Each circuit breaker in the enclosure is a child device. The number of circuits 
 | `dipole` | boolean | — | MUST | no | Is this a 240V double-pole circuit? |
 | `breaker-rating` | integer | A | SHOULD | no | Breaker amperage rating. |
 | `dedicated` | boolean | — | MAY | no | True when commissioning has explicitly marked this circuit as serving a single load; false when explicitly marked as a mixed-load circuit; omitted when no determination has been recorded. Absence is *not* equivalent to false. |
-| `tags` | string | — | MAY | no | Reserved for a future controlled vocabulary of circuit-load type tags (e.g., `WATER_HEATER`, `HVAC_COMPRESSOR`, `RANGE`, `EV_DRIVE`, `EV_OTHER`, `DRYER`, `PUMP`). Multi-valued: a mixed-load circuit may carry multiple tags. **Very preliminary — exploratory work is in progress on the [`wip/circuit-tags`](../../../tree/wip/circuit-tags) branch; the vocabulary and even the shape of this property are not yet stable. Implementations should not rely on this property yet.** |
+| `tags` | string | — | MAY | no | Controlled vocabulary of circuit-load type tags identifying the load(s) physically connected to the circuit (e.g., `WATER_HEATER`, `AC_CONDENSER`, `RANGE`, `EVSE`, `DRYER`, `PUMP`). Multi-valued: a comma-separated list of tags from the vocabulary. Single-tag for a dedicated-load circuit; multi-tag for a mixed-load circuit. See [`registries/circuit-tags.md`](../registries/circuit-tags.md) for the full vocabulary, naming conventions, and multi-tag semantics. |
 | `external-ids` | string | — | MAY | no | Reserved for a future scheme for opaque identifiers from external systems referencing the load(s) on this circuit. Each item would be of the form `<scheme>:<identifier>` (e.g., `matter:0x123ABC`, `zigbee:00:11:22:33:44:55:66:77`, `vendor:tesla:wall-connector-42`). **Very preliminary — exploratory work is in progress on the [`wip/external-id-schemes`](../../../tree/wip/external-id-schemes) branch; scheme prefixes and even the shape of this property are not yet stable. Implementations should not rely on this property yet.** |
 
-The circuit-tag registry and the external-id scheme registry are exploratory companion artifacts under active development on dedicated WIP branches; the vocabularies, scheme prefixes, and even the shape of the `tags` and `external-ids` properties themselves are subject to substantial change. This data-model spec reserves the property slots so future stable registries can populate them, but implementations should treat both properties as not-yet-defined and SHOULD NOT populate them.
+The `external-ids` property's scheme registry is still exploratory and under active development on a dedicated WIP branch; the scheme prefixes and even the shape of that property are subject to substantial change. This data-model spec reserves the slot so a future stable scheme registry can populate it, but implementations should treat `external-ids` as not-yet-defined and SHOULD NOT populate it.
 
 **capability.meter:**
 
@@ -818,7 +818,7 @@ ebus/5/<circuit-5-id>/                          energy.ebus.device.circuit
   info/tab-number                               5
   info/dipole                                   true
   info/breaker-rating                           60
-  info/tags                                     "EV_DRIVE"
+  info/tags                                     "EVSE"
   meter/active-power                            5350.0
   switch/relay                                  CLOSED
   priority/shed-priority                        SOC_THRESHOLD
