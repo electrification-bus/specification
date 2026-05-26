@@ -564,6 +564,23 @@ Adapters for cloud APIs SHOULD cache data locally and continue to serve last-kno
 | OpenADR | 3.0 | [Open Automated Demand Response](https://www.openadr.org/openadr-3-0) |
 | IEEE 2030.5 | — | [Smart Energy Profile](https://standards.ieee.org/ieee/2030.5/11216/) |
 
+---
+
+## Adjacent Standards (non-normative)
+
+The standards listed below are *not* referenced normatively by eBus — an implementation is conformant without touching any of them — but they describe systems that meet eBus at the edges of its scope. Integrators building bridges, gateways, or translation layers between an eBus premises and the wider grid will encounter these models, and the eBus design has been informed by where its boundary falls relative to each one.
+
+### Grid-side: IEC Common Information Model (CIM)
+
+The IEC Common Information Model (IEC 61970 for transmission/EMS, IEC 61968 for distribution/DMS/OMS/CIS, IEC 62325 for markets) is the canonical data model on the *utility* side of the service drop. CIM describes the grid — substations, feeders, transformers, switches, capacitor banks, protection relays — and the operational IT systems that manage it. Its customer-facing leaf, `EnergyConsumer`, represents an entire service point as a single aggregate load characterized by active/reactive power and (optionally) a customer count; CIM does not categorize what is *behind* that point into branch circuits or end-use loads.
+
+eBus is the mirror image: it models the *premises* side of the service drop — the panel, the branch circuits, the appliances and DERs connected to them — at per-circuit and per-device resolution. The two models are complementary, and the natural seam is the service entrance / revenue meter. An integrator publishing aggregated premises data into a utility DERMS, OMS, or DR platform will typically translate from eBus models on one side of that seam to CIM (often CIM's DER profile, IEC 61968-5) on the other.
+
+Practical entry points to the CIM model:
+
+- **Zepben Evolve CIM100 documentation** — [https://zepben.github.io/evolve/docs/cim/cim100/](https://zepben.github.io/evolve/docs/cim/cim100/) — browsable class reference for the CIM 100 distribution profile, maintained alongside the open-source [Zepben Evolve](https://github.com/zepben/evolve-sdk-jvm) implementation. More readable than the IEC source documents for getting oriented.
+- **CIM Users Group** — [https://cimug.ucaiug.org/](https://cimug.ucaiug.org/) — community, working groups, profile registry.
+
 [mqtt]: https://mqtt.org/mqtt-specification/
 [mqtt5]: https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html
 [homie5]: https://homieiot.github.io/specification/
