@@ -2,6 +2,37 @@
 
 **Status:** exploratory scratch, not a data-model document. Built from a read-pass through the GEISA project's metering schemas and specification, to support drafting an eBus `utility-meter` data-model on branch `wip/data-model-utility-meter`.
 
+## Decisions
+
+Decisions taken on 2026-06-05 to anchor the eventual `data-models/utility-meter.md` draft.
+
+### Capability decomposition (six capability nodes)
+
+The utility-meter device exposes six Homie capability nodes. The first three are always present (they define what the device is); the latter three are populated when the meter computes them.
+
+| Capability | Origin | Notes |
+|---|---|---|
+| `capability.info` | existing | Nameplate identity. Standard Homie identity properties (vendor, model, serial, firmware) plus utility-meter-specific: `meter-class`, `meter-form`, `phases`, `neutral-connected`, `nominal-frequency`, `nominal-voltage-line-to-line`, `nominal-voltage-line-to-neutral`, `calculation-convention` (`ARITHMETIC` / `VECTORIAL`), `ct-ratio`, `pt-ratio`, `register-multiplier`. |
+| `capability.meter` | existing | Instantaneous V/I/P/Q/S + power-factor + frequency + cumulative imported/exported energy. System-level and per-phase. |
+| `capability.status` | existing | Meter-as-device operational state: tamper, comm health, time-sync state, reverse-energy flag, internal temperature. |
+| `capability.grid` | existing (broadened) | Meter's *verdict* view of utility-supply health: `grid-state` (UP/DOWN/DEGRADED/UNKNOWN — with `DEGRADED` actually distinguishable on a revenue-grade meter, unlike on a proxied black-box MID), meter-observed grid-event timestamps. The utility-meter does **not** publish `islanding-state` or `grid-forming-entity` — those belong on the MID per framework principle #7. This work broadens the registry's note on `capability.grid` (currently scoped to MID) to acknowledge utility-meter as a second publisher class. |
+| `capability.demand` | new | Peak-average demand for commercial tariffs: `integration-window`, `current-interval-demand`, `previous-interval-demand`, `peak-demand-this-period`, `peak-demand-time`, `peak-demand-reset-time`. Separate from `capability.meter` because the audience (commercial billing), value shape (quantity + timestamp pairs), cadence (interval-based), and configuration (`integration-window`) all differ. Mirrors how `capability.soc` is separate from `capability.meter` even though both touch energy. **Requires a new entry in `registries/capability-types.md`.** |
+| `capability.power-quality` | new | Quantitative power-quality measurements: `thd-voltage-*`, `thd-current-*`, `tdd-current-*`, `2nd-harmonic-voltage-*`, `2nd-harmonic-current-*`, voltage unbalance. Separate audience (PQ analytics, not energy management). Higher-order harmonic spectra (GEISA's `repeated float` arrays) deferred — they straddle the waveform boundary we're already excluding. **Requires a new entry in `registries/capability-types.md`.** |
+
+### Per-phase representation
+
+Per-phase electrical measurements use property-name suffixes (`voltage-a`, `voltage-b`, `voltage-c`, `current-a`, …), not phase-as-child-device. Matches the lugs precedent in `distribution-enclosure.md` (`l1-current`, `l2-current`). The neutral-phase suffix is `-n` (`current-n`). System aggregates carry no suffix (`active-power`, not `active-power-system`).
+
+### Conformance latitude
+
+The eBus utility-meter data model defines a property **vocabulary**, not a conformance gauntlet. Within each capability node, the **vast majority of properties are MAY-level**. Meter OEMs publish what they have and omit what they don't (framework principle #3); the data model is more valuable when broad participation populates it partially than when a strict contract excludes most candidates.
+
+The Homie device-type discriminator (`$description.type = energy.ebus.device.utility-meter`) is what identifies a device as a utility-meter. Population of any specific property does not.
+
+This is a deliberately *more lenient* stance than `data-models/distribution-enclosure.md` takes (which marks several circuit and lugs `capability.meter` properties as MUST). An enclosure is a single integrated product whose vendor controls the whole stack; the utility-meter data model targets a long tail of meter OEMs and proxy publishers where any conformance bar above MAY will exclude most of them.
+
+GEISA's per-field mandatory/optional annotations (M/O on the AC Polyphase Meter / AC Meter device types in `instantaneous.csv`) apply to GEISA conformance, not eBus. The property groups below carry the GEISA flags for reference; the eventual data-model document will not import them.
+
 ## Sources
 
 All paths below are within the locally cloned GEISA project (`~/projects/GEISA/repo/`):
@@ -140,19 +171,11 @@ Additional events that aren't in GEISA but a utility meter typically publishes, 
 
 ## Open questions for the data-model draft
 
-1. **Capability decomposition.** Three plausible Homie-node carvings of the above:
-   (a) one big `meter` node with all properties flat (matches GEISA's single instantaneous message);
-   (b) split per cadence — `meter-realtime` (≥1 Hz) / `meter-billing` (summation+demand) / `meter-events` (status);
-   (c) split per audience — `energy` / `power` / `power-quality` / `nameplate` / `events`.
-   The framework's design principle "Homie nodes represent capabilities" pushes toward (c).
-2. **Per-phase representation.** GEISA repeats per-phase blocks in the protobuf. Homie has no protobuf — we can either (i) use Homie property name conventions like `voltage-a / voltage-b / voltage-c`, or (ii) model phases as child devices under the meter parent. Distribution-enclosure precedent should inform this.
-3. **Quadrant-quadrant arithmetic.** The 47-field billing axis is largely combinations of a smaller orthogonal set. Worth deciding whether the data-model exposes the full axis (closer to GEISA, easier proxy mapping) or the orthogonal primitives plus computed views.
-4. **Arithmetic vs. vectorial.** GEISA picks one stream per host via discovery. eBus could do the same (a nameplate property `calculation-convention: arithmetic | vectorial`), or expose both side-by-side where the meter provides them.
-5. **Time fields.** GEISA uses µs UNIX epoch in the messages and ms UNIX epoch in the discovery API. eBus payload-format decisions land here.
-6. **CT / PT ratios.** Not in the GEISA list, but real revenue meters publish CT primary, CT secondary, PT primary, PT secondary so downstream consumers can sanity-check. Worth adding.
-7. **Service multiplier / register multiplier.** Same rationale — utility-side metering practice, missing from the GEISA inventory.
-8. **Demand reset / billing-cycle boundary semantics.** Needed if eBus consumers will read billing fields without being confused about what window they cover.
+1. **Quadrant-quadrant arithmetic.** The GEISA 47-field billing axis is largely combinations of a smaller orthogonal set. Worth deciding whether the data-model nominates the full axis as forward-compat slots (closer to GEISA, easier proxy mapping) or only the orthogonal primitives. The conformance-latitude decision means whichever we choose is MAY-level anyway, so the cost of nominating the full matrix is mostly document length.
+2. **Arithmetic vs. vectorial.** GEISA picks one stream per host via discovery and broadcasts the choice. eBus does the same via `calculation-convention` on `capability.info` (decided). Open: when a meter happens to expose *both* (rare but possible — some commercial meters compute both internally), should the data-model nominate parallel `-arithmetic` / `-vectorial` property variants, or stick to single names and let `calculation-convention` disambiguate?
+3. **Time fields.** GEISA uses µs UNIX epoch in the protobuf messages and ms UNIX epoch in the discovery API. eBus payload-format decisions land here — most likely follow framework convention (ISO-8601 strings on Homie properties), but worth confirming.
+4. **Demand reset / billing-cycle boundary semantics.** Needed so eBus consumers reading `peak-demand-this-period` and `peak-demand-time` are not confused about what window they cover (billing-month vs rolling-30-day vs since-reset).
 
 ## Next step
 
-Convert this inventory into the eBus data-model document at `data-models/utility-meter.md`, using the same Homie-device/Homie-capability framing as `distribution-enclosure.md`. Resolve question 1 (capability decomposition) first — that decision shapes the rest of the document.
+Convert this inventory into the eBus data-model document at `data-models/utility-meter.md`, using the same Homie-device / Homie-capability framing as `distribution-enclosure.md` and honoring the conformance-latitude stance recorded above (vocabulary, not gauntlet).
