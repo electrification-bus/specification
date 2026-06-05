@@ -1,4 +1,4 @@
-# Utility Electric Meter — Property Inventory (research scratch)
+# Utility Meter — Property Inventory (research scratch)
 
 **Status:** exploratory scratch, not a data-model document. Built from a read-pass through the GEISA project's metering schemas and specification, to support drafting an eBus `utility-meter` data-model on branch `wip/data-model-utility-meter`.
 
@@ -6,9 +6,9 @@
 
 Decisions taken on 2026-06-05 to anchor the eventual `data-models/utility-meter.md` draft.
 
-### Capability decomposition (six capability nodes)
+### Capability decomposition (seven capability nodes)
 
-The utility-meter device exposes six Homie capability nodes. The first three are always present (they define what the device is); the latter three are populated when the meter computes them.
+The utility-meter device exposes seven Homie capability nodes. The first three are always present (they define what the device is); the latter four are populated when the meter exposes the corresponding signal or computes the corresponding quantities.
 
 | Capability | Origin | Notes |
 |---|---|---|
@@ -16,6 +16,7 @@ The utility-meter device exposes six Homie capability nodes. The first three are
 | `capability.meter` | existing | Instantaneous V/I/P/Q/S + power-factor + frequency + cumulative imported/exported energy. System-level and per-phase. |
 | `capability.status` | existing | Meter-as-device operational state: tamper, comm health, time-sync state, reverse-energy flag, internal temperature. |
 | `capability.grid` | existing (broadened) | Meter's *verdict* view of utility-supply health: `grid-state` (UP/DOWN/DEGRADED/UNKNOWN — with `DEGRADED` actually distinguishable on a revenue-grade meter, unlike on a proxied black-box MID), meter-observed grid-event timestamps. The utility-meter does **not** publish `islanding-state` or `grid-forming-entity` — those belong on the MID per framework principle #7. This work broadens the registry's note on `capability.grid` (currently scoped to MID) to acknowledge utility-meter as a second publisher class. |
+| `capability.doe` | new | Utility-signaled import / export power limits (UL 3141 PIL / PEL, Matter PowerThresholdStruct equivalent, IEEE 2030.5 / CSIP "DOE" terminology). Properties: `power-import-limit`, `apparent-power-import-limit`, `power-import-limit-source` (CONTRACT / REGULATOR / EQUIPMENT / GRID / UNKNOWN), `power-import-limit-valid-until`, and symmetric `*-export-*` quartet. Publish-only — no `/set` topic. Designed for the pub/sub flow where panels and EMSes subscribe to the meter's published envelope and apply it to their PCS internally; closes the Matter 1.5 gaps (no export side, no Grid source value) eBus has the latitude to address from v0. **Requires a new entry in `registries/capability-types.md`.** |
 | `capability.demand` | new | Peak-average demand for commercial tariffs: `integration-window`, `current-interval-demand`, `previous-interval-demand`, `peak-demand-this-period`, `peak-demand-time`, `peak-demand-reset-time`. Separate from `capability.meter` because the audience (commercial billing), value shape (quantity + timestamp pairs), cadence (interval-based), and configuration (`integration-window`) all differ. Mirrors how `capability.soc` is separate from `capability.meter` even though both touch energy. **Requires a new entry in `registries/capability-types.md`.** |
 | `capability.power-quality` | new | Quantitative power-quality measurements: `thd-voltage-*`, `thd-current-*`, `tdd-current-*`, `2nd-harmonic-voltage-*`, `2nd-harmonic-current-*`, voltage unbalance. Separate audience (PQ analytics, not energy management). Higher-order harmonic spectra (GEISA's `repeated float` arrays) deferred — they straddle the waveform boundary we're already excluding. **Requires a new entry in `registries/capability-types.md`.** |
 

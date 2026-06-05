@@ -1,4 +1,4 @@
-# eBus Utility Electric Meter Data Model Specification
+# eBus Utility Meter Data Model Specification
 
 **Status:** EXPLORATORY
 **Version:** 0.1
@@ -7,15 +7,17 @@
 
 ## Overview
 
-This document defines an eBus/Homie data model for a **utility electric meter** — the revenue-grade metering device installed by an electric utility at a customer's service entrance, between the utility's distribution system and the customer's premises wiring. The utility meter is the customer site's primary point of measurement for energy billing and the most authoritative observer of the utility supply that the site has.
+This document defines an eBus/Homie data model for a **utility meter** — the revenue-grade metering device installed by an electric utility at a customer's service entrance, between the utility's distribution system and the customer's premises wiring. The utility meter is the customer site's primary point of measurement for energy billing and the most authoritative observer of the utility supply that the site has.
 
 The data model captures the ≥1 Hz instantaneous electrical measurements (voltage, current, power, frequency), the slower cumulative-energy and demand quantities used for billing, the meter's view of utility supply health, and the meter's own operational state. It is layered on Homie 5 plus eBus's HEI-specific device and capability types and is intended to be vendor-neutral: any meter OEM or proxy publisher with internal access to the underlying values can populate it.
 
 This data model is informed by — but does not depend on or copy — the [GEISA project](https://lfenergy.org/introduction-to-geisa/)'s metering schemas. Where the property vocabulary aligns with GEISA, the alignment is deliberate; where it diverges (notably in conformance posture, in encoding decisions, and in the omission of GEISA's high-sample-rate waveform tier), the divergence is also deliberate. The two specifications are independent. See the companion inventory at [`utility-meter-property-inventory.md`](utility-meter-property-inventory.md) for the GEISA-to-eBus mapping decisions taken during this data model's drafting.
 
-## Terminology: "utility electric meter"
+## Terminology: "utility meter"
 
-This document uses **utility electric meter** (or just *utility meter*) for the device class being modelled. The defining characteristic is that the meter is installed by the **electric utility** at the customer's **service entrance** and is the revenue-class measurement device on which energy billing is based.
+This document uses **utility meter** for the device class being modelled. The defining characteristic is that the meter is installed by the **electric utility** at the customer's **service entrance** and is the revenue-class measurement device on which energy billing is based.
+
+The formal industry term in standards literature is *utility electric meter* (or Matter's "Electrical Utility Meter" device type 0x0093). Within eBus the "electric" qualifier is redundant — eBus is the Electrification Bus, every measured quantity in the spec is electrical — so the prose throughout uses the shorter form. The device-type identifier `energy.ebus.device.utility-meter` reflects the same convention. Cross-references to other standards' formal names appear where relevant.
 
 This is distinct from:
 
@@ -69,12 +71,13 @@ ebus/5/<meter-id>/                         energy.ebus.device.utility-meter
   capability.info                          Meter identity and nameplate
   capability.meter                         Instantaneous + cumulative electrical measurements
   capability.status                        Meter-as-device operational state
-  capability.grid                          Meter's verdict view of utility supply health   (when published)
-  capability.demand                        Peak-average demand quantities                  (when published)
-  capability.power-quality                 Quantitative power-quality measurements         (when published)
+  capability.grid                          Meter's verdict view of utility supply health           (when published)
+  capability.doe    Utility-signaled import/export power limits             (when published)
+  capability.demand                        Peak-average demand quantities                          (when published)
+  capability.power-quality                 Quantitative power-quality measurements                 (when published)
 ```
 
-The first three capabilities (`info`, `meter`, `status`) are always present on a conformant utility-meter device — they define what the device is. The latter three (`grid`, `demand`, `power-quality`) are populated when the meter computes the corresponding quantities; a meter that does not compute power-quality metrics simply omits `capability.power-quality` from its `$description`.
+The first three capabilities (`info`, `meter`, `status`) are always present on a conformant utility-meter device — they define what the device is. The latter four (`grid`, `doe`, `demand`, `power-quality`) are populated when the meter exposes the corresponding signal or computes the corresponding quantities; a meter that does not signal a dynamic operating envelope simply omits `capability.doe` from its `$description`.
 
 ### Device ID
 
@@ -103,7 +106,7 @@ Meter identity and nameplate properties. The standard Homie identity properties 
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `vendor-name` | string | — | MAY | Meter manufacturer (e.g., `"Itron"`, `"Landis+Gyr"`, `"Honeywell"`). |
+| `vendor-name` | string | — | MAY | Meter manufacturer (e.g., `"Landis+Gyr"`, `"Aclara"`, `"Honeywell"`). |
 | `serial-number` | string | — | MAY | Meter serial number. |
 | `model` | string | — | MAY | Vendor-defined model identifier. |
 | `hardware-version` | string | — | MAY | Hardware revision. |
@@ -188,6 +191,35 @@ This is the same capability node type used on MID devices in [`distribution-encl
 | `grid-state` | enum | — | MAY | Sensed condition of the utility supply: `UP`, `DOWN`, `DEGRADED`, `UNKNOWN`. A revenue-grade utility meter is qualified to distinguish `DEGRADED` (voltage / frequency outside the band for `UP` but not yet a declared outage) from `UP` based on its measurement gear — populating `DEGRADED` rather than collapsing to `UP` / `DOWN` is encouraged where the meter has the underlying capability. |
 | `last-outage-time` | datetime | — | MAY | Timestamp of the most recent transition from `UP` (or `DEGRADED`) to `DOWN` observed by the meter. ISO-8601 UTC. |
 | `last-restoration-time` | datetime | — | MAY | Timestamp of the most recent transition from `DOWN` to `UP` (or `DEGRADED`) observed by the meter. ISO-8601 UTC. |
+
+#### capability.doe
+
+The utility's **dynamic operating envelope (DOE)** for this service point — the current import and export power limits the utility is signaling, with the source of each limit and (where defined) the time at which the limit expires. Published when the meter is configured to expose this signaling channel; omitted otherwise.
+
+**Node type:** `energy.ebus.capability.doe`
+
+The term *dynamic operating envelope* is from [IEEE 2030.5 / CSIP](https://standards.ieee.org/ieee/2030.5/5897/), where it names the utility-issued operating constraints a customer site agrees to remain within. In Matter 1.5 terminology, the import side of this capability corresponds to the Meter Identification cluster's `PowerThreshold` attribute (Section 9.10 of the Matter 1.5 Application Cluster Specification); the export side has no Matter 1.5 equivalent and is proposed for a future Matter release. In [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) / NEC 2026 Article 130 terms, the import and export limits are PIL (Power Import Limit) and PEL (Power Export Limit) respectively.
+
+| Property ID | Datatype | Unit | Req | Description |
+|---|---|---|---|---|
+| `power-import-limit` | float | W | MAY | Real power import limit (UL 3141 PIL / Matter `PowerThresholdStruct.powerThreshold`) — the maximum active power the utility is signaling that the site may import. |
+| `apparent-power-import-limit` | float | VA | MAY | Apparent power import limit (Matter `PowerThresholdStruct.apparentPowerThreshold`). Published in addition to or instead of `power-import-limit` when the meter expresses the limit in apparent-power terms. |
+| `power-import-limit-source` | enum | — | MAY | Origin of the import limit: `CONTRACT` (service contract / customer agreement), `REGULATOR` (permanent regulatory mandate), `EQUIPMENT` (equipment / conductor rating), `GRID` (dynamic utility grid-management action — distribution transformer protection, DR event, congestion management), `UNKNOWN` (source not specified). The `GRID` value distinguishes a temporary utility action from a permanent `REGULATOR` mandate and closes the gap [Matter 1.5's `PowerThresholdSourceEnum`](https://csa-iot.org/all-solutions/matter/) currently has between those two cases. |
+| `power-import-limit-valid-until` | datetime | — | MAY | UTC timestamp at which the published import limit is expected to expire or be re-evaluated. Absent or empty when there is no defined end (typical for static / contract limits). Published when known (e.g., a DR event with a defined window) so subscribers can plan for the revert. ISO-8601 UTC. |
+| `power-export-limit` | float | W | MAY | Real power export limit (UL 3141 PEL) — the maximum active power the utility is signaling that the site may export. No Matter 1.5 equivalent; eBus carries this from v0. |
+| `apparent-power-export-limit` | float | VA | MAY | Apparent power export limit. |
+| `power-export-limit-source` | enum | — | MAY | Same value domain as `power-import-limit-source`. |
+| `power-export-limit-valid-until` | datetime | — | MAY | Same semantics as `power-import-limit-valid-until`, for the export side. |
+
+**Publish-only.** This capability is publish-only; no `/set` topic is defined. The utility configures the meter's envelope through whatever out-of-band channel the meter and utility have (typically AMI head-end / IEEE 2030.5 / proprietary backhaul). The meter publishes the resulting values to the eBus broker. Subscribers (panels, EMSes, DERMS adapters) cannot tell the meter what envelope to publish; they read the published values and act locally. This separation — utility owns the source of the envelope, meter owns publication, subscribers own enforcement — keeps authorization simple: no subscriber needs write permission to any property on the meter.
+
+**Absence semantics.** A property that is not published means "no value to signal for this dimension." A subscriber treats absence of `power-import-limit` (and `apparent-power-import-limit`) as "no meter-signaled import limit; fall back to the local equipment / static rating." Absence of `power-import-limit-valid-until` while `power-import-limit` is published means "the limit has no defined expiry" (typical for contract limits); the subscriber should not assume a default expiry. Absence of the capability node entirely means the meter does not signal an operating envelope at all.
+
+**Why a new capability rather than extending `capability.meter` or `capability.grid`.** A utility-signaled envelope is neither a measurement (capability.meter is for what the meter measures) nor a verdict on grid health (capability.grid). It is a third class of signal — a control input the utility is communicating downstream — and it has a distinct audience (PCS subscribers, EMS panels, DERMS coordinators) and lifecycle (utility-driven, possibly time-bounded). Giving it its own capability keeps the three streams separable on the subscriber side.
+
+**Interaction with the distribution-enclosure's `capability.pcs`.** A smart panel that consumes this capability subscribes to the meter's `power-import-limit` (and optionally the export-side properties) on the eBus broker. When the value changes, the panel updates its internal CSL — typically the `grid-import-limit` slot on its own `capability.pcs`. The panel's PCS then enforces the effective limit per the existing CSL composition: `min(feed-import-limit, grid-import-limit, requested-import-limit, [off-grid-import-limit if islanded])` — the static feed rating naturally caps the effective limit without the meter-driven slot needing to clamp. The meter's `power-import-limit` and the panel's `grid-import-limit` are distinct properties with distinct semantics — the meter publishes "what the utility is signaling", the panel publishes "what the panel is currently enforcing from the grid-source CSL slot" — and they live on different devices. The end-to-end integration (commissioning, subscription topology, failure handling, audit) is intended to be documented in a companion integration guide.
+
+**Publishers other than utility meters.** Although this data model defines `capability.doe` in the context of utility meters, the capability itself is publisher-agnostic. Any device that authoritatively knows a utility-signaled operating envelope — a future IEEE 2030.5 / CSIP gateway, a DERMS adapter, an aggregator's site controller — MAY publish this capability per framework principle #7. The property contracts above apply unchanged to any conformant publisher.
 
 #### capability.demand
 
@@ -308,6 +340,7 @@ Both meters are valid `energy.ebus.device.utility-meter` publishers. Consumers h
 
 This data model introduces or broadens entries in [`registries/capability-types.md`](../registries/capability-types.md):
 
+- `energy.ebus.capability.doe` — **new** capability type. Utility-signaled import / export power limits (IEEE 2030.5 / CSIP "dynamic operating envelope" terminology). Defined in the context of utility meters but publisher-agnostic — applicable to any device that authoritatively knows a utility-signaled envelope (DERMS adapters, IEEE 2030.5 / CSIP gateways, aggregator site controllers).
 - `energy.ebus.capability.demand` — **new** capability type. Peak-average demand quantities; primarily used on utility-meter devices but applicable wherever interval-demand integration is computed.
 - `energy.ebus.capability.power-quality` — **new** capability type. Quantitative power-quality measurements (THD, TDD, unbalance); primarily used on utility-meter devices.
 - `energy.ebus.capability.grid` — **broadened source.** Currently scoped to MID devices in the registry; the registry note will be updated to acknowledge utility-meter as a second publisher class. The MID and the utility-meter publish disjoint subsets of the capability's vocabulary; both are conformant.
@@ -328,3 +361,6 @@ The new capability identifiers and the broadened `capability.grid` source are do
 - ANSI C12.10 — meter form designations (for `capability.info/meter-form`).
 - IEEE 519 — harmonic limits (for `capability.power-quality/thd-*`, `tdd-*`).
 - NEMA MG-1 §14.36 — voltage unbalance definition (for `capability.power-quality/voltage-unbalance`).
+- [IEEE 2030.5 / CSIP](https://standards.ieee.org/ieee/2030.5/5897/) — Smart Energy Profile 2.0 / Common Smart Inverter Profile. Source of the "dynamic operating envelope" terminology used in `capability.doe`.
+- [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) — Power Control Systems. Source of the PIL / PEL terminology used in `capability.doe`. NEC 2026 Article 130 incorporates PCS requirements into the National Electrical Code.
+- [Matter 1.5 Meter Identification cluster (0x0B06)](https://csa-iot.org/all-solutions/matter/) — Cross-reference for the import side of `capability.doe` (`PowerThreshold` / `PowerThresholdStruct`).
