@@ -71,20 +71,21 @@ This section is the normative core of the eBus specification. Each requirement i
 
 23. An eBus entity SHOULD use TLS for MQTT and HTTP connections; MAY fall back to non-TLS if not feasible.
 24. When TLS is supported, TLS 1.2 or later MUST be used; TLS 1.3 is RECOMMENDED.
-25. An eBus entity supporting TLS SHOULD provide a REST endpoint to download its CA certificate (unauthenticated).
-26. An eBus entity supporting TLS SHOULD provide a REST endpoint to upload a CA certificate for the MQTT broker.
+25. An eBus entity whose TLS certificate is not publicly verifiable (typically self-signed) SHOULD provide a REST endpoint to download its CA certificate (unauthenticated).
+26. An eBus entity that connects to an MQTT broker whose TLS certificate is not publicly verifiable SHOULD provide a REST endpoint to upload that broker's CA certificate.
+27. An eBus entity that supports mTLS client-certificate authentication SHOULD provide an authenticated REST endpoint to upload trust-anchor CA certificates against which inbound client certificates are validated.
 
 ### OTA Firmware Updates
 
-27. An eBus entity SHOULD support a REST endpoint to initiate OTA firmware updates.
-28. The OTA update server URL SHOULD be obtained from configuration.
-29. An OTA update MUST NOT permanently brick the device (rollback or dual-partition boot SHOULD be supported).
+28. An eBus entity SHOULD support a REST endpoint to initiate OTA firmware updates.
+29. The OTA update server URL SHOULD be obtained from configuration.
+30. An OTA update MUST NOT permanently brick the device (rollback or dual-partition boot SHOULD be supported).
 
 ### Proxy Publishers
 
-30. A proxy publisher is a device-role entity that publishes a Homie device representation on behalf of a non-eBus-native device.
-31. A proxy publisher's Homie device MUST be functionally equivalent to a native eBus publication of the same device (same property contracts, same `$state` lifecycle, same discovery) and MAY be discoverable as a proxy via its `root.$type` per [`data-models/proxy.md`](data-models/proxy.md).
-32. A proxy publisher that bridges from a vendor cloud API SHOULD cache data locally and serve last-known state when cloud connectivity is unavailable.
+31. A proxy publisher is a device-role entity that publishes a Homie device representation on behalf of a non-eBus-native device.
+32. A proxy publisher's Homie device MUST be functionally equivalent to a native eBus publication of the same device (same property contracts, same `$state` lifecycle, same discovery) and MAY be discoverable as a proxy via its `root.$type` per [`data-models/proxy.md`](data-models/proxy.md).
+33. A proxy publisher that bridges from a vendor cloud API SHOULD cache data locally and serve last-known state when cloud connectivity is unavailable.
 
 ---
 
@@ -509,11 +510,13 @@ When TLS is supported:
 
 ### Certificate Management
 
-eBus entities on a local network will typically use self-signed certificates. The entity SHOULD:
+eBus entities on a local network typically use self-signed certificates because publicly-trusted CA certificates depend on infrastructure (publicly-resolvable DNS, periodic renewal) that LAN-local devices usually don't have. An entity using a self-signed (or otherwise non-publicly-verifiable) TLS certificate SHOULD:
 
-- Generate a self-signed certificate with SANs for its mDNS hostname and all IP addresses.
+- Generate the certificate with SANs for its mDNS hostname and all IP addresses.
 - Regenerate the certificate when IP addresses change.
-- Serve the CA certificate via an unauthenticated REST endpoint (e.g., `GET /api/v1/certificate/ca`).
+- Serve its CA certificate via an unauthenticated REST endpoint (e.g., `GET /api/v1/certificate/ca`) so that clients can establish trust.
+
+An entity using a publicly-trusted certificate (e.g., a cloud-hosted gateway with a Let's Encrypt cert) need not provide a CA-download endpoint; standard CA-chain validation suffices.
 
 ### Broker CA Certificate Download
 
@@ -536,11 +539,17 @@ Content-Type: application/x-pem-file
 
 ### MQTT Authentication
 
-An entity connecting to a broker requiring authentication MUST use credentials from the broker host's registration endpoint or from its configuration.
+An entity connecting to a broker requiring authentication MUST use credentials from the broker host's registration endpoint or from its configuration. When a broker is configured for mTLS client-certificate authentication (see §"mTLS Client Authentication (Optional)" below), presenting a valid client certificate chained to one of the broker's configured trust anchors is an alternative — or addition — to credential-based authentication.
 
-### Client Certificate Roles (Optional)
+### mTLS Client Authentication (Optional)
 
-An eBus deployment MAY use mTLS with client certificates for access control:
+An eBus deployment MAY use mutual TLS (mTLS) with client certificates as a client-authentication mechanism — independent of, or in addition to, the passphrase-based registration flow defined in §"Registration Endpoint" above. With mTLS, the entity (typically a device hosting an MQTT broker or REST endpoint) validates the inbound client's certificate against one or more configured trust-anchor CAs, and accepts the connection if validation succeeds.
+
+**Trust-anchor configuration.** An entity supporting mTLS is configured with the CA certificate(s) it should trust for inbound client validation. These are managed via the authenticated trust-anchor REST endpoint required by requirement 27. Trust anchors are distinct from the entity's own CA cert (covered by requirement 25 and §"Certificate Management" above), which clients use to trust the entity; trust anchors are the CAs the entity uses to validate inbound clients.
+
+**Identity assertion.** A successfully-authenticated client's identity is the subject of its certificate — typically the certificate's Subject DN, but a publisher MAY use a SAN or other configured attribute. The mapping from cert subject to authorization role is publisher-defined and out of scope for this specification.
+
+**Role taxonomy.** When a publisher uses mTLS for both authentication and authorization, the following role values are conventional:
 
 | Role | Description |
 |------|-------------|
@@ -549,6 +558,8 @@ An eBus deployment MAY use mTLS with client certificates for access control:
 | `controller` | May publish and issue commands to settable properties |
 | `automation` | May execute automation rules and coordinate devices |
 | `admin` | Full access including configuration and certificate management |
+
+**OEM-federated trust.** A deployment pattern emerging in the eBus ecosystem: two or more eBus-supporting OEMs arrange a trust relationship by direct or cross-signed CA certificates. Each participating device is configured with the partner OEM(s) trust anchor(s). When a client signed by a partner OEM connects to a device, its certificate validates against the configured trust anchor — no per-device passphrase registration is needed. This pattern is well-suited to direct device-to-device integration scenarios where the involved OEMs have an operational relationship and want to avoid placing the homeowner in the credential-provisioning path. PKI mechanics (key ceremony, chain construction, revocation handling) are standard CA-management practice and out of scope here.
 
 ---
 
