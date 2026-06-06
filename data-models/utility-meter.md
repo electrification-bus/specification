@@ -1,8 +1,8 @@
 # Electrification Bus Utility Meter Data Model Specification
 
-**Status:** EXPLORATORY
+**Status:** DRAFT
 **Version:** 0.1
-**Date:** 2026-06-05
+**Date:** 2026-06-06
 **Authors:** Don Jackson
 
 ## Overview
@@ -52,7 +52,7 @@ The model does **not** cover:
 
 ## Design Principles
 
-This data model follows the eBus data-model design principles — the Homie devices-vs-nodes split, parent aggregation, proxying as a first-class peer to native publishing, property placement on the authoritative device, forward compatibility, and multi-instance modeling. See **[Design Principles in data-models/README.md](README.md#design-principles)** for the canonical list.
+This data model follows the Electrification Bus design principles — the Homie devices-vs-nodes split, parent aggregation, proxying as a first-class peer to native publishing, property placement on the authoritative device, forward compatibility, and multi-instance modeling. See **[Design Principles in framework.md](../framework.md#design-principles)** for the canonical list.
 
 One stance is worth surfacing explicitly because it shapes the property tables that follow:
 
@@ -357,11 +357,11 @@ The new capability identifiers and the broadened `grid` source are documentation
 - [Electrification Bus design principles](../framework.md#design-principles)
 - [Electrification Bus distribution-enclosure data model](distribution-enclosure.md) — for the precedent on `meter`, `grid`, `status`, per-phase property suffixes, and the parent-of-children pattern this data model deliberately does *not* use.
 - [Electrification Bus capability-type registry](../registries/capability-types.md)
-- [GEISA project](https://lfenergy.org/introduction-to-geisa/) — independent LF Energy effort whose metering schemas informed the property vocabulary here. eBus and GEISA are independent specifications; alignment is deliberate where it exists, divergence is also deliberate.
+- [GEISA project](https://lfenergy.org/introduction-to-geisa/) — independent LF Energy effort whose metering schemas informed the property vocabulary here. Electrification Bus and GEISA are independent specifications; alignment is deliberate where it exists, divergence is also deliberate.
 - ANSI C12.20 — meter accuracy classes (for `info/meter-class`).
 - ANSI C12.10 — meter form designations (for `info/meter-form`).
 - IEEE 519 — harmonic limits (for `power-quality/thd-*`, `tdd-*`).
 - NEMA MG-1 §14.36 — voltage unbalance definition (for `power-quality/voltage-unbalance`).
 - [IEEE 2030.5 / CSIP](https://standards.ieee.org/ieee/2030.5/5897/) — Smart Energy Profile 2.0 / Common Smart Inverter Profile. Source of the "dynamic operating envelope" terminology used in `doe`.
 - [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) — Power Control Systems. Source of the PIL / PEL terminology used in `doe`. NEC 2026 Article 130 incorporates PCS requirements into the National Electrical Code.
-- [Matter 1.5 Meter Identification cluster (0x0B06)](https://csa-iot.org/all-solutions/matter/) — Cross-reference for the import side of `doe` (`PowerThreshold` / `PowerThresholdStruct`).
+- Matter 1.5 Meter Identification cluster (0x0B06) — Cross-reference for the import side of `doe` (`PowerThreshold` / `PowerThresholdStruct`). Cluster specifications are published by the Connectivity Standards Alliance.

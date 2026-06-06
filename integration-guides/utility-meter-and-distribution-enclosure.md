@@ -1,9 +1,9 @@
 # Utility Meter ↔ Distribution Enclosure Integration Guide
 
 **Type:** Integration Guide (informative)
-**Status:** EXPLORATORY
+**Status:** DRAFT
 **Version:** 0.1
-**Date:** 2026-06-05
+**Date:** 2026-06-06
 **Authors:** Don Jackson
 
 ## Overview
@@ -169,9 +169,11 @@ The same composition handles the case where multiple inputs are present simultan
 
 ### Interaction with `requested-import-limit`
 
-The pre-existing `requested-import-limit` slot was originally documented in `distribution-enclosure.md` as the slot for "Externally-requested limit (e.g., utility demand-response)." With the meter-driven flow described in this guide, `grid-import-limit` becomes the natural slot for utility-signaled limits delivered over the eBus pub / sub path. `requested-import-limit` continues to exist as the slot for non-meter-driven external requests (e.g., a fleet-management cloud pushing a temporary limit via the panel's REST API, distinct from anything the meter signals).
+`requested-import-limit` is the slot for **user- or operator-requested temporary limits** — a homeowner reducing the panel's import limit via the vendor's mobile app, a fleet operator pushing a limit via REST API, or similar. It is distinct from utility-signaled limits, which the panel receives via this guide's pub / sub flow and mirrors into `grid-import-limit`.
 
-The two slots can hold different values simultaneously, and the `min()` composition handles the precedence cleanly. An implementation MAY choose to disable external `/set` on `requested-import-limit` when a meter is actively driving `grid-import-limit`, but the spec does not require this — keeping both paths open lets a fleet operator push a more-restrictive limit on top of a meter-signaled one if needed.
+Both slots can be populated simultaneously, and the `min()` composition handles the precedence cleanly. Example: if the homeowner has set `requested-import-limit = 8 000 W` and the utility is signaling 30 000 W via the meter's DOE (mirrored by the panel into `grid-import-limit`), the effective import limit composes to `min(8 000, 30 000, …) = 8 000 W` — the user's tighter request wins. The two paths are independent: a user override and a utility-signaled limit can coexist, each acting as a ceiling.
+
+> **Note on a corrected slot semantics.** Earlier drafts of `distribution-enclosure.md` documented `requested-import-limit` as the slot for "Externally-requested limit (e.g., utility demand-response)." That framing was imprecise: utility-signaled limits — whether delivered via the meter's published DOE described in this guide or via another future utility integration path — belong on `grid-import-limit`. `requested-import-limit` is reserved for non-utility user / operator requests. This guide's mapping table reflects the corrected semantics.
 
 ---
 
