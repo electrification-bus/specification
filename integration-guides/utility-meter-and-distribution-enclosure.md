@@ -1,4 +1,4 @@
-# eBus Integration Guide: Utility Meter ↔ Distribution Enclosure
+# Utility Meter ↔ Distribution Enclosure Integration Guide
 
 **Type:** Integration Guide (informative)
 **Status:** EXPLORATORY
@@ -8,7 +8,7 @@
 
 ## Overview
 
-This integration guide is **informative**. It describes how two eBus data models — the [utility meter](../data-models/utility-meter.md) and the [distribution enclosure](../data-models/distribution-enclosure.md) — compose at runtime when both are present on the same eBus broker, so that a utility-signaled operating envelope reaches the panel's UL 3141-listed Power Control System (PCS) and constrains the panel's load management. The normative property contracts remain in the individual data-model documents; this guide composes them.
+This integration guide is **informative**. It describes how two Electrification Bus (eBus for short) data models — the [utility meter](../data-models/utility-meter.md) and the [distribution enclosure](../data-models/distribution-enclosure.md) — compose at runtime when both are present on the same eBus broker, so that a utility-signaled operating envelope reaches the panel's UL 3141-listed Power Control System (PCS) and constrains the panel's load management. The normative property contracts remain in the individual data-model documents; this guide composes them.
 
 The mechanism described here is vendor-neutral. A utility meter publishes its operating envelope to an eBus broker; a distribution enclosure subscribed to that envelope translates the published value into a PCS control setting and enforces it. The data-model surfaces involved (`doe` on the utility-meter, `pcs` on the distribution enclosure) make no vendor-specific assumptions; any conformant publisher / subscriber pair can participate.
 

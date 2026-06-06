@@ -1,4 +1,4 @@
-# eBus Utility Meter Data Model Specification
+# Electrification Bus Utility Meter Data Model Specification
 
 **Status:** EXPLORATORY
 **Version:** 0.1
@@ -7,7 +7,7 @@
 
 ## Overview
 
-This document defines an eBus/Homie data model for a **utility meter** — the revenue-grade metering device installed by an electric utility at a customer's service entrance, between the utility's distribution system and the customer's premises wiring. The utility meter is the customer site's primary point of measurement for energy billing and the most authoritative observer of the utility supply that the site has.
+This document defines an Electrification Bus (eBus for short) data model for a **utility meter** — the revenue-grade metering device installed by an electric utility at a customer's service entrance, between the utility's distribution system and the customer's premises wiring. The utility meter is the customer site's primary point of measurement for energy billing and the most authoritative observer of the utility supply that the site has.
 
 The data model captures the ≥1 Hz instantaneous electrical measurements (voltage, current, power, frequency), the slower cumulative-energy and demand quantities used for billing, the meter's view of utility supply health, and the meter's own operational state. It is layered on Homie 5 plus eBus's HEI-specific device and capability types and is intended to be vendor-neutral: any meter OEM or proxy publisher with internal access to the underlying values can populate it.
 

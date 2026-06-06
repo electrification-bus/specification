@@ -1,4 +1,4 @@
-# eBus Device Type Registry
+# Electrification Bus Device Type Registry
 
 **Status:** DRAFT v0.1
 **Date:** 2026-05-22
@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document is the canonical registry of `energy.ebus.device.*` device-type identifiers used across all eBus data models. Data-model documents reference identifiers from this registry; new identifiers are added to this registry when a data-model document introduces them.
+This document is the canonical registry of `energy.ebus.device.*` device-type identifiers used across all Electrification Bus (eBus for short) data models. Data-model documents reference identifiers from this registry; new identifiers are added to this registry when a data-model document introduces them.
 
 In the eBus Homie model, every device participating in the bus declares its device type via the `$type` attribute drawn from this namespace. A device-type identifier names a category of physical or logical device — for example, a distribution enclosure, a battery energy storage system, an electric vehicle supply equipment unit — and constrains what device structure (child devices, capabilities) the parent of that type is expected to expose.
 
