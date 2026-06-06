@@ -662,6 +662,18 @@ Proxy publishers commonly bridge from these underlying protocols:
 
 A proxy publisher that bridges from a vendor cloud API SHOULD cache data locally and continue to serve last-known state when cloud connectivity is unavailable.
 
+### Standalone Proxy Hosts (Bridges)
+
+A proxy publisher is most often embedded in another eBus device (a distribution enclosure proxies a BESS; a smart panel proxies an EVSE). The framework also accommodates a **standalone proxy host** — an entity whose only purpose is to bridge one or more non-eBus-native devices into eBus. A standalone proxy host implements the device role exclusively in its proxy-publisher capacity; it does not represent any HEI device of its own. Common examples: a Raspberry Pi or Linux service that polls a Tesla cloud API and publishes the resulting Powerwall as a proxy; a vendor-provided Modbus-to-eBus appliance; a developer's Python service bridging a CTA-2045 water heater.
+
+A standalone proxy host publishes itself as a Homie device of type **`energy.ebus.device.bridge`** — the eBus device type reserved for hosts whose role is solely to bridge non-eBus-native devices into the eBus tree. The bridge device is the root of the Homie tree; the proxied devices it publishes are its children, named per the `{proxier-id}-{proxied-id}` convention in [`data-models/proxy.md`](data-models/proxy.md).
+
+The bridge device's `info` capability carries the bridge's own identity (vendor of the bridge, model, firmware version of the bridge software). The bridge does not publish HEI-device capabilities of its own — no `meter`, no `grid`, no `pcs`. Its sole function is to anchor the proxied children in the Homie tree and provide an mDNS-discoverable host for them.
+
+This pattern keeps proxy disambiguation working via the primary `root.$type` mechanism: a consumer that finds two BESS devices with the same `info/serial-number` distinguishes them by inspecting each root — one BESS's root has `$type = energy.ebus.device.bess` (the BESS publishing itself natively), the other has `$type = energy.ebus.device.bridge` (the BESS being proxied by a bridge). Without the bridge device type, a standalone proxy host would have to rely on the explicit `proxied = true` boolean (a secondary mechanism) — the bridge device type lets the primary mechanism work uniformly across both embedded-proxy and standalone-proxy scenarios.
+
+The semantic shape parallels Matter's *Bridge* device type (a Matter node that aggregates non-Matter devices into a Matter fabric). A developer building an eBus bridge can think of `energy.ebus.device.bridge` as the eBus analogue.
+
 ---
 
 ## Referenced Standards
