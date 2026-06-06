@@ -39,7 +39,7 @@ The guide does **not** cover:
 - Normative property definitions — those live in [`data-models/utility-meter.md`](../data-models/utility-meter.md) and [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md).
 - The mechanism by which a utility configures the meter's envelope (AMI head-end, IEEE 2030.5 / CSIP backhaul, proprietary protocols) — out of scope.
 - Vendor-specific commissioning UIs and provisioning flows.
-- Matter-side specifics — see the companion Matter design.
+- Matter-side specifics beyond the cross-reference in [§Relationship to Matter](#relationship-to-matter) — vendor / SDK-specific bring-up is out of scope here.
 
 ---
 
