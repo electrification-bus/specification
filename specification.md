@@ -17,7 +17,8 @@ eBus composes existing, well-known protocols — **mDNS**, **MQTT** (with the **
 - **eBus entity** — A network host implementing the device role, the controller role, or both.
 - **Device role** — Publishes Homie devices to the MQTT broker, representing HEI device state and capabilities.
 - **Controller role** — Discovers and subscribes to Homie devices, reads state, and issues `/set` commands.
-- **Adapter** — An eBus entity (device role) that bridges a non-eBus device by translating its native protocol to Homie/MQTT.
+- **Native publisher** — A device-role entity that publishes a Homie device representing itself (or, for a vendor-built publisher, representing one of the vendor's own products).
+- **Proxy publisher** — A device-role entity that publishes a Homie device on behalf of a non-eBus-native device — typically bridging from the device's native protocol (Modbus, Matter, CTA-2045, vendor cloud API, etc.). The published representation is a *proxy*. Disambiguation between proxy and native publication is defined in [`data-models/proxy.md`](data-models/proxy.md).
 
 ### Conformance Language
 
@@ -50,7 +51,7 @@ This section is the normative core of the eBus specification. Each requirement i
 11. eBus uses `ebus` as the Homie topic domain: `ebus/5/{device-id}/...`
 12. An eBus device-role entity MUST comply with the Homie Convention v5.0 for device description, lifecycle, property publication, datatypes, and retained message semantics.
 13. An eBus entity SHOULD use QoS 2 for property value publications; QoS 0 for `/set` commands.
-14. eBus device and node types use the `energy.ebus.device.*` namespace; manufacturers MAY use their own prefix.
+14. eBus device types use the `energy.ebus.device.*` namespace; eBus capability types (the `$type` attribute on Homie nodes) use the parallel `energy.ebus.capability.*` namespace. Manufacturers MAY use their own namespace prefix for either.
 
 ### REST API and Configuration
 
@@ -79,11 +80,11 @@ This section is the normative core of the eBus specification. Each requirement i
 28. The OTA update server URL SHOULD be obtained from configuration.
 29. An OTA update MUST NOT permanently brick the device (rollback or dual-partition boot SHOULD be supported).
 
-### Adapters
+### Proxy Publishers
 
-30. An adapter is an eBus entity (device role) that bridges a non-eBus device by translating its native protocol to Homie/MQTT.
-31. An adapter's Homie device MUST be indistinguishable from a native eBus device to other eBus entities.
-32. Adapters for cloud APIs SHOULD cache data locally and serve last-known state when connectivity is lost.
+30. A proxy publisher is a device-role entity that publishes a Homie device representation on behalf of a non-eBus-native device.
+31. A proxy publisher's Homie device MUST be functionally equivalent to a native eBus publication of the same device (same property contracts, same `$state` lifecycle, same discovery) and MAY be discoverable as a proxy via its `root.$type` per [`data-models/proxy.md`](data-models/proxy.md).
+32. A proxy publisher that bridges from a vendor cloud API SHOULD cache data locally and serve last-known state when cloud connectivity is unavailable.
 
 ---
 
@@ -108,6 +109,22 @@ This section is the normative core of the eBus specification. Each requirement i
 ```
 
 **Lifecycle:** Once an eBus entity has an IP address and has claimed its mDNS hostname, it discovers (or provides) an MQTT broker via mDNS and connects. From there, the entity follows the Homie device lifecycle for publishing state and coordinating with other entities.
+
+---
+
+## Design Principles
+
+The following principles guide the structure of every eBus data model and the framework itself. Individual data-model documents may extend or clarify them but should not contradict them. Data-model documents reference these principles by number.
+
+1. **Homie devices represent physical things.** If it could maintain its own independent Homie representation, it is a Homie device.
+2. **Homie nodes represent capabilities.** A node carries what a Homie device *can do* (meter, switch, sense), not what physical component it is.
+3. **Publish what you have, omit what you don't.** Absent properties mean "unknown" or "not applicable," not a sentinel-encoded value.
+4. **Parent aggregates children.** The parent device exposes system-level aggregates; per-component detail lives on the relevant child.
+5. **Standard capability types are reused** across device classes.
+6. **Proxying is first-class.** eBus supports *proxying* — publication of an eBus representation by a publisher other than the device itself — as a peer to native publishing. The consumer-facing surface is identical for both forms, and capability and property contracts are written so that any conformant publisher (native or proxy) can satisfy them. See [`data-models/proxy.md`](data-models/proxy.md) for the full proxy specification (disambiguation between proxied and native representations, device-ID convention, and where proxy-side knowledge lives).
+7. **Properties belong on the device that authoritatively knows them**, even when proxying makes other placements convenient. A property that could not be populated by a non-proxying publisher belongs elsewhere. This is a direct consequence of principle 6: the property contract must be satisfiable by *any* conformant publisher, native or proxy, and a property smuggled onto an adjacent device because only the proxy happens to know it breaks the contract for the native publisher.
+8. **Forward compatibility is a design goal.** The data model defines slots for richer data than current implementations capture. Properties are MAY-level by default; datatypes are chosen for extensibility (open-vocabulary strings, not hardcoded enums where the value space is open); capabilities accept new properties additively. The model serves as a contract for the evolving ecosystem, not as a transcript of any one current feature set.
+9. **Multi-instance from the outset.** Identifying attributes and inter-device relationships are recorded per-device rather than enumerated as class-level properties on a containing parent, so N instances of any class can coexist without model changes (for example, multiple BESSs, PV inverters, or EVSEs in a single distribution enclosure).
 
 ---
 
@@ -265,29 +282,59 @@ Upon receiving a `$state` message for an unknown device, the controller retrieve
 
 ### Device and Node Types
 
-The Homie `type` attribute uses a hierarchical, reverse-domain-style naming convention. The `energy.ebus.device` prefix is reserved for eBus-standard types.
+The Homie `$type` attribute on devices and nodes uses a flat, reverse-domain-style naming convention. eBus reserves two prefixes:
 
-**Example type hierarchy:**
+- `energy.ebus.device.*` — eBus-standard **device** types (the `$type` of the root or child device).
+- `energy.ebus.capability.*` — eBus-standard **capability** types (the `$type` of a Homie node).
+
+**Example device types:**
 
 ```
 energy.ebus.device.distribution-enclosure
-energy.ebus.device.distribution-enclosure.circuit
-energy.ebus.device.distribution-enclosure.core
-energy.ebus.device.distribution-enclosure.pcs
-energy.ebus.device.bess
-energy.ebus.device.inverter
-energy.ebus.device.meter
-energy.ebus.device.evse
-energy.ebus.device.generator
+energy.ebus.device.circuit
+energy.ebus.device.lugs
 energy.ebus.device.mid
+energy.ebus.device.bess
+energy.ebus.device.pv
+energy.ebus.device.evse
+energy.ebus.device.utility-meter
+energy.ebus.device.generator
 energy.ebus.device.hems
 ```
 
-Device type definitions — required and optional nodes and properties for each type — will be specified in a companion document: **eBus Device Type Registry**.
+Device types are flat — a circuit is `energy.ebus.device.circuit`, not `energy.ebus.device.distribution-enclosure.circuit`. Containment is expressed via the Homie 5 parent-child topology (see §"Device Topology" below), not via dotted sub-typing of the device-type identifier.
 
-Manufacturers MAY define custom types using their own namespace prefix (e.g., `com.acme.device.widget`).
+**Example capability types:**
+
+```
+energy.ebus.capability.info
+energy.ebus.capability.meter
+energy.ebus.capability.status
+energy.ebus.capability.connection
+energy.ebus.capability.grid
+energy.ebus.capability.soc
+energy.ebus.capability.switch
+energy.ebus.capability.power-flows
+energy.ebus.capability.pcs
+energy.ebus.capability.priority
+energy.ebus.capability.door
+energy.ebus.capability.shed
+energy.ebus.capability.shed-forecast
+```
+
+Both registries — device types and capability types — are maintained as canonical lists in this repository under [`registries/`](registries/) (specifically [`registries/device-types.md`](registries/device-types.md) and [`registries/capability-types.md`](registries/capability-types.md)). Per-device-class data-model documents under [`data-models/`](data-models/) define the required and optional capabilities and properties for each device type (e.g., [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md), [`data-models/utility-meter.md`](data-models/utility-meter.md), [`data-models/proxy.md`](data-models/proxy.md)).
+
+Manufacturers MAY define custom types using their own namespace prefix (e.g., `com.acme.device.widget`, `com.acme.capability.thermal-zone`).
 
 **Node IDs vs. node types.** A node's *type* is the value of its Homie `$type` attribute and uses the dotted reverse-domain form above (e.g., `energy.ebus.capability.meter`). A node's *ID* — the segment that appears in the MQTT topic path between the device-id and the property-id (`ebus/5/<device-id>/<node-id>/<property-id>`) — MUST conform to Homie 5's topic-ID character set: lowercase ASCII letters, digits, and hyphens; the `.` character is NOT permitted. The conventional choice is to use the rightmost segment of the type as the ID (e.g., a node of type `energy.ebus.capability.meter` has node-ID `meter`). Data-model authors MUST follow this convention; reviewers MUST reject node IDs containing `.` (the dotted form is for `$type` values, not IDs).
+
+### Device Topology
+
+eBus devices form a parent-child hierarchy using Homie 5's `$description.children`, `$description.root`, and `$description.parent` attributes. A parent (root) device represents a physical container (e.g., a distribution enclosure); its child devices represent meaningful sub-components (e.g., individual circuits, lugs, an integrated MID) or related devices the parent publishes on behalf of (e.g., a proxied BESS that the enclosure publishes from its own internal integration).
+
+Children of a root device share the root's MQTT connection and lifecycle: the root's Last Will and Testament cascades a `lost` `$state` to every child in its tree per Homie 5. Consumers determine effective child state by consulting both the child's own `$state` and its root's `$state`.
+
+The Homie 5 specification is the normative reference for the parent-child mechanics. eBus data-model documents specify the device-class-specific topology rules — which sub-components are children, what their device types are, how the root aggregates them. The canonical worked example is [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) (enclosure as root; circuits, lugs, MID as children; proxied DERs as additional children).
 
 ### Units
 
@@ -518,24 +565,31 @@ The OTA endpoint:
 
 ---
 
-## Detail: Adapters
+## Detail: Proxy Publishers
 
-An adapter is an eBus entity (device role) that bridges a non-eBus device into the eBus ecosystem. It communicates with the non-eBus device using its native protocol and publishes its state as a Homie device on the eBus broker. From other eBus entities' perspective, an adapter's Homie device is indistinguishable from a native eBus device.
+A **proxy publisher** is an eBus entity (device role) that publishes a Homie device representation on behalf of a non-eBus-native device. It communicates with the underlying device using whatever native protocol the device offers (Modbus, Matter, CTA-2045, vendor cloud API, etc.) and publishes the resulting Homie device on the eBus broker. The published representation is called a *proxy*.
 
-### Adapter Responsibilities
+A proxy is **functionally equivalent** to a native eBus publication of the same device: same property contracts, same `$state` lifecycle, same discovery. Consumers that need to distinguish proxy from native publication can do so via the proxy device's `root.$type` — this is the canonical mechanism, defined in [`data-models/proxy.md`](data-models/proxy.md). A publisher MAY also publish an explicit `proxied = true` boolean on the proxy's `info` capability when it wants the distinction to be unambiguous; the implicit `root.$type` mechanism is sufficient on its own.
 
-An adapter MUST:
-- Publish a Homie device description for the bridged device.
-- Translate native protocol data into Homie property values.
-- Manage the Homie device lifecycle (`$state`) to reflect the bridged device's availability.
+This pattern is principle 6 of the design principles above ("Proxying is first-class"): an eBus consumer treats native and proxy publications equivalently; the data-model property contracts are written so that any conformant publisher — native or proxy — can satisfy them.
 
-An adapter SHOULD:
-- Translate `/set` commands into the native protocol's command format.
-- Republish data promptly to minimize latency.
+### Proxy Publisher Responsibilities
 
-### Common Adapter Types
+A proxy publisher MUST:
+- Publish a Homie `$description` for the proxied device.
+- Translate native-protocol data into Homie property values, populating the property contracts defined by the relevant data-model document for the proxied device class.
+- Manage the proxy's Homie `$state` to reflect the underlying device's availability.
 
-| Adapter Type | Native Protocol | Examples |
+A proxy publisher SHOULD:
+- Translate `/set` commands into the native protocol's command format where the underlying device supports control.
+- Republish data promptly to minimize observable latency.
+- Stop publishing a given proxied device once an eBus-native publisher for that device is detected (so the eBus tree converges on a single representation per physical device). Coexistence during the detection window is expected; see [`data-models/proxy.md`](data-models/proxy.md) for consumer-side dedup.
+
+### Common Bridge Protocols
+
+Proxy publishers commonly bridge from these underlying protocols:
+
+| Protocol | Description | Examples |
 |-------------|-----------------|----------|
 | REST/JSON | HTTP polling | Tesla Powerwall, Enphase Envoy |
 | Modbus TCP | Modbus TCP | SolarEdge inverter, Fronius inverter |
@@ -544,7 +598,7 @@ An adapter SHOULD:
 | CTA-2045 | CTA-2045 / EcoPort | Water heaters, demand-response appliances |
 | Cloud API | Vendor cloud API | Sense Energy Monitor, Emporia Vue |
 
-Adapters for cloud APIs SHOULD cache data locally and continue to serve last-known state when cloud connectivity is unavailable.
+A proxy publisher that bridges from a vendor cloud API SHOULD cache data locally and continue to serve last-known state when cloud connectivity is unavailable.
 
 ---
 
