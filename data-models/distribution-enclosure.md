@@ -56,14 +56,14 @@ The distribution enclosure device represents the enclosure itself — its system
 
 ```
 ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclosure
-  capability.info                          Enclosure identity (vendor, serial, model, firmware)
-  capability.door                          Door state sensor (when applicable)
-  capability.meter                         Enclosure-level aggregate metering
-  capability.power-flows                   Site-level power flow aggregation
-  capability.pcs                           UL 3141 Power Control Systems (PCS) configuration and state
-  capability.status                        Enclosure system status
-  capability.shed-forecast                 Off-grid time-remaining forecast (when a BESS is commissioned)
-  capability.shed                          Enclosure-wide shed-policy controls (when a BESS is commissioned)
+  info                          Enclosure identity (vendor, serial, model, firmware)
+  door                          Door state sensor (when applicable)
+  meter                         Enclosure-level aggregate metering
+  power-flows                   Site-level power flow aggregation
+  pcs                           UL 3141 Power Control Systems (PCS) configuration and state
+  status                        Enclosure system status
+  shed-forecast                 Off-grid time-remaining forecast (when a BESS is commissioned)
+  shed                          Enclosure-wide shed-policy controls (when a BESS is commissioned)
 
   children:
     <enclosure-id>-lugs-up                 energy.ebus.device.lugs       (service-entrance lugs)
@@ -75,11 +75,11 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
     <evse-id>                              energy.ebus.device.evse       (proxied or eBus-native)
 ```
 
-Each enclosure-side device that *is* an electrical connection point — every circuit, both lugs devices, and the enclosure-integrated MID — also exposes a `capability.connection` node that records what is wired to it (downstream feed) and, where the publisher knows, what feeds it (upstream). The connection records are the enclosure-side topology surface: they identify which circuit feeds which DER, where an UPSTREAM DER (e.g., a BESS wired between utility and the enclosure main lugs) sits, and how enclosures chain together in multi-enclosure installs.
+Each enclosure-side device that *is* an electrical connection point — every circuit, both lugs devices, and the enclosure-integrated MID — also exposes a `connection` node that records what is wired to it (downstream feed) and, where the publisher knows, what feeds it (upstream). The connection records are the enclosure-side topology surface: they identify which circuit feeds which DER, where an UPSTREAM DER (e.g., a BESS wired between utility and the enclosure main lugs) sits, and how enclosures chain together in multi-enclosure installs.
 
 ### Enclosure Capabilities
 
-#### capability.info
+#### info
 
 **Node type:** `energy.ebus.capability.info`
 
@@ -92,9 +92,9 @@ Each enclosure-side device that *is* an electrical connection point — every ci
 | `firmware-version` | string | MUST | Firmware version. |
 | `data-model-version` | string | SHOULD | Version of the eBus distribution-enclosure data model this device publishes (e.g., `"1.0"`). |
 
-Publishers MAY add vendor-specific informational properties (subsystem versions, hardware-revision sub-identifiers, etc.) to `capability.info` as additional properties; the spec mandates only the properties listed above.
+Publishers MAY add vendor-specific informational properties (subsystem versions, hardware-revision sub-identifiers, etc.) to `info` as additional properties; the spec mandates only the properties listed above.
 
-#### capability.door
+#### door
 
 Some distribution enclosures expose a digitally-monitored door (for access to breakers, terminals, etc.). Enclosures with such a sensor publish this capability; enclosures without one omit it.
 
@@ -104,7 +104,7 @@ Some distribution enclosures expose a digitally-monitored door (for access to br
 |---|---|---|---|
 | `state` | enum | MUST | Door state: `OPEN`, `CLOSED`, `UNKNOWN`. |
 
-#### capability.meter
+#### meter
 
 Enclosure-level aggregate metering — measurements at the main relay / service entrance.
 
@@ -124,7 +124,7 @@ Enclosure-level aggregate metering — measurements at the main relay / service 
 | `l1-exported-energy` | float | Wh | MAY | Line 1 exported energy |
 | `l2-exported-energy` | float | Wh | MAY | Line 2 exported energy |
 
-#### capability.power-flows
+#### power-flows
 
 Site-level aggregate power flows across all energy sources. The enclosure computes these from its children and connected DER devices.
 
@@ -137,7 +137,7 @@ Site-level aggregate power flows across all energy sources. The enclosure comput
 | `pv` | float | W | SHOULD | Solar PV power flow (positive = producing) |
 | `site` | float | W | MUST | Total site power consumption |
 
-#### capability.pcs
+#### pcs
 
 UL 3141 Power Control Systems (PCS) configuration, state, and the family of Configurable Service Limit (CSL) properties that the PCS manages.
 
@@ -175,9 +175,9 @@ CSL family — each CSL publishes the same three-property pattern: the limit val
 | `requested-import-limit-enablement` | enum | — | SHOULD | Same enum domain |
 | `requested-import-limit-active` | boolean | — | SHOULD | Is requested-import-limit currently being enforced? |
 
-Grid-forming-entity identity is **not** carried here — it is published as `grid-forming-entity` on the MID device's `capability.grid`. The property identifies what is establishing the AC voltage/frequency reference the home is synchronized to; its placement on the MID device (rather than the enclosure) keeps it on the device that authoritatively knows. Its value space is open — a Homie device ID or `"GRID"` — so multi-DER installs can identify *which* DER is grid-forming, not just *which class*.
+Grid-forming-entity identity is **not** carried here — it is published as `grid-forming-entity` on the MID device's `grid`. The property identifies what is establishing the AC voltage/frequency reference the home is synchronized to; its placement on the MID device (rather than the enclosure) keeps it on the device that authoritatively knows. Its value space is open — a Homie device ID or `"GRID"` — so multi-DER installs can identify *which* DER is grid-forming, not just *which class*.
 
-#### capability.status
+#### status
 
 Enclosure system status.
 
@@ -193,7 +193,7 @@ Enclosure system status.
 | `postal-code` | string | MAY | Configured postal code |
 | `time-zone` | string | MAY | Configured time zone |
 
-#### capability.shed-forecast
+#### shed-forecast
 
 Computed forecast of how long backup loads will continue to be served when the home is or becomes off-grid. Published only when at least one BESS is commissioned to the enclosure; omitted entirely otherwise.
 
@@ -211,11 +211,11 @@ The forecast is **enclosure-knowledge** — it is computed by the enclosure from
 
 **Multi-BESS:** when the enclosure has more than one commissioned BESS, the forecast values are computed against the aggregate SOE across all of them. The published surface is a single set of values; per-BESS forecast detail is not currently exposed (and is not needed for the consumer-visible "how long do my loads stay up?" question).
 
-**No-BESS case:** when no BESS is commissioned, the enclosure omits `capability.shed-forecast` from its `$description` entirely. Presence of the capability ⇔ at least one BESS is commissioned.
+**No-BESS case:** when no BESS is commissioned, the enclosure omits `shed-forecast` from its `$description` entirely. Presence of the capability ⇔ at least one BESS is commissioned.
 
-#### capability.shed
+#### shed
 
-Enclosure-wide shed-policy controls — the homeowner override for emergencies when the enclosure's view of islanding state has become untrustworthy, and the BESS SOC threshold that governs SOC-triggered shedding. Published only when at least one BESS is commissioned; omitted otherwise (same presence rule as `capability.shed-forecast`).
+Enclosure-wide shed-policy controls — the homeowner override for emergencies when the enclosure's view of islanding state has become untrustworthy, and the BESS SOC threshold that governs SOC-triggered shedding. Published only when at least one BESS is commissioned; omitted otherwise (same presence rule as `shed-forecast`).
 
 **Node type:** `energy.ebus.capability.shed`
 
@@ -224,9 +224,9 @@ Enclosure-wide shed-policy controls — the homeowner override for emergencies w
 | `override` | boolean | — | MAY | yes | Homeowner-asserted override. When `true`, the enclosure treats the home as on-grid for load-shedding purposes regardless of the sensed `<mid>/grid/islanding-state`. Default `false`. The Homie `$settable` attribute is statically `true`; the enclosure enforces eligibility at write time (see Runtime acceptance rule below). |
 | `soc-threshold` | integer | % | MAY | (impl-defined) | BESS SOC threshold (range 0–100) below which circuits with `priority/shed-priority = SOC_THRESHOLD` are auto-shed. Enclosure-wide policy parameter — the same value applies to every SOC_THRESHOLD circuit. Conforming implementations MAY publish this property with `$settable = true` to expose runtime tuning, or MAY publish it read-only with a built-in default. |
 
-**SOC threshold semantics.** A circuit with `priority/shed-priority = SOC_THRESHOLD` is shed when the enclosure's aggregate BESS SOC falls below `soc-threshold`. The `<enclosure>/shed-forecast/time-to-priority-shed` value (see §"capability.shed-forecast") forecasts how long until this threshold is reached given current discharge rate. Setting `override = true` short-circuits all auto-shed paths including SOC-triggered shedding.
+**SOC threshold semantics.** A circuit with `priority/shed-priority = SOC_THRESHOLD` is shed when the enclosure's aggregate BESS SOC falls below `soc-threshold`. The `<enclosure>/shed-forecast/time-to-priority-shed` value (see §"shed-forecast") forecasts how long until this threshold is reached given current discharge rate. Setting `override = true` short-circuits all auto-shed paths including SOC-triggered shedding.
 
-**Extensibility — supporting additional shed triggers.** An enclosure's supported shed triggers are discoverable from the `$format` attribute on any circuit's `priority/shed-priority` property — the enum values listed there are exactly the triggers this enclosure implements. The baseline `UNKNOWN` / `NEVER` / `OFF_GRID` are required of every conforming enclosure; other triggers (`SOC_THRESHOLD`, plus future spec- or vendor-defined extensions) are optional and appear in `$format` only when implemented. Each optional trigger that has a tunable parameter publishes that parameter as a sibling property under `capability.shed`, named as the lowercase-hyphenated form of the enum value (`SOC_THRESHOLD` ↔ `soc-threshold`). When a trigger is in `$format`, its companion property SHOULD be published if the spec defines one; triggers with no tunable (e.g., `OFF_GRID`, which fires unconditionally when islanded) publish no companion. Vendors introducing new triggers should propose them upstream so the spec registry can track them and prevent name collisions.
+**Extensibility — supporting additional shed triggers.** An enclosure's supported shed triggers are discoverable from the `$format` attribute on any circuit's `priority/shed-priority` property — the enum values listed there are exactly the triggers this enclosure implements. The baseline `UNKNOWN` / `NEVER` / `OFF_GRID` are required of every conforming enclosure; other triggers (`SOC_THRESHOLD`, plus future spec- or vendor-defined extensions) are optional and appear in `$format` only when implemented. Each optional trigger that has a tunable parameter publishes that parameter as a sibling property under `shed`, named as the lowercase-hyphenated form of the enum value (`SOC_THRESHOLD` ↔ `soc-threshold`). When a trigger is in `$format`, its companion property SHOULD be published if the spec defines one; triggers with no tunable (e.g., `OFF_GRID`, which fires unconditionally when islanded) publish no companion. Vendors introducing new triggers should propose them upstream so the spec registry can track them and prevent name collisions.
 
 **Effective shed gate:** the enclosure auto-sheds when `<mid>/grid/islanding-state != ON_GRID` AND `<enclosure>/shed/override != true`. Setting `override = true` short-circuits the auto-shed even when the sensed state is `OFF_GRID`.
 
@@ -234,7 +234,7 @@ Enclosure-wide shed-policy controls — the homeowner override for emergencies w
 
 **Why static `settable: true` rather than dynamically-toggled.** The Homie 5 `$description` mutability rule restricts `$description` changes to `$state` transitions through `init` / `disconnected` / `lost`. Toggling `$settable` based on real-time eligibility would require cycling `$state` on every transition (and during any comm flapping) — heavyweight and visible to consumers. Keeping `settable: true` static and enforcing eligibility at write time avoids this churn at the cost of one specific user-visible quirk: a naive write may be silently ignored. Consumers compute eligibility client-side from `islanding-state` plus the MID/BESS comm-status signals and grey out the UI accordingly.
 
-**Why this is a separate capability from `capability.shed-forecast`.** The forecast capability holds read-only computed values; the shed capability holds settable controls. Mixing read and write properties under one capability would muddle the concerns. The two capabilities are siblings on the enclosure device — `shed-forecast` (read) and `shed` (write) — and future shed-related controls (manual force-shed-now, configurable shed-aggressiveness, scheduled shed policies) can be added to `shed` additively.
+**Why this is a separate capability from `shed-forecast`.** The forecast capability holds read-only computed values; the shed capability holds settable controls. Mixing read and write properties under one capability would muddle the concerns. The two capabilities are siblings on the enclosure device — `shed-forecast` (read) and `shed` (write) — and future shed-related controls (manual force-shed-now, configurable shed-aggressiveness, scheduled shed policies) can be added to `shed` additively.
 
 ---
 
@@ -250,7 +250,7 @@ Each circuit breaker in the enclosure is a child device. The number of circuits 
 
 #### Circuit Capabilities
 
-**capability.info:**
+**info:**
 
 | Property ID | Datatype | Unit | Req | Settable | Description |
 |---|---|---|---|---|---|
@@ -264,7 +264,7 @@ Each circuit breaker in the enclosure is a child device. The number of circuits 
 
 The `external-ids` property's scheme registry is still exploratory and under active development on a dedicated WIP branch; the scheme prefixes and even the shape of that property are subject to substantial change. This data-model spec reserves the slot so a future stable scheme registry can populate it, but implementations should treat `external-ids` as not-yet-defined and SHOULD NOT populate it.
 
-**capability.meter:**
+**meter:**
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
@@ -273,7 +273,7 @@ The `external-ids` property's scheme registry is still exploratory and under act
 | `exported-energy` | float | Wh | MUST | Cumulative energy exported |
 | `current` | float | A | SHOULD | RMS current |
 
-**capability.switch:**
+**switch:**
 
 Circuit relay control.
 
@@ -284,7 +284,7 @@ Circuit relay control.
 | `relay` | enum | MUST | Relay state: `OPEN`, `CLOSED`, `UNKNOWN`. Settable when the circuit's `priority/relay-controllable = true`; not settable when `relay-controllable = false`. |
 | `relay-requester` | enum | SHOULD | Source attribution — who or what last drove the relay state. Canonical values: `USER` (a user request via API, mobile app, etc.); `LOAD_SHED` (load-shedding logic, informed by the circuit's `shed-priority` and the enclosure's grid/SOC state); `PCS` (UL 3141 PCS power-control/management); `CONFIGURATION` (installer commissioning or user configuration — a deliberate setting, typically long-lived); `FAULT` (a fault condition such as overcurrent); `NONE` (no actor has driven the relay; it is in its natural/default state); `UNKNOWN` (the publisher cannot determine). Vendors MAY extend the enum via Homie `$format` with implementation-specific values for finer-grained attribution. |
 
-**capability.priority:**
+**priority:**
 
 Load shedding policy and relay control authority for the circuit.
 
@@ -292,12 +292,12 @@ Load shedding policy and relay control authority for the circuit.
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `shed-priority` | enum | MUST | Shedding priority. Baseline values (required of every conforming enclosure): `UNKNOWN`, `OFF_GRID`, `NEVER`. Optional values (advertised in this property's `$format` when the enclosure implements them): `SOC_THRESHOLD` and any future spec- or vendor-defined extensions. The `SOC_THRESHOLD` value defers shedding until the BESS aggregate SOC falls below the enclosure-wide threshold published at `<enclosure>/shed/soc-threshold`. See §"capability.shed — Extensibility" for the convention linking optional trigger values to their tunable parameters. Settable on user-configurable circuits; locked (Homie `$settable = false`) on circuits commissioned as permanently OFF_GRID. |
+| `shed-priority` | enum | MUST | Shedding priority. Baseline values (required of every conforming enclosure): `UNKNOWN`, `OFF_GRID`, `NEVER`. Optional values (advertised in this property's `$format` when the enclosure implements them): `SOC_THRESHOLD` and any future spec- or vendor-defined extensions. The `SOC_THRESHOLD` value defers shedding until the BESS aggregate SOC falls below the enclosure-wide threshold published at `<enclosure>/shed/soc-threshold`. See §"shed — Extensibility" for the convention linking optional trigger values to their tunable parameters. Settable on user-configurable circuits; locked (Homie `$settable = false`) on circuits commissioned as permanently OFF_GRID. |
 | `relay-controllable` | boolean | MUST | True = the circuit's relay can be controlled (by the enclosure's auto-shed logic *or* by direct user-set). False = the relay is locked closed and cannot be opened by any path; the `switch/relay` property's `$settable` attribute is also `false` in that case. |
 | `pcs-managed` | boolean | MAY | Is this circuit managed by the enclosure's PCS? |
 | `pcs-priority` | integer | MAY | PCS priority ranking for this circuit. Used by the PCS import-limit-enforcement logic to decide which circuits get controlled when the active CSL is binding. |
 
-**capability.connection:**
+**connection:**
 
 What is wired downstream of (and, where the publisher knows, upstream of) this circuit. See §"Connection Capability" below for the full property catalog — the same capability is published by every enclosure-side device that *is* an electrical connection point (every circuit, both lugs devices, the enclosure-integrated MID).
 
@@ -311,15 +311,15 @@ Physical lug connection point. Each enclosure has upstream lugs (grid connection
 
 #### Lugs Capabilities
 
-**capability.info:**
+**info:**
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
 | `direction` | enum | MUST | `UPSTREAM` or `DOWNSTREAM` |
 
-The wiring relationship between a lugs device and what is wired to it is expressed as a structured `feeds-device-id` / `fed-by-device-id` reference on `capability.connection`, which scales to N DERs and distinguishes downstream-feed from upstream-feed. See §"Connection Capability" below.
+The wiring relationship between a lugs device and what is wired to it is expressed as a structured `feeds-device-id` / `fed-by-device-id` reference on `connection`, which scales to N DERs and distinguishes downstream-feed from upstream-feed. See §"Connection Capability" below.
 
-**capability.meter:**
+**meter:**
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
@@ -329,7 +329,7 @@ The wiring relationship between a lugs device and what is wired to it is express
 | `l1-current` | float | A | SHOULD | Line 1 current |
 | `l2-current` | float | A | SHOULD | Line 2 current |
 
-**capability.connection:**
+**connection:**
 
 What is wired downstream of (or upstream of) this lugs device. See §"Connection Capability" below for the full property catalog. The downstream lugs device typically populates the `feeds-*` triplet (when it feeds a known device); the upstream lugs device typically populates the `fed-by-*` triplet (when fed by something other than the utility, such as an UPSTREAM BESS or an upstream sister enclosure in a multi-enclosure chain).
 
@@ -343,15 +343,15 @@ When the MID is external (e.g., shipped as part of a BESS), it is a child of tha
 
 **Device ID:** `{enclosure-id}-mid`.
 
-**Capabilities:** `capability.info`, `capability.grid`, and (when the enclosure-integrated MID is itself a connection point in the enclosure's wiring topology) `capability.connection` — see §"Connection Capability" below.
+**Capabilities:** `info`, `grid`, and (when the enclosure-integrated MID is itself a connection point in the enclosure's wiring topology) `connection` — see §"Connection Capability" below.
 
 #### MID Capabilities
 
-**capability.info:**
+**info:**
 
 Standard identity properties (`vendor-name`, `serial-number`, `product-name`, `model`, `firmware-version`, `hardware-version`). The enclosure-integrated MID's `vendor-name` is the enclosure vendor, and the `data-model-version` on the MID device tracks the MID's data-model spec version (independent of the enclosure's `data-model-version`).
 
-**capability.grid:**
+**grid:**
 
 Grid connection state, islanding state, and grid-forming-entity identity. This is the canonical home for these three properties; the enclosure device itself does not publish them.
 
@@ -363,9 +363,9 @@ Grid connection state, islanding state, and grid-forming-entity identity. This i
 | `grid-state` | enum | SHOULD | Sensed grid condition: `UP`, `DOWN`, `DEGRADED`, `UNKNOWN`. Reflects what the MID senses about the grid itself. `DEGRADED` (grid quality outside the band for `UP` but not yet declared an outage) is OPTIONAL — publishers SHOULD distinguish it when they have the underlying measurement capability; proxied black-box MIDs typically report only `UP`/`DOWN`/`UNKNOWN`. `islanding-state` and `grid-state` can differ — a system can be `OFF_GRID` with `grid-state = UP` (intentional island) or `OFF_GRID` with `grid-state = DOWN` (outage). |
 | `grid-forming-entity` | string | SHOULD | Identity of the device currently establishing the AC voltage/frequency reference. Value: `"GRID"` when grid-tied, or the Homie device ID of the grid-forming device (typically the DER parent device ID, e.g., the BESS) when islanded. Empty string or absent during transitions or when unknown. In a multi-DER islanded chain where more than one DER is technically capable of grid-forming, exactly one is the actual reference at any given moment, and its parent device ID is the published value; behavior during simultaneous grid-forming (parallel BESSs) is implementation-defined and out of scope here. |
 
-Native eBus MIDs (those implementing the in-progress eBus MID data-model specification — a separate companion document) publish additional `capability.grid` properties (`system-state` 8-state machine, `mid-relay-state`, cross-side phase angles, `sync-ready`, etc.) and per-side meter children. The three properties above are the minimum surface any MID — proxied or native — MUST/SHOULD publish.
+Native eBus MIDs (those implementing the in-progress eBus MID data-model specification — a separate companion document) publish additional `grid` properties (`system-state` 8-state machine, `mid-relay-state`, cross-side phase angles, `sync-ready`, etc.) and per-side meter children. The three properties above are the minimum surface any MID — proxied or native — MUST/SHOULD publish.
 
-**capability.connection** (when the enclosure-integrated MID is a connection point):
+**connection** (when the enclosure-integrated MID is a connection point):
 
 See §"Connection Capability" below for the full property catalog.
 
@@ -373,7 +373,7 @@ See §"Connection Capability" below for the full property catalog.
 
 ## Connection Capability
 
-An enclosure-side device that is itself an *electrical connection point* — every circuit, both lugs devices, and the enclosure-integrated MID — publishes a `capability.connection` node recording what is wired to it. This is the enclosure-side topology surface: it identifies which circuit feeds which DER, where an UPSTREAM DER (e.g., a BESS wired between utility and the enclosure main lugs) sits, and how enclosures chain together in multi-enclosure installs.
+An enclosure-side device that is itself an *electrical connection point* — every circuit, both lugs devices, and the enclosure-integrated MID — publishes a `connection` node recording what is wired to it. This is the enclosure-side topology surface: it identifies which circuit feeds which DER, where an UPSTREAM DER (e.g., a BESS wired between utility and the enclosure main lugs) sits, and how enclosures chain together in multi-enclosure installs.
 
 **Node type:** `energy.ebus.capability.connection`
 
@@ -421,7 +421,7 @@ This enclosure model proxies DER child devices (BESS, PV, EVSE) when those devic
 
 Per the proxy model's general rule that [proxy-side knowledge stays on the proxy](proxy.md#proxy-side-knowledge-stays-on-the-proxy), two classes of information are enclosure-side facts that the DER child itself cannot publish (because a non-proxying eBus-native publisher would not have them), and so they live on enclosure-side surfaces rather than on the DER child:
 
-- **The wiring relationship between the DER and the enclosure** — which circuit, lugs device, or MID is physically connected to the DER. Recorded on `capability.connection` of the enclosure-side connection-owner (see §"Connection Capability").
+- **The wiring relationship between the DER and the enclosure** — which circuit, lugs device, or MID is physically connected to the DER. Recorded on `connection` of the enclosure-side connection-owner (see §"Connection Capability").
 - **The enclosure's view of communication-link health to the DER** — whether the enclosure's internal integration is currently reaching the DER. Recorded as `feeds-device-status` / `fed-by-device-status` on the same connection record.
 
 The DER child carries no `feed` property, no `relative-position` property, and no enclosure-↔-DER link-health property. A BESS device publishes its own `status/communication` property (the publisher's self-report of adapter-to-BESS communication) — that is a different signal from the enclosure-side link-health, published independently of the enclosure's view.
@@ -434,7 +434,7 @@ When no eBus-native BESS publisher is available, the enclosure proxies a BESS ch
 
 **Type:** `energy.ebus.device.bess` (same type as an eBus-native BESS)
 
-A conformant BESS publisher MUST include a MID child device — including for proxied BESSs. The proxied BESS child therefore consists of the parent BESS device (typically with `capability.info`, `capability.soc`, `capability.status`) plus a MID child device (`<bess-id>-mid`) carrying `capability.info` and `capability.grid` (with `islanding-state`, `grid-state`, and `grid-forming-entity`). When the underlying BESS hardware does not present a separable MID, the enclosure synthesizes a minimal MID child — the islanding state and grid-forming-entity values are enclosure-known (from the same internal integration) and are always populatable. Individual battery / inverter children are omitted unless the internal integration provides per-component data. The full BESS device shape is defined in the eBus BESS data-model specification (an in-progress companion document).
+A conformant BESS publisher MUST include a MID child device — including for proxied BESSs. The proxied BESS child therefore consists of the parent BESS device (typically with `info`, `soc`, `status`) plus a MID child device (`<bess-id>-mid`) carrying `info` and `grid` (with `islanding-state`, `grid-state`, and `grid-forming-entity`). When the underlying BESS hardware does not present a separable MID, the enclosure synthesizes a minimal MID child — the islanding state and grid-forming-entity values are enclosure-known (from the same internal integration) and are always populatable. Individual battery / inverter children are omitted unless the internal integration provides per-component data. The full BESS device shape is defined in the eBus BESS data-model specification (an in-progress companion document).
 
 ### Proxied PV Child
 
@@ -442,7 +442,7 @@ A conformant BESS publisher MUST include a MID child device — including for pr
 
 Published when solar is commissioned but no eBus-native PV publisher exists. The proxied PV child carries identity (vendor/product/serial/nameplate) and — when the proxier has access to per-PV meter readings via its internal integration — instantaneous production.
 
-#### capability.info
+#### info
 
 **Node type:** `energy.ebus.capability.info`
 
@@ -454,7 +454,7 @@ Published when solar is commissioned but no eBus-native PV publisher exists. The
 | `firmware-version` | string | — | MAY | PV system firmware version, when the integration reports it. |
 | `nameplate-capacity` | float | W | SHOULD | Nameplate capacity. |
 
-#### capability.meter
+#### meter
 
 **Node type:** `energy.ebus.capability.meter`
 
@@ -463,7 +463,7 @@ Published when solar is commissioned but no eBus-native PV publisher exists. The
 | `active-power` | float | W | SHOULD | Current PV production. Positive = producing. |
 | `exported-energy` | float | Wh | MAY | Cumulative energy produced, when integrated metering is available. |
 
-The proxied PV child's wiring relationship to the enclosure is recorded on the enclosure-side connection-owner that feeds it (a circuit or a lugs device) via `capability.connection`, not on the PV child itself.
+The proxied PV child's wiring relationship to the enclosure is recorded on the enclosure-side connection-owner that feeds it (a circuit or a lugs device) via `connection`, not on the PV child itself.
 
 ### Proxied EVSE Child
 
@@ -471,9 +471,9 @@ The proxied PV child's wiring relationship to the enclosure is recorded on the e
 
 Published when an EVSE is integrated with the enclosure but no eBus-native EVSE publisher exists. Some EVSEs connect to the enclosure via a vendor-specific bus (e.g., RS485) without an MQTT/eBus publication path of their own; the enclosure publishes the eBus representation on the EVSE's behalf.
 
-The capabilities below cover the EVSE properties carried on the proxied child plus the settable `capability.config`. A future stand-alone eBus EVSE Device Specification may extract these into a vendor-agnostic spec once the property set grows enough to justify it; for now, the EVSE child shape is defined here.
+The capabilities below cover the EVSE properties carried on the proxied child plus the settable `config`. A future stand-alone eBus EVSE Device Specification may extract these into a vendor-agnostic spec once the property set grows enough to justify it; for now, the EVSE child shape is defined here.
 
-#### capability.info
+#### info
 
 **Node type:** `energy.ebus.capability.info`
 
@@ -485,7 +485,7 @@ The capabilities below cover the EVSE properties carried on the proxied child pl
 | `serial-number` | string | SHOULD | EVSE serial number. |
 | `firmware-version` | string | MAY | EVSE firmware version. |
 
-#### capability.meter
+#### meter
 
 **Node type:** `energy.ebus.capability.meter`
 
@@ -495,7 +495,7 @@ The capabilities below cover the EVSE properties carried on the proxied child pl
 | `imported-energy` | float | Wh | MAY | Cumulative energy delivered to the EV, when integrated metering is available. |
 | `advertised-current` | float | A | SHOULD | The current the EVSE is advertising to the EV via the J1772 pilot signal — the actual offered current, computed as the minimum of `config/max-charge-current`, `config/user-max-charge-current`, and any active PCS import limit. |
 
-#### capability.switch
+#### switch
 
 **Node type:** `energy.ebus.capability.switch`
 
@@ -503,7 +503,7 @@ The capabilities below cover the EVSE properties carried on the proxied child pl
 |---|---|---|---|
 | `lock-state` | enum | MAY | EVSE connector lock state: `LOCKED`, `UNLOCKED`, `UNKNOWN`. |
 
-#### capability.status
+#### status
 
 **Node type:** `energy.ebus.capability.status`
 
@@ -511,7 +511,7 @@ The capabilities below cover the EVSE properties carried on the proxied child pl
 |---|---|---|---|
 | `operational-state` | enum | SHOULD | EVSE operational state: `IDLE`, `CONNECTED`, `CHARGING`, `FAULTED`, `UNKNOWN`. |
 
-#### capability.config
+#### config
 
 **Node type:** `energy.ebus.capability.config`
 
@@ -520,7 +520,7 @@ The capabilities below cover the EVSE properties carried on the proxied child pl
 | `max-charge-current` | integer | A | MUST | no | Installer-configured maximum charge current. Reflects breaker rating and J1772 derating. |
 | `user-max-charge-current` | integer | A | SHOULD | yes | User-configured maximum charge current ceiling. MUST be ≤ `max-charge-current`. |
 
-The proxied EVSE child's wiring relationship to the enclosure — specifically, which circuit feeds the EVSE — is recorded on the enclosure-side connection-owner's `capability.connection` (the circuit's `feeds-device-id` references the EVSE), not on the EVSE child itself.
+The proxied EVSE child's wiring relationship to the enclosure — specifically, which circuit feeds the EVSE — is recorded on the enclosure-side connection-owner's `connection` (the circuit's `feeds-device-id` references the EVSE), not on the EVSE child itself.
 
 ---
 
@@ -631,7 +631,7 @@ This is two rounds regardless of child count — the startup cost is a burst of 
 
 Standard capability types shared across enclosure, BESS, and future device specs.
 
-**Capability types define a semantic namespace and intent, not a fixed property contract.** The same capability type (e.g., `capability.meter`) may expose different property subsets on different device classes. The authoritative property set for any given capability node is always declared in that device's `$description`. Consumers should read the `$description` schema, not assume a fixed property set from the capability type name alone.
+**Capability types define a semantic namespace and intent, not a fixed property contract.** The same capability type (e.g., `meter`) may expose different property subsets on different device classes. The authoritative property set for any given capability node is always declared in that device's `$description`. Consumers should read the `$description` schema, not assume a fixed property set from the capability type name alone.
 
 | Capability Type | Description | Used By |
 |---|---|---|
@@ -667,7 +667,7 @@ Utility ─→ Tesla PW2 ─→ xy-0001-aaaaa ─→ xy-0002-bbbbb ─→ xy-000
                             └── Enphase PV (IQ7+) landing on a circuit in xy-0001-aaaaa
 ```
 
-Each panel is an independent Homie root device on its own MQTT broker. Each broker reports only what its panel knows. The data model accommodates the per-panel views — the wiring topology is the union of `capability.connection` records across the three brokers.
+Each panel is an independent Homie root device on its own MQTT broker. Each broker reports only what its panel knows. The data model accommodates the per-panel views — the wiring topology is the union of `connection` records across the three brokers.
 
 ```
 ─── panel 1 broker (xy-0001-aaaaa) ─────────────────────────────────
@@ -875,4 +875,4 @@ Consumer derivation: a scan of enclosure-side connection records finds `<circuit
 - eBus BESS data-model specification — in-progress companion document (separate spec covering the BESS device shape; not part of this distribution)
 - [SPAN-API-Client-Docs (public)](https://github.com/spanio/SPAN-API-Client-Docs) — public API documentation for the SPAN-panel implementation of this data model
 - [Connectivity Standards Alliance (CSA)](https://csa-iot.org/) — home of the Matter Energy Management Working Group, source of the "distribution enclosure" terminology used in this document
-- [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) — Standard for Power Control Systems (referenced by `capability.pcs`)
+- [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) — Standard for Power Control Systems (referenced by `pcs`)

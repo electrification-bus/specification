@@ -21,9 +21,9 @@ The formal industry term in standards literature is *utility electric meter* (or
 
 This is distinct from:
 
-- **Sub-meters** — branch-level metering inside the premises (e.g., per-circuit metering inside a distribution enclosure, per-tenant metering in a multi-family building). These are modeled as `capability.meter` instances on whichever eBus device the sub-meter physically attaches to (a circuit, a feedthrough lugs device, etc.), not as standalone `utility-meter` devices.
-- **Panel meters / aggregate enclosure metering** — the service-entrance measurements that a distribution enclosure publishes on its own `capability.meter`. The enclosure's measurements are at the *enclosure's* main relay; the utility meter's measurements are at the *utility's* revenue boundary. The two devices may sit a few feet apart and measure nearly the same current, but they are distinct devices, are commissioned independently, and may not even communicate with each other.
-- **Power-quality analyzers and recorders** — class-A power-quality instruments and disturbance recorders. A utility meter that exposes PQ measurements via this data model's `capability.power-quality` is doing so as a secondary function; a dedicated PQ analyzer would warrant its own data model (out of scope here).
+- **Sub-meters** — branch-level metering inside the premises (e.g., per-circuit metering inside a distribution enclosure, per-tenant metering in a multi-family building). These are modeled as `meter` instances on whichever eBus device the sub-meter physically attaches to (a circuit, a feedthrough lugs device, etc.), not as standalone `utility-meter` devices.
+- **Panel meters / aggregate enclosure metering** — the service-entrance measurements that a distribution enclosure publishes on its own `meter`. The enclosure's measurements are at the *enclosure's* main relay; the utility meter's measurements are at the *utility's* revenue boundary. The two devices may sit a few feet apart and measure nearly the same current, but they are distinct devices, are commissioned independently, and may not even communicate with each other.
+- **Power-quality analyzers and recorders** — class-A power-quality instruments and disturbance recorders. A utility meter that exposes PQ measurements via this data model's `power-quality` is doing so as a secondary function; a dedicated PQ analyzer would warrant its own data model (out of scope here).
 
 The data model uses "utility meter" in normative prose. Vendor-specific examples may use whichever term the vendor's product literature uses ("smart meter", "AMI endpoint", "revenue meter", etc.).
 
@@ -68,16 +68,16 @@ The utility meter device represents the meter itself. It has no eBus-modeled chi
 
 ```
 ebus/5/<meter-id>/                         energy.ebus.device.utility-meter
-  capability.info                          Meter identity and nameplate
-  capability.meter                         Instantaneous + cumulative electrical measurements
-  capability.status                        Meter-as-device operational state
-  capability.grid                          Meter's verdict view of utility supply health           (when published)
-  capability.doe    Utility-signaled import/export power limits             (when published)
-  capability.demand                        Peak-average demand quantities                          (when published)
-  capability.power-quality                 Quantitative power-quality measurements                 (when published)
+  info                          Meter identity and nameplate
+  meter                         Instantaneous + cumulative electrical measurements
+  status                        Meter-as-device operational state
+  grid                          Meter's verdict view of utility supply health           (when published)
+  doe                           Utility-signaled import/export power limits             (when published)
+  demand                        Peak-average demand quantities                          (when published)
+  power-quality                 Quantitative power-quality measurements                 (when published)
 ```
 
-The first three capabilities (`info`, `meter`, `status`) are always present on a conformant utility-meter device — they define what the device is. The latter four (`grid`, `doe`, `demand`, `power-quality`) are populated when the meter exposes the corresponding signal or computes the corresponding quantities; a meter that does not signal a dynamic operating envelope simply omits `capability.doe` from its `$description`.
+The first three capabilities (`info`, `meter`, `status`) are always present on a conformant utility-meter device — they define what the device is. The latter four (`grid`, `doe`, `demand`, `power-quality`) are populated when the meter exposes the corresponding signal or computes the corresponding quantities; a meter that does not signal a dynamic operating envelope simply omits `doe` from its `$description`.
 
 ### Device ID
 
@@ -87,10 +87,10 @@ The device ID is publisher-defined and opaque to consumers. Common conventions a
 
 Per-phase electrical measurements use property-name suffixes — `-a`, `-b`, `-c` for the three phase positions, `-n` for the neutral position — rather than phase-as-child-device. This matches the lugs precedent in [`distribution-enclosure.md`](distribution-enclosure.md) (`l1-current`, `l2-current`). System aggregates carry no suffix (`active-power`, not `active-power-system`).
 
-The `-a` / `-b` / `-c` letters denote the abstract phase positions of a polyphase service. Mapping to physical conductors depends on the meter form (ANSI form number, published as `capability.info`/`meter-form`):
+The `-a` / `-b` / `-c` letters denote the abstract phase positions of a polyphase service. Mapping to physical conductors depends on the meter form (ANSI form number, published as `info`/`meter-form`):
 
 - A single-phase / 2-wire service populates only `-a` (no `-b`, no `-c`, neutral via `-n` if present).
-- A US split-phase / 3-wire residential service (ANSI forms 2S / 12S / similar) populates `-a` and `-b` for the two 240 V-opposed hot conductors, plus `-n`. The two hots are 180° out of phase, not 120° — consumers that need to know this read `capability.info`/`nominal-phase-angle` (typically `180`).
+- A US split-phase / 3-wire residential service (ANSI forms 2S / 12S / similar) populates `-a` and `-b` for the two 240 V-opposed hot conductors, plus `-n`. The two hots are 180° out of phase, not 120° — consumers that need to know this read `info`/`nominal-phase-angle` (typically `180`).
 - A three-phase / 4-wire wye service (ANSI forms 9S / 16S / similar) populates `-a` / `-b` / `-c` for the three phase conductors and `-n` for the neutral; `nominal-phase-angle` is typically `120`.
 - A three-phase / 3-wire delta service populates `-a` / `-b` / `-c` with no `-n`.
 
@@ -98,7 +98,7 @@ A property whose corresponding phase position is not present on this meter's ser
 
 ### Utility Meter Capabilities
 
-#### capability.info
+#### info
 
 Meter identity and nameplate properties. The standard Homie identity properties are reused from the eBus convention; meter-specific nameplate properties are added below them.
 
@@ -115,21 +115,21 @@ Meter identity and nameplate properties. The standard Homie identity properties 
 | `meter-class` | string | — | MAY | Accuracy class designator (e.g., `"0.2"`, `"0.2S"`, `"0.5"`, `"0.5S"`, `"1.0"`). Free-text; the set of valid values is governed by the relevant metrology standard, not by this spec. |
 | `meter-form` | string | — | MAY | ANSI meter form designation (e.g., `"2S"`, `"9S"`, `"16S"`, `"45S"`). Free-text. Determines the meter's service configuration (single-phase / split-phase / three-phase, with/without neutral, transformer-rated vs. self-contained) and therefore which `-a` / `-b` / `-c` / `-n` property positions are populated below. |
 | `phases` | integer | — | MAY | Number of phase positions the meter measures (`1`, `2`, or `3`). Distinct from the *wire count* of the service — a US split-phase service is `phases = 2`, not 3. |
-| `neutral-connected` | boolean | — | MAY | Is a neutral conductor connected at the meter? When `true`, the `-n` suffixed properties (e.g., `current-n`) may appear under `capability.meter`. |
+| `neutral-connected` | boolean | — | MAY | Is a neutral conductor connected at the meter? When `true`, the `-n` suffixed properties (e.g., `current-n`) may appear under `meter`. |
 | `nominal-frequency` | float | Hz | MAY | Nominal supply frequency. Typically `50` or `60`. |
 | `nominal-phase-angle` | float | ° | MAY | Nominal angle between adjacent phase positions, in degrees. `120` for three-phase, `180` for US split-phase, `0` or absent for single-phase. |
 | `nominal-voltage-line-to-line` | float | V | MAY | Nominal phase-to-phase voltage of the service (e.g., `240`, `208`, `480`). Omitted when not applicable (single-phase service). |
 | `nominal-voltage-line-to-neutral` | float | V | MAY | Nominal phase-to-neutral voltage of the service (e.g., `120`, `277`). Omitted when not applicable (delta service without neutral). |
-| `calculation-convention` | enum | — | MAY | How the meter computes the derived quantities (reactive and apparent power, power factor, vectorial sums) reported under `capability.meter`: `ARITHMETIC` or `VECTORIAL`. Some jurisdictions (e.g., Canada) prefer vectorial; others prefer arithmetic. Consumers that interpret the derived properties should read this to know how. When the meter exposes only direct measurements (V, I, P) and no derived quantities, this property MAY be omitted. |
+| `calculation-convention` | enum | — | MAY | How the meter computes the derived quantities (reactive and apparent power, power factor, vectorial sums) reported under `meter`: `ARITHMETIC` or `VECTORIAL`. Some jurisdictions (e.g., Canada) prefer vectorial; others prefer arithmetic. Consumers that interpret the derived properties should read this to know how. When the meter exposes only direct measurements (V, I, P) and no derived quantities, this property MAY be omitted. |
 | `ct-ratio` | float | — | MAY | Current-transformer ratio for transformer-rated meters (e.g., `40.0` for a 200:5 CT). Self-contained meters MAY omit this property or publish `1.0`. |
 | `pt-ratio` | float | — | MAY | Potential-transformer (a.k.a. voltage-transformer) ratio for transformer-rated meters. Self-contained meters MAY omit or publish `1.0`. |
-| `register-multiplier` | float | — | MAY | Multiplier applied to internal register counts to produce the engineering-unit values published under `capability.meter`. The meter's published values are already scaled (consumers do not apply this multiplier); the property is published for reference and for billing reconciliation against utility back-office systems. |
+| `register-multiplier` | float | — | MAY | Multiplier applied to internal register counts to produce the engineering-unit values published under `meter`. The meter's published values are already scaled (consumers do not apply this multiplier); the property is published for reference and for billing reconciliation against utility back-office systems. |
 
-Publishers MAY add vendor-specific informational properties to `capability.info` as additional properties; the spec defines only the properties listed above.
+Publishers MAY add vendor-specific informational properties to `info` as additional properties; the spec defines only the properties listed above.
 
-#### capability.meter
+#### meter
 
-Instantaneous electrical measurements and cumulative energy quantities. Properties are grouped below by scope (system aggregate vs. per-phase) for readability; all are sibling properties under the same `capability.meter` node.
+Instantaneous electrical measurements and cumulative energy quantities. Properties are grouped below by scope (system aggregate vs. per-phase) for readability; all are sibling properties under the same `meter` node.
 
 **Node type:** `energy.ebus.capability.meter`
 
@@ -140,7 +140,7 @@ System-level (no phase suffix):
 | `frequency` | float | Hz | MAY | System line frequency. |
 | `active-power` | float | W | MAY | Total active power across all phases. Sign convention: positive = imported from utility, negative = exported to utility. |
 | `reactive-power` | float | VAR | MAY | Total reactive power. |
-| `apparent-power` | float | VA | MAY | Total apparent power. Computed per `capability.info`/`calculation-convention` when the meter computes both arithmetic and vectorial forms; the data model exposes only one value. |
+| `apparent-power` | float | VA | MAY | Total apparent power. Computed per `info`/`calculation-convention` when the meter computes both arithmetic and vectorial forms; the data model exposes only one value. |
 | `power-factor` | float | — | MAY | System power factor, signed: positive = lagging (inductive), negative = leading (capacitive); range `[-1.0, 1.0]`. |
 | `imported-energy` | float | Wh | MAY | Cumulative active energy delivered by the utility to the customer. Monotonically non-decreasing in normal operation. |
 | `exported-energy` | float | Wh | MAY | Cumulative active energy delivered by the customer to the utility. Monotonically non-decreasing. |
@@ -162,11 +162,11 @@ Per-phase (suffix `-a` / `-b` / `-c`, plus `-n` for the neutral conductor where 
 
 **Encoding notes.** Properties use the engineering-unit values listed (no scaling factor or `µ-` prefix). Cumulative energy quantities are floats in Wh / VARh — sufficient resolution for billing-grade energy from a `float64` Homie property; a publisher whose internal representation is integer micro-Wh converts at publish time. Sign conventions follow IEEE / IEC norms: imported / delivered = positive flow from utility to customer, exported / received = the reverse.
 
-**Forward compatibility.** The full GEISA-style 4-quadrant per-phase + system VA matrix (Q1/Q2/Q3/Q4 × delivered/received × fundamental-only / +harmonics, arithmetic and vectorial flavors) is **not** defined here. The decision is deliberate: the property space above covers the common revenue-metering and energy-management use cases at a manageable surface area, and the quadrant matrix can be added additively to `capability.meter` later when a real consumer (e.g., a commercial demand-charge calculator, a regulated vectorial-jurisdiction billing system) needs it. The vocabulary will be added without renaming existing properties.
+**Forward compatibility.** The full GEISA-style 4-quadrant per-phase + system VA matrix (Q1/Q2/Q3/Q4 × delivered/received × fundamental-only / +harmonics, arithmetic and vectorial flavors) is **not** defined here. The decision is deliberate: the property space above covers the common revenue-metering and energy-management use cases at a manageable surface area, and the quadrant matrix can be added additively to `meter` later when a real consumer (e.g., a commercial demand-charge calculator, a regulated vectorial-jurisdiction billing system) needs it. The vocabulary will be added without renaming existing properties.
 
-#### capability.status
+#### status
 
-Meter-as-device operational state — distinct from the meter's view of the *grid* (which lives on `capability.grid`).
+Meter-as-device operational state — distinct from the meter's view of the *grid* (which lives on `grid`).
 
 **Node type:** `energy.ebus.capability.status`
 
@@ -178,7 +178,7 @@ Meter-as-device operational state — distinct from the meter's view of the *gri
 | `internal-temperature` | float | °C | MAY | Meter internal temperature, when sensed. |
 | `communication-state` | enum | — | MAY | Meter's view of its own AMI / backhaul communication state: `OK`, `DEGRADED`, `LOST`, `UNKNOWN`. Reflects whether the meter believes it can currently report to its head-end; orthogonal to whether the eBus publisher is currently reporting to its consumers. |
 
-#### capability.grid
+#### grid
 
 The meter's **verdict view** of utility supply health, observed at the service entrance. Published when the meter exposes any grid-sensing signal; omitted otherwise.
 
@@ -192,7 +192,7 @@ This is the same capability node type used on MID devices in [`distribution-encl
 | `last-outage-time` | datetime | — | MAY | Timestamp of the most recent transition from `UP` (or `DEGRADED`) to `DOWN` observed by the meter. ISO-8601 UTC. |
 | `last-restoration-time` | datetime | — | MAY | Timestamp of the most recent transition from `DOWN` to `UP` (or `DEGRADED`) observed by the meter. ISO-8601 UTC. |
 
-#### capability.doe
+#### doe
 
 The utility's **dynamic operating envelope (DOE)** for this service point — the current import and export power limits the utility is signaling, with the source of each limit and (where defined) the time at which the limit expires. Published when the meter is configured to expose this signaling channel; omitted otherwise.
 
@@ -215,13 +215,13 @@ The term *dynamic operating envelope* is from [IEEE 2030.5 / CSIP](https://stand
 
 **Absence semantics.** A property that is not published means "no value to signal for this dimension." A subscriber treats absence of `power-import-limit` (and `apparent-power-import-limit`) as "no meter-signaled import limit; fall back to the local equipment / static rating." Absence of `power-import-limit-valid-until` while `power-import-limit` is published means "the limit has no defined expiry" (typical for contract limits); the subscriber should not assume a default expiry. Absence of the capability node entirely means the meter does not signal an operating envelope at all.
 
-**Why a new capability rather than extending `capability.meter` or `capability.grid`.** A utility-signaled envelope is neither a measurement (capability.meter is for what the meter measures) nor a verdict on grid health (capability.grid). It is a third class of signal — a control input the utility is communicating downstream — and it has a distinct audience (PCS subscribers, EMS panels, DERMS coordinators) and lifecycle (utility-driven, possibly time-bounded). Giving it its own capability keeps the three streams separable on the subscriber side.
+**Why a new capability rather than extending `meter` or `grid`.** A utility-signaled envelope is neither a measurement (meter is for what the meter measures) nor a verdict on grid health (grid). It is a third class of signal — a control input the utility is communicating downstream — and it has a distinct audience (PCS subscribers, EMS panels, DERMS coordinators) and lifecycle (utility-driven, possibly time-bounded). Giving it its own capability keeps the three streams separable on the subscriber side.
 
-**Interaction with the distribution-enclosure's `capability.pcs`.** The meter's `power-import-limit` and the panel's `grid-import-limit` are distinct properties on distinct devices: the meter publishes "what the utility is signaling"; the panel publishes "what the panel is currently enforcing from the grid-source CSL slot." For the end-to-end composition (subscription topology, CSL math, commissioning, failure handling), see [Integration Guide: Utility Meter ↔ Distribution Enclosure](../integration-guides/utility-meter-and-distribution-enclosure.md).
+**Interaction with the distribution-enclosure's `pcs`.** The meter's `power-import-limit` and the panel's `grid-import-limit` are distinct properties on distinct devices: the meter publishes "what the utility is signaling"; the panel publishes "what the panel is currently enforcing from the grid-source CSL slot." For the end-to-end composition (subscription topology, CSL math, commissioning, failure handling), see [Integration Guide: Utility Meter ↔ Distribution Enclosure](../integration-guides/utility-meter-and-distribution-enclosure.md).
 
-**Publishers other than utility meters.** Although this data model defines `capability.doe` in the context of utility meters, the capability itself is publisher-agnostic. Any device that authoritatively knows a utility-signaled operating envelope — a future IEEE 2030.5 / CSIP gateway, a DERMS adapter, an aggregator's site controller — MAY publish this capability per framework principle #7. The property contracts above apply unchanged to any conformant publisher.
+**Publishers other than utility meters.** Although this data model defines `doe` in the context of utility meters, the capability itself is publisher-agnostic. Any device that authoritatively knows a utility-signaled operating envelope — a future IEEE 2030.5 / CSIP gateway, a DERMS adapter, an aggregator's site controller — MAY publish this capability per framework principle #7. The property contracts above apply unchanged to any conformant publisher.
 
-#### capability.demand
+#### demand
 
 Peak-average demand quantities for commercial demand-charge billing. Published when the meter computes interval demand; omitted otherwise.
 
@@ -242,7 +242,7 @@ The peak-reset semantics — billing-month vs. rolling-30-day vs. since-last-uti
 
 Reactive and apparent demand variants are not included in this v0; they will be added additively if a real consumer requires them.
 
-#### capability.power-quality
+#### power-quality
 
 Quantitative power-quality measurements. Published when the meter computes them; omitted otherwise.
 
@@ -269,19 +269,19 @@ A simple residential single-phase meter that exposes only cumulative energy and 
 
 ```
 ebus/5/meter-7a3f.../$description.type      = energy.ebus.device.utility-meter
-ebus/5/meter-7a3f.../capability.info/vendor-name        = "ExampleCorp"
-ebus/5/meter-7a3f.../capability.info/serial-number      = "EM-0000-7A3F"
-ebus/5/meter-7a3f.../capability.info/phases             = 1
-ebus/5/meter-7a3f.../capability.info/nominal-frequency  = 60
-ebus/5/meter-7a3f.../capability.meter/active-power      = 1842.3
-ebus/5/meter-7a3f.../capability.meter/voltage-a         = 121.8
-ebus/5/meter-7a3f.../capability.meter/current-a         = 15.12
-ebus/5/meter-7a3f.../capability.meter/imported-energy   = 24817.2
-ebus/5/meter-7a3f.../capability.meter/exported-energy   = 0
-ebus/5/meter-7a3f.../capability.status/communication-state = "OK"
+ebus/5/meter-7a3f.../info/vendor-name        = "ExampleCorp"
+ebus/5/meter-7a3f.../info/serial-number      = "EM-0000-7A3F"
+ebus/5/meter-7a3f.../info/phases             = 1
+ebus/5/meter-7a3f.../info/nominal-frequency  = 60
+ebus/5/meter-7a3f.../meter/active-power      = 1842.3
+ebus/5/meter-7a3f.../meter/voltage-a         = 121.8
+ebus/5/meter-7a3f.../meter/current-a         = 15.12
+ebus/5/meter-7a3f.../meter/imported-energy   = 24817.2
+ebus/5/meter-7a3f.../meter/exported-energy   = 0
+ebus/5/meter-7a3f.../status/communication-state = "OK"
 ```
 
-`capability.grid`, `capability.demand`, and `capability.power-quality` are omitted entirely.
+`grid`, `demand`, and `power-quality` are omitted entirely.
 
 ### Commercial three-phase meter with demand and PQ
 
@@ -289,47 +289,47 @@ A transformer-rated three-phase commercial meter publishing the full per-phase i
 
 ```
 ebus/5/meter-c402.../$description.type      = energy.ebus.device.utility-meter
-ebus/5/meter-c402.../capability.info/vendor-name              = "ExampleCorp"
-ebus/5/meter-c402.../capability.info/model                    = "REV-3P-9S"
-ebus/5/meter-c402.../capability.info/meter-form               = "9S"
-ebus/5/meter-c402.../capability.info/meter-class              = "0.2S"
-ebus/5/meter-c402.../capability.info/phases                   = 3
-ebus/5/meter-c402.../capability.info/neutral-connected        = true
-ebus/5/meter-c402.../capability.info/nominal-frequency        = 60
-ebus/5/meter-c402.../capability.info/nominal-phase-angle      = 120
-ebus/5/meter-c402.../capability.info/nominal-voltage-line-to-line     = 480
-ebus/5/meter-c402.../capability.info/nominal-voltage-line-to-neutral  = 277
-ebus/5/meter-c402.../capability.info/calculation-convention   = "ARITHMETIC"
-ebus/5/meter-c402.../capability.info/ct-ratio                 = 80
-ebus/5/meter-c402.../capability.info/pt-ratio                 = 1
-ebus/5/meter-c402.../capability.meter/frequency               = 59.98
-ebus/5/meter-c402.../capability.meter/active-power            = 142337.5
-ebus/5/meter-c402.../capability.meter/reactive-power          = 38420.1
-ebus/5/meter-c402.../capability.meter/apparent-power          = 147432.7
-ebus/5/meter-c402.../capability.meter/power-factor            = 0.965
-ebus/5/meter-c402.../capability.meter/voltage-a               = 277.4
-ebus/5/meter-c402.../capability.meter/voltage-b               = 277.1
-ebus/5/meter-c402.../capability.meter/voltage-c               = 276.9
-ebus/5/meter-c402.../capability.meter/current-a               = 178.2
-ebus/5/meter-c402.../capability.meter/current-b               = 174.8
-ebus/5/meter-c402.../capability.meter/current-c               = 177.5
-ebus/5/meter-c402.../capability.meter/current-n               = 4.1
-ebus/5/meter-c402.../capability.meter/imported-energy         = 18472134
-ebus/5/meter-c402.../capability.meter/exported-energy         = 0
-ebus/5/meter-c402.../capability.demand/integration-window     = 900
-ebus/5/meter-c402.../capability.demand/current-interval-demand    = 138420
-ebus/5/meter-c402.../capability.demand/previous-interval-demand   = 141200
-ebus/5/meter-c402.../capability.demand/peak-demand-this-period    = 187320
-ebus/5/meter-c402.../capability.demand/peak-demand-time           = "2026-05-22T14:30:00Z"
-ebus/5/meter-c402.../capability.demand/peak-demand-reset-time     = "2026-05-01T00:00:00Z"
-ebus/5/meter-c402.../capability.power-quality/thd-voltage-a   = 2.1
-ebus/5/meter-c402.../capability.power-quality/thd-voltage-b   = 2.0
-ebus/5/meter-c402.../capability.power-quality/thd-voltage-c   = 2.2
-ebus/5/meter-c402.../capability.power-quality/voltage-unbalance = 0.18
-ebus/5/meter-c402.../capability.grid/grid-state               = "UP"
-ebus/5/meter-c402.../capability.status/tamper-state           = "NORMAL"
-ebus/5/meter-c402.../capability.status/time-sync-state        = "LOCKED"
-ebus/5/meter-c402.../capability.status/communication-state    = "OK"
+ebus/5/meter-c402.../info/vendor-name              = "ExampleCorp"
+ebus/5/meter-c402.../info/model                    = "REV-3P-9S"
+ebus/5/meter-c402.../info/meter-form               = "9S"
+ebus/5/meter-c402.../info/meter-class              = "0.2S"
+ebus/5/meter-c402.../info/phases                   = 3
+ebus/5/meter-c402.../info/neutral-connected        = true
+ebus/5/meter-c402.../info/nominal-frequency        = 60
+ebus/5/meter-c402.../info/nominal-phase-angle      = 120
+ebus/5/meter-c402.../info/nominal-voltage-line-to-line     = 480
+ebus/5/meter-c402.../info/nominal-voltage-line-to-neutral  = 277
+ebus/5/meter-c402.../info/calculation-convention   = "ARITHMETIC"
+ebus/5/meter-c402.../info/ct-ratio                 = 80
+ebus/5/meter-c402.../info/pt-ratio                 = 1
+ebus/5/meter-c402.../meter/frequency               = 59.98
+ebus/5/meter-c402.../meter/active-power            = 142337.5
+ebus/5/meter-c402.../meter/reactive-power          = 38420.1
+ebus/5/meter-c402.../meter/apparent-power          = 147432.7
+ebus/5/meter-c402.../meter/power-factor            = 0.965
+ebus/5/meter-c402.../meter/voltage-a               = 277.4
+ebus/5/meter-c402.../meter/voltage-b               = 277.1
+ebus/5/meter-c402.../meter/voltage-c               = 276.9
+ebus/5/meter-c402.../meter/current-a               = 178.2
+ebus/5/meter-c402.../meter/current-b               = 174.8
+ebus/5/meter-c402.../meter/current-c               = 177.5
+ebus/5/meter-c402.../meter/current-n               = 4.1
+ebus/5/meter-c402.../meter/imported-energy         = 18472134
+ebus/5/meter-c402.../meter/exported-energy         = 0
+ebus/5/meter-c402.../demand/integration-window     = 900
+ebus/5/meter-c402.../demand/current-interval-demand    = 138420
+ebus/5/meter-c402.../demand/previous-interval-demand   = 141200
+ebus/5/meter-c402.../demand/peak-demand-this-period    = 187320
+ebus/5/meter-c402.../demand/peak-demand-time           = "2026-05-22T14:30:00Z"
+ebus/5/meter-c402.../demand/peak-demand-reset-time     = "2026-05-01T00:00:00Z"
+ebus/5/meter-c402.../power-quality/thd-voltage-a   = 2.1
+ebus/5/meter-c402.../power-quality/thd-voltage-b   = 2.0
+ebus/5/meter-c402.../power-quality/thd-voltage-c   = 2.2
+ebus/5/meter-c402.../power-quality/voltage-unbalance = 0.18
+ebus/5/meter-c402.../grid/grid-state               = "UP"
+ebus/5/meter-c402.../status/tamper-state           = "NORMAL"
+ebus/5/meter-c402.../status/time-sync-state        = "LOCKED"
+ebus/5/meter-c402.../status/communication-state    = "OK"
 ```
 
 Both meters are valid `energy.ebus.device.utility-meter` publishers. Consumers handle the difference by reading what is published and treating absent properties as unknown.
@@ -345,7 +345,7 @@ This data model introduces or broadens entries in [`registries/capability-types.
 - `energy.ebus.capability.power-quality` — **new** capability type. Quantitative power-quality measurements (THD, TDD, unbalance); primarily used on utility-meter devices.
 - `energy.ebus.capability.grid` — **broadened source.** Currently scoped to MID devices in the registry; the registry note will be updated to acknowledge utility-meter as a second publisher class. The MID and the utility-meter publish disjoint subsets of the capability's vocabulary; both are conformant.
 
-The new capability identifiers and the broadened `capability.grid` source are documentation in this data model document; the registry will be updated in a companion commit when this data model lands as a non-exploratory draft.
+The new capability identifiers and the broadened `grid` source are documentation in this data model document; the registry will be updated in a companion commit when this data model lands as a non-exploratory draft.
 
 ---
 
@@ -353,14 +353,14 @@ The new capability identifiers and the broadened `capability.grid` source are do
 
 - [eBus framework specification](../../../tree/wip/framework) (`wip/framework` branch)
 - [eBus data-model design principles](README.md#design-principles)
-- [eBus distribution-enclosure data model](distribution-enclosure.md) — for the precedent on `capability.meter`, `capability.grid`, `capability.status`, per-phase property suffixes, and the parent-of-children pattern this data model deliberately does *not* use.
+- [eBus distribution-enclosure data model](distribution-enclosure.md) — for the precedent on `meter`, `grid`, `status`, per-phase property suffixes, and the parent-of-children pattern this data model deliberately does *not* use.
 - [eBus capability-type registry](../registries/capability-types.md)
 - [Utility-meter property inventory](utility-meter-property-inventory.md) — the GEISA-to-eBus mapping research that informed this data model.
 - [GEISA project](https://lfenergy.org/introduction-to-geisa/) — independent LF Energy effort whose metering schemas informed the property vocabulary here. eBus and GEISA are independent specifications; alignment is deliberate where it exists, divergence is also deliberate.
-- ANSI C12.20 — meter accuracy classes (for `capability.info/meter-class`).
-- ANSI C12.10 — meter form designations (for `capability.info/meter-form`).
-- IEEE 519 — harmonic limits (for `capability.power-quality/thd-*`, `tdd-*`).
-- NEMA MG-1 §14.36 — voltage unbalance definition (for `capability.power-quality/voltage-unbalance`).
-- [IEEE 2030.5 / CSIP](https://standards.ieee.org/ieee/2030.5/5897/) — Smart Energy Profile 2.0 / Common Smart Inverter Profile. Source of the "dynamic operating envelope" terminology used in `capability.doe`.
-- [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) — Power Control Systems. Source of the PIL / PEL terminology used in `capability.doe`. NEC 2026 Article 130 incorporates PCS requirements into the National Electrical Code.
-- [Matter 1.5 Meter Identification cluster (0x0B06)](https://csa-iot.org/all-solutions/matter/) — Cross-reference for the import side of `capability.doe` (`PowerThreshold` / `PowerThresholdStruct`).
+- ANSI C12.20 — meter accuracy classes (for `info/meter-class`).
+- ANSI C12.10 — meter form designations (for `info/meter-form`).
+- IEEE 519 — harmonic limits (for `power-quality/thd-*`, `tdd-*`).
+- NEMA MG-1 §14.36 — voltage unbalance definition (for `power-quality/voltage-unbalance`).
+- [IEEE 2030.5 / CSIP](https://standards.ieee.org/ieee/2030.5/5897/) — Smart Energy Profile 2.0 / Common Smart Inverter Profile. Source of the "dynamic operating envelope" terminology used in `doe`.
+- [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) — Power Control Systems. Source of the PIL / PEL terminology used in `doe`. NEC 2026 Article 130 incorporates PCS requirements into the National Electrical Code.
+- [Matter 1.5 Meter Identification cluster (0x0B06)](https://csa-iot.org/all-solutions/matter/) — Cross-reference for the import side of `doe` (`PowerThreshold` / `PowerThresholdStruct`).
