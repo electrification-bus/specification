@@ -96,6 +96,8 @@ The `-a` / `-b` / `-c` letters denote the abstract phase positions of a polyphas
 
 A property whose corresponding phase position is not present on this meter's service is simply not published (framework principle #3).
 
+**Why properties-with-suffix rather than phase-as-child-device.** A utility meter is one physical instrument — one serial number, one firmware, one comm channel, one Homie `$state` lifecycle. Phases are conductors passing through the meter, not sub-entities of it. The Homie device boundary is heavyweight (its own `$description`, `$state`, lifecycle, MQTT presence); using it for phase decomposition would import that weight where it does not pay for itself, break the colocation of system aggregates with their per-phase decomposition, triple device count per meter, and diverge from the Matter, DLMS/COSEM, and DNP3 metering conventions. Full rationale (including the alternative considered and the decision rule for future revisit) is recorded as a decision in the project's bd tracker under issue `SPEC-7si`.
+
 ### Utility Meter Capabilities
 
 #### info
