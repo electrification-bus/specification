@@ -1,7 +1,7 @@
 # Electrification Bus Specification
 
-**Version:** 0.2.0 (Draft)
-**Date:** 2026-03-29
+**Version:** 0.3.0 (Draft)
+**Date:** 2026-06-06
 **Status:** Working Draft
 
 ---
