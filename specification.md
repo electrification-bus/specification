@@ -1,4 +1,4 @@
-# Electrification Bus (eBus) Specification
+# Electrification Bus Specification
 
 **Version:** 0.2.0 (Draft)
 **Date:** 2026-03-29
@@ -6,11 +6,11 @@
 
 ---
 
-## What is eBus?
+## What is Electrification Bus?
 
-eBus is an open interoperability framework for Home Energy Infrastructure (HEI) devices — smart panels, batteries, inverters, HEMS, meters, generators, and transfer switches.
+Electrification Bus (eBus for short) is an open interoperability framework for Home Energy Infrastructure (HEI) devices — smart panels, batteries, inverters, HEMS, meters, generators, and transfer switches.
 
-eBus composes existing, well-known protocols — **mDNS**, **MQTT** (with the **Homie Convention**), and **HTTP/REST** — in a structured way that enables automatic discovery, self-describing messaging, and local-first coordination. Most developers already know these protocols; eBus defines how to use them together so that devices from different manufacturers can interoperate without custom integration work.
+Electrification Bus composes existing, well-known protocols — **mDNS**, **MQTT** (with the **Homie Convention**), and **HTTP/REST** — in a structured way that enables automatic discovery, self-describing messaging, and local-first coordination. Most developers already know these protocols; eBus defines how to use them together so that devices from different manufacturers can interoperate without custom integration work.
 
 ### Terminology
 
@@ -630,7 +630,7 @@ The standards listed below are *not* referenced normatively by eBus — an imple
 
 The IEC Common Information Model (IEC 61970 for transmission/EMS, IEC 61968 for distribution/DMS/OMS/CIS, IEC 62325 for markets) is the canonical data model on the *utility* side of the service drop. CIM describes the grid — substations, feeders, transformers, switches, capacitor banks, protection relays — and the operational IT systems that manage it. Its customer-facing leaf, `EnergyConsumer`, represents an entire service point as a single aggregate load characterized by active/reactive power and (optionally) a customer count; CIM does not categorize what is *behind* that point into branch circuits or end-use loads.
 
-eBus is the mirror image: it models the *premises* side of the service drop — the panel, the branch circuits, the appliances and DERs connected to them — at per-circuit and per-device resolution. The two models are complementary, and the natural seam is the service entrance / revenue meter. An integrator publishing aggregated premises data into a utility DERMS, OMS, or DR platform will typically translate from eBus models on one side of that seam to CIM (often CIM's DER profile, IEC 61968-5) on the other.
+Electrification Bus is the mirror image: it models the *premises* side of the service drop — the panel, the branch circuits, the appliances and DERs connected to them — at per-circuit and per-device resolution. The two models are complementary, and the natural seam is the service entrance / revenue meter. An integrator publishing aggregated premises data into a utility DERMS, OMS, or DR platform will typically translate from eBus models on one side of that seam to CIM (often CIM's DER profile, IEC 61968-5) on the other.
 
 Practical entry points to the CIM model:
 
