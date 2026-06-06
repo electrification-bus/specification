@@ -106,7 +106,7 @@ Some distribution enclosures expose a digitally-monitored door (for access to br
 
 #### meter
 
-Enclosure-level aggregate metering — measurements at the main relay / service entrance.
+Enclosure-level aggregate metering — measurements at the enclosure's main relay (which is the service-entrance feed in single-panel installs, or the feedthrough from an upstream enclosure in multi-enclosure chains).
 
 **Node type:** `energy.ebus.capability.meter`
 
@@ -141,6 +141,15 @@ Site-level aggregate power flows across all energy sources. The enclosure comput
 
 UL 3141 Power Control Systems (PCS) configuration, state, and the family of Configurable Service Limit (CSL) properties that the PCS manages.
 
+**What a CSL is.** A *Configurable Service Limit* is a per-source upper bound on power flow into the enclosure that the PCS enforces. (The enclosure's feed is the service entrance in single-panel installs; in multi-enclosure chains a downstream enclosure's feed is the feedthrough from an upstream enclosure — the CSL applies at the enclosure's own feed point either way, not specifically at the utility service entrance.) The enclosure publishes one CSL slot per logical source of constraint:
+
+- `feed-import-limit` — the commissioned static feed capacity (set at install time; reflects the upstream feed conductor, which may be smaller than the panel's main breaker).
+- `grid-import-limit` — the dynamic grid-tied limit when on-grid (typically utility-signaled — the panel mirrors a Dynamic Operating Envelope received via AMI / IEEE 2030.5 / a utility-meter's `doe`).
+- `off-grid-import-limit` — the import limit when islanded (from BESS / DER).
+- `requested-import-limit` — a user- or operator-requested temporary limit (homeowner via mobile app, fleet operator via REST API).
+
+At any instant the effective limit is `min()` across all enabled CSLs: each CSL acts as a ceiling and the most restrictive wins. This composition accommodates multiple independent constraint sources without any single source needing to know about the others. The term *Configurable Service Limit* is Electrification Bus vocabulary, not UL 3141 standard terminology — UL 3141 defines the PCS itself; the CSL family is the eBus convention for how a PCS exposes its multi-source constraint state.
+
 **Node type:** `energy.ebus.capability.pcs`
 
 Service rating and capability properties:
@@ -162,16 +171,16 @@ CSL family — each CSL publishes the same three-property pattern: the limit val
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `feed-import-limit` | float | A | SHOULD | Maximum power feeding the distribution enclosure |
+| `feed-import-limit` | float | A | SHOULD | Commissioned static limit reflecting the actual incoming feed capacity. Set at install time. May be less than `breaker-rating` when the upstream feed conductor is smaller than the panel's main breaker (e.g., a 200 A panel wired to a 100 A service feed publishes `feed-import-limit = 100`). |
 | `feed-import-limit-enablement` | enum | — | SHOULD | `UNSPECIFIED`, `UNCONFIGURED`, `DISABLED`, `ENABLED` |
 | `feed-import-limit-active` | boolean | — | SHOULD | Is feed-import-limit currently being enforced? |
-| `grid-import-limit` | float | A | SHOULD | Maximum power imported from the grid |
+| `grid-import-limit` | float | A | SHOULD | Dynamic limit on grid-side import when grid-tied — typically utility-signaled (a Dynamic Operating Envelope received via AMI / IEEE 2030.5 / a utility-meter's `doe/power-import-limit`, mirrored here by the panel). The slot for "the utility's signal of what we may import right now." |
 | `grid-import-limit-enablement` | enum | — | SHOULD | Same enum domain as above |
 | `grid-import-limit-active` | boolean | — | SHOULD | Is grid-import-limit currently being enforced? |
 | `off-grid-import-limit` | float | A | SHOULD | Maximum power imported when off-grid (from BESS / DER) |
 | `off-grid-import-limit-enablement` | enum | — | SHOULD | Same enum domain |
 | `off-grid-import-limit-active` | boolean | — | SHOULD | Is off-grid-import-limit currently being enforced? |
-| `requested-import-limit` | float | A | SHOULD | Externally-requested limit (e.g., utility demand-response) |
+| `requested-import-limit` | float | A | SHOULD | User- or operator-requested temporary limit. Examples: a homeowner reducing import via the vendor's mobile app; a fleet operator pushing a limit via REST API. Distinct from utility-signaled limits — those go to `grid-import-limit`. |
 | `requested-import-limit-enablement` | enum | — | SHOULD | Same enum domain |
 | `requested-import-limit-active` | boolean | — | SHOULD | Is requested-import-limit currently being enforced? |
 

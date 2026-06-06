@@ -1,7 +1,7 @@
 # Electrification Bus Capability Type Registry
 
-**Status:** DRAFT v0.1
-**Date:** 2026-05-22
+**Status:** DRAFT v0.2
+**Date:** 2026-06-06
 **Authors:** Don Jackson
 
 ## Purpose
@@ -40,6 +40,9 @@ The **Source** column references the data-model document where the identifier cu
 | `energy.ebus.capability.priority` | Per-circuit load-shedding policy and relay-control authority. Includes `shed-priority` (when to shed: `OFF_GRID`, `SOC_THRESHOLD`, `NEVER`, etc.), `relay-controllable` (whether the relay can be controlled at all), and PCS management metadata. Appears on circuits. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.shed` | Enclosure-wide shed-policy controls. Currently exposes a homeowner `override` (for emergencies when the sensed islanding state has become untrustworthy) and the BESS `soc-threshold` that governs SOC-triggered shedding. Published only when at least one BESS is commissioned to the enclosure. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.shed-forecast` | Computed forecast of how long backup loads will continue to be served when the home is or becomes off-grid. Includes `total-time-remaining`, `time-to-priority-shed`, full-charge equivalents, and a confidence indicator. Computed by the enclosure from aggregate BESS SOE plus per-circuit configuration and history. Published only when at least one BESS is commissioned. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
+| `energy.ebus.capability.doe` | Utility-signaled dynamic operating envelope — the power-import / -export limits the utility is signaling for the site (UL 3141 PIL / PEL, Matter `PowerThresholdStruct` equivalent, IEEE 2030.5 / CSIP "DOE" terminology), with source attribution (`CONTRACT` / `REGULATOR` / `EQUIPMENT` / `GRID` / `UNKNOWN`) and per-limit validity windows. Publish-only — no `/set` topic. Appears on utility-meter devices and on any other publisher with authoritative knowledge of a utility-signaled envelope (a future IEEE 2030.5 / CSIP gateway, a DERMS adapter, an aggregator's site controller). | [`data-models/utility-meter.md`](../data-models/utility-meter.md) |
+| `energy.ebus.capability.demand` | Peak-average demand quantities for commercial demand-charge billing — demand-interval length, current and previous interval demand, peak demand for the current billing period with its occurrence timestamp and reset-time. Appears on utility-meter devices and other publishers with interval-demand computation. | [`data-models/utility-meter.md`](../data-models/utility-meter.md) |
+| `energy.ebus.capability.power-quality` | Quantitative power-quality measurements (THD / TDD, individual harmonics, voltage unbalance, and similar PQ metrics). Appears on utility-meter devices that compute the measurements and on dedicated power-quality analyzers. | [`data-models/utility-meter.md`](../data-models/utility-meter.md) |
 
 ## Adding new capability types
 
