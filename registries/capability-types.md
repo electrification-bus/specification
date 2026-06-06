@@ -1,4 +1,4 @@
-# eBus Capability Type Registry
+# Electrification Bus Capability Type Registry
 
 **Status:** DRAFT v0.1
 **Date:** 2026-05-22
@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document is the canonical registry of `energy.ebus.capability.*` capability-type identifiers used across all eBus data models. Data-model documents reference identifiers from this registry; new identifiers are added to this registry when a data-model document introduces them.
+This document is the canonical registry of `energy.ebus.capability.*` capability-type identifiers used across all Electrification Bus (eBus for short) data models. Data-model documents reference identifiers from this registry; new identifiers are added to this registry when a data-model document introduces them.
 
 In the eBus Homie model, child devices group their properties under capability-typed nodes. A capability-type identifier names a coherent functional aspect of a device — for example, electrical metering, grid-tie status, load-shed control, state-of-charge reporting. A single device may expose multiple capabilities; the same capability identifier appears on devices of different device types (e.g., `energy.ebus.capability.meter` appears on circuits, feed points, and BESS devices alike).
 

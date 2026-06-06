@@ -1,6 +1,6 @@
-# Electrification Bus (eBus) Specification
+# Electrification Bus Specification
 
-The **Electrification Bus**, or **eBus**, is an open framework that enables Home Energy Infrastructure devices — distribution enclosures, battery energy storage systems, electric vehicle supply equipment, photovoltaic inverters, microgrid interconnect devices, and similar — to discover one another, communicate, and coordinate using open, standard protocols.
+**Electrification Bus** (**eBus** for short) is an open framework that enables Home Energy Infrastructure devices — distribution enclosures, battery energy storage systems, electric vehicle supply equipment, photovoltaic inverters, microgrid interconnect devices, and similar — to discover one another, communicate, and coordinate using open, standard protocols.
 
 This repository holds the eBus specification documents.
 

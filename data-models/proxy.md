@@ -1,11 +1,11 @@
-# eBus Proxy Model
+# Electrification Bus Proxy Model
 
 **Status:** DRAFT
 **Version:** 0.1
 **Date:** 2026-05-22
 **Authors:** Don Jackson
 
-This document defines how eBus handles **proxying** — the publication of an eBus representation of a device by some publisher other than the device itself. Proxying is the bridge that lets the eBus ecosystem cover devices that are not yet eBus-native: an enclosure, gateway, or integration hub publishes the eBus tree for a non-eBus-native device, populated from vendor APIs, internal integrations, or commissioning data, until the device (or its vendor) becomes eBus-native and takes over publication itself.
+This document defines how Electrification Bus (eBus for short) handles **proxying** — the publication of an eBus representation of a device by some publisher other than the device itself. Proxying is the bridge that lets the eBus ecosystem cover devices that are not yet eBus-native: an enclosure, gateway, or integration hub publishes the eBus tree for a non-eBus-native device, populated from vendor APIs, internal integrations, or commissioning data, until the device (or its vendor) becomes eBus-native and takes over publication itself.
 
 Proxying is a first-class peer to native publishing (see [Design Principle 6 in data-models/README.md](README.md#design-principles)). This document specifies the consumer-facing surface for distinguishing proxied from native representations, the device-ID convention for proxied devices, and where proxy-side knowledge lives in the data model. It applies uniformly to every eBus data model whose devices may be proxied (BESS, PV, EVSE, MID, future device classes).
 

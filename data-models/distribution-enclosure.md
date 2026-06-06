@@ -1,4 +1,4 @@
-# eBus Distribution Enclosure Data Model Specification
+# Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
 **Version:** 0.1
@@ -7,7 +7,7 @@
 
 ## Overview
 
-This document defines an eBus/Homie data model for an electrical **distribution enclosure** — the device that takes an incoming AC feed in on its upstream lugs, distributes power across branch circuits, and optionally integrates Distributed Energy Resources (DERs) such as battery energy storage systems (BESS), solar PV, and EV charging equipment (EVSE). The upstream feed may come from the utility service (the common case), from an upstream BESS wired between the utility and the enclosure, or from another (parent) distribution enclosure in a multi-enclosure install. The downstream side may similarly feed loads directly, feed a sub-enclosure via feedthrough lugs, or both. The model uses a parent-child device hierarchy with capability-typed nodes, layered on Homie 5 plus eBus's HEI-specific device and capability types.
+This document defines an Electrification Bus (eBus for short) data model for an electrical **distribution enclosure** — the device that takes an incoming AC feed in on its upstream lugs, distributes power across branch circuits, and optionally integrates Distributed Energy Resources (DERs) such as battery energy storage systems (BESS), solar PV, and EV charging equipment (EVSE). The upstream feed may come from the utility service (the common case), from an upstream BESS wired between the utility and the enclosure, or from another (parent) distribution enclosure in a multi-enclosure install. The downstream side may similarly feed loads directly, feed a sub-enclosure via feedthrough lugs, or both. The model uses a parent-child device hierarchy with capability-typed nodes, layered on Homie 5 plus eBus's HEI-specific device and capability types.
 
 The data model aspires and attempts to be vendor-neutral. Publisher implementations populate it from whatever internal data sources they have available; consumers interact with it through a single, vendor-agnostic schema. SPAN is the first known implementation; SPAN-tagged examples appear throughout this document for concreteness and are clearly marked as examples — they are illustrative, not normative.
 
