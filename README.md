@@ -26,7 +26,7 @@ eBus is built on top of [Homie 5](https://homieiot.github.io/) (a general-purpos
 | [`data-models/utility-meter.md`](data-models/utility-meter.md) | DRAFT v0.1 (2026-06-06) |
 | `data-models/bess.md` | Planned |
 | `data-models/mid.md` | Planned |
-| [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.1 (2026-05-22) |
+| [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.2 (2026-06-06) |
 | [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.2 (2026-06-06) |
 | [`registries/circuit-tags.md`](registries/circuit-tags.md) | DRAFT v0.1 (2026-05-23) |
 | [`registries/external-id-schemes.md`](registries/external-id-schemes.md) | DRAFT v0.1 (2026-05-16) |
