@@ -183,6 +183,7 @@ Every eBus entity MUST advertise this service to make itself discoverable.
 | `fw_version` | Firmware version | `24.5.1` |
 | `register` | REST endpoint to exchange a device secret for API token and/or MQTT broker credentials | `/api/v1/auth/register` |
 | `broker_ca` | Authenticated REST endpoint to download the MQTT broker's self-signed CA certificate | `/api/v1/certificate/broker-ca` |
+| `auth_methods` | Comma-separated list of authentication methods this entity supports. Defined values: `passphrase` (REST registration endpoint, see `register` TXT record and §"Registration Endpoint"); `preconfigured` (credentials managed out-of-band — admin UI, config file, vendor onboarding); `mtls` (mTLS client-certificate authentication — see §"mTLS Client Authentication (Optional)"). An entity MAY publish multiple values when it supports more than one method concurrently. Lets a controller pick a supported method without round-tripping to the OpenAPI spec. | `passphrase,mtls` |
 
 ### `_device-info._tcp` Service
 
