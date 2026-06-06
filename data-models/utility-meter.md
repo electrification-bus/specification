@@ -11,7 +11,7 @@ This document defines an Electrification Bus (eBus for short) data model for a *
 
 The data model captures the ≥1 Hz instantaneous electrical measurements (voltage, current, power, frequency), the slower cumulative-energy and demand quantities used for billing, the meter's view of utility supply health, and the meter's own operational state. It is layered on Homie 5 plus eBus's HEI-specific device and capability types and is intended to be vendor-neutral: any meter OEM or proxy publisher with internal access to the underlying values can populate it.
 
-This data model is informed by — but does not depend on or copy — the [GEISA project](https://lfenergy.org/introduction-to-geisa/)'s metering schemas. Where the property vocabulary aligns with GEISA, the alignment is deliberate; where it diverges (notably in conformance posture, in encoding decisions, and in the omission of GEISA's high-sample-rate waveform tier), the divergence is also deliberate. The two specifications are independent. See the companion inventory at [`utility-meter-property-inventory.md`](utility-meter-property-inventory.md) for the GEISA-to-eBus mapping decisions taken during this data model's drafting.
+This data model is informed by — but does not depend on or copy — the [GEISA project](https://lfenergy.org/introduction-to-geisa/)'s metering schemas. Where the property vocabulary aligns with GEISA, the alignment is deliberate; where it diverges (notably in conformance posture, in encoding decisions, and in the omission of GEISA's high-sample-rate waveform tier), the divergence is also deliberate. The two specifications are independent.
 
 ## Terminology: "utility meter"
 
@@ -353,11 +353,10 @@ The new capability identifiers and the broadened `grid` source are documentation
 
 ## References
 
-- [eBus framework specification](../../../tree/wip/framework) (`wip/framework` branch)
-- [eBus data-model design principles](README.md#design-principles)
-- [eBus distribution-enclosure data model](distribution-enclosure.md) — for the precedent on `meter`, `grid`, `status`, per-phase property suffixes, and the parent-of-children pattern this data model deliberately does *not* use.
-- [eBus capability-type registry](../registries/capability-types.md)
-- [Utility-meter property inventory](utility-meter-property-inventory.md) — the GEISA-to-eBus mapping research that informed this data model.
+- [Electrification Bus framework specification](../framework.md)
+- [Electrification Bus design principles](../framework.md#design-principles)
+- [Electrification Bus distribution-enclosure data model](distribution-enclosure.md) — for the precedent on `meter`, `grid`, `status`, per-phase property suffixes, and the parent-of-children pattern this data model deliberately does *not* use.
+- [Electrification Bus capability-type registry](../registries/capability-types.md)
 - [GEISA project](https://lfenergy.org/introduction-to-geisa/) — independent LF Energy effort whose metering schemas informed the property vocabulary here. eBus and GEISA are independent specifications; alignment is deliberate where it exists, divergence is also deliberate.
 - ANSI C12.20 — meter accuracy classes (for `info/meter-class`).
 - ANSI C12.10 — meter form designations (for `info/meter-form`).
