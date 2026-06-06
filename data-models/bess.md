@@ -70,17 +70,12 @@ For a grid-following-only BESS, the value to a coordinating distribution-enclosu
 
 ### Design Principles
 
-1. **Homie devices represent physical things** — a battery pack, an inverter, a MID, a meter. If it could conceivably maintain its own independent Homie representation someday, it is a Homie device, not a Homie node.
+This data model follows the Electrification Bus design principles — the Homie devices-vs-nodes split, parent aggregation, standard capability-type reuse across device classes, proxying as a first-class peer to native publishing, property placement on the authoritative device, forward compatibility, and multi-instance modeling. See **[Design Principles in framework.md](../framework.md#design-principles)** for the canonical list. Examples worth noting for BESS publishers:
 
-2. **Homie nodes represent capabilities** — what a Homie device can do. A battery has metering capability, state-of-charge capability, and info capability. An inverter also has metering capability — same capability type, different Homie device.
-
-3. **Publish what you have** — not every BESS has all components. A simple system might be just the parent BESS device with one battery child and one MID child. A complex system might have 6 battery children, an inverter, a MID, and 3 meter children. The spec accommodates both.
-
-4. **Parent aggregates children** — the parent BESS device provides aggregated values (total SOC, total battery power) so consumers don't need to discover and sum children.
-
-5. **eBus is a vendor-independent industry standard for Home Energy Infrastructure (HEI) devices** — BESSs, distribution enclosures, PV systems, EVSEs, MIDs, generators, and similar — built on top of Homie 5 (a general-purpose IoT convention) plus complementary conventions like mDNS and REST/OpenAPI. eBus's value-add over Homie is HEI specialization: HEI-specific device types (`energy.ebus.device.*`), capability types (`energy.ebus.capability.*`), and the property catalogs within them. Homie features (the parent-child device model, the `$state` lifecycle, the `$description` mutability rules, the `$settable` attribute, retained-message semantics) belong to Homie and are credited to Homie, not to eBus. Schema vocabulary defined by eBus MUST be vendor-neutral; vendor trademarks and product-specific terminology are excluded from the schema. The Homie `name` string attribute on each property is implementation-defined and may carry vendor-specific labels — its contents are presentation, not part of the standard.
-
-6. **The spec is satisfiable by either a native publisher or a proxy.** A vendor implementing eBus directly in their BESS firmware and a third-party adapter translating from the vendor's proprietary API both produce the same device shape. The consumer-facing surface is identical; the source of the data is transparent to consumers. This is fundamental to eBus's adoption strategy — adapters bridge the gap between today's reality (most BESS vendors do not yet speak eBus) and the future where they do. The spec's property contracts are written so that any conformant publisher — native or adapter — can satisfy them; a property that only an adapter (or only a native publisher) could populate would break the contract for the other.
+- *Homie devices represent physical things* — a battery pack, an inverter, a MID, a meter (framework principle #1).
+- *Publish what you have, omit what you don't* — not every BESS has all components. A simple system might be just the parent BESS device with one battery child and one MID child; a complex system might have 6 battery children, an inverter, a MID, and 3 meter children. The spec accommodates both (framework principle #3).
+- *Parent aggregates children* — the parent BESS device provides aggregated values (total SOC, total battery power) so consumers don't need to discover and sum children (framework principle #4).
+- *Proxying is first-class* — a vendor implementing eBus directly in their BESS firmware and a third-party proxy publisher translating from the vendor's proprietary API both produce the same device shape. The consumer-facing surface is identical; the source of the data is transparent to consumers. This is fundamental to eBus's adoption strategy — proxies bridge the gap between today's reality (most BESS vendors do not yet speak eBus) and the future where they do (framework principle #6).
 
 ### Device Types
 
