@@ -10,7 +10,7 @@ eBus is built on top of [Homie 5](https://homieiot.github.io/) (a general-purpos
 
 ## What's in this repository
 
-- **Framework spec** — defines how devices participate in the bus: network architecture, discovery (mDNS), messaging (MQTT/Homie), credentials, security (TLS), updates, and adapter conventions. *Currently a working draft on the [`wip/framework`](../../tree/wip/framework) branch as `specification.md`; will land on `main` as `framework.md` when ready for review.*
+- **[`framework.md`](framework.md)** — the framework spec. Defines how devices participate in the bus: network architecture, discovery (mDNS), messaging (MQTT/Homie), broker hosting, credentials and TLS (including mTLS client authentication), proxy publishers, design principles, and the device-and-node-type taxonomy that data-model documents build on.
 - **`data-models/`** — vendor-neutral data models for specific device categories. Each data-model document defines the canonical Homie device structure (parent device + child devices, capabilities, properties) for that category. Data-model documents reference the framework but stand on their own — vendors implementing a specific device category will read the relevant data-model document directly.
 - **`registries/`** — canonical registries for device-type identifiers (`energy.ebus.device.*`) and capability-type identifiers (`energy.ebus.capability.*`) used across all data models. Registries grow as new device categories are added.
 - **`examples/`** — reference snippets, reference implementations, and integration examples.
@@ -19,7 +19,7 @@ eBus is built on top of [Homie 5](https://homieiot.github.io/) (a general-purpos
 
 | Document | Status |
 |---|---|
-| Framework spec | Draft, in progress (see [`wip/framework`](../../tree/wip/framework) branch) |
+| [`framework.md`](framework.md) | Working Draft v0.3.0 (2026-06-06) |
 | [`data-models/proxy.md`](data-models/proxy.md) | DRAFT v0.1 (2026-05-22) |
 | [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.1 (2026-05-17) |
 | `data-models/bess.md` | Planned |
