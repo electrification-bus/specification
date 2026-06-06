@@ -10,6 +10,8 @@ The eBus distribution-enclosure data model exposes a per-circuit `info/tags` pro
 
 This document is the registry of currently-defined tag values. It is descriptive, not exhaustive: new tags may be added as the integrator ecosystem requires, without a schema change. Consumers MUST tolerate unknown tag values (e.g., display as raw strings, ignore for categorization).
 
+**Applicability beyond circuits.** The registry's primary application is the circuit `info/tags` property, and the file is named accordingly. But the underlying pattern — a controlled vocabulary classifying what is on the downstream side of a connection-point device that the spec doesn't model as a structured eBus device — generalizes naturally. Other data-model documents MAY adopt this same vocabulary on their own `info/tags` properties when they have analogous use cases (for example, a feedthrough-lugs device feeding a non-eBus subpanel could carry `SUBPANEL`; a future power-distribution-unit data model could use per-outlet load tags; an MID grid-side interconnection could use a service-context tag). New tags required by such uses extend this registry rather than forming separate registries — keeping one shared vocabulary across all connection-point devices.
+
 **What `info/tags` does not cover.** The distribution-enclosure data model carries circuit-level metadata that is orthogonal to load identification, and which `info/tags` deliberately does not duplicate:
 
 - Single-load vs mixed-load circuits → `info`'s `dedicated` boolean property
