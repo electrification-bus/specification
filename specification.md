@@ -287,6 +287,8 @@ Device type definitions — required and optional nodes and properties for each 
 
 Manufacturers MAY define custom types using their own namespace prefix (e.g., `com.acme.device.widget`).
 
+**Node IDs vs. node types.** A node's *type* is the value of its Homie `$type` attribute and uses the dotted reverse-domain form above (e.g., `energy.ebus.capability.meter`). A node's *ID* — the segment that appears in the MQTT topic path between the device-id and the property-id (`ebus/5/<device-id>/<node-id>/<property-id>`) — MUST conform to Homie 5's topic-ID character set: lowercase ASCII letters, digits, and hyphens; the `.` character is NOT permitted. The conventional choice is to use the rightmost segment of the type as the ID (e.g., a node of type `energy.ebus.capability.meter` has node-ID `meter`). Data-model authors MUST follow this convention; reviewers MUST reject node IDs containing `.` (the dotted form is for `$type` values, not IDs).
+
 ### Units
 
 Properties representing physical measurements MUST include a `unit` attribute, using units defined by the [Homie Convention specification][homie5].
