@@ -44,7 +44,7 @@ The model does **not** cover:
 
 ## Design Principles
 
-This data model follows the eBus data-model design principles — the Homie devices-vs-nodes split, parent aggregation, proxying as a first-class peer to native publishing, property placement on the authoritative device, forward compatibility, and multi-instance modeling. See **[Design Principles in data-models/README.md](README.md#design-principles)** for the canonical list.
+This data model follows the eBus design principles — the Homie devices-vs-nodes split, parent aggregation, proxying as a first-class peer to native publishing, property placement on the authoritative device, forward compatibility, and multi-instance modeling. See **[Design Principles in framework.md](../framework.md#design-principles)** for the canonical list.
 
 ---
 

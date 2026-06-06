@@ -7,9 +7,9 @@
 
 This document defines how Electrification Bus (eBus for short) handles **proxying** — the publication of an eBus representation of a device by some publisher other than the device itself. Proxying is the bridge that lets the eBus ecosystem cover devices that are not yet eBus-native: an enclosure, gateway, or integration hub publishes the eBus tree for a non-eBus-native device, populated from vendor APIs, internal integrations, or commissioning data, until the device (or its vendor) becomes eBus-native and takes over publication itself.
 
-Proxying is a first-class peer to native publishing (see [Design Principle 6 in data-models/README.md](README.md#design-principles)). This document specifies the consumer-facing surface for distinguishing proxied from native representations, the device-ID convention for proxied devices, and where proxy-side knowledge lives in the data model. It applies uniformly to every eBus data model whose devices may be proxied (BESS, PV, EVSE, MID, future device classes).
+Proxying is a first-class peer to native publishing (see [Design Principle 6 in framework.md](../framework.md#design-principles)). This document specifies the consumer-facing surface for distinguishing proxied from native representations, the device-ID convention for proxied devices, and where proxy-side knowledge lives in the data model. It applies uniformly to every eBus data model whose devices may be proxied (BESS, PV, EVSE, MID, future device classes).
 
-The long-term home for this content is the [eBus framework spec](../../../tree/wip/framework). Until that document matures, this file is the canonical reference for proxy conventions across all eBus data models.
+The framework spec covers the proxy role at a high level in [§Detail: Proxy Publishers](../framework.md#detail-proxy-publishers). This document is the detailed proxy specification — disambiguation mechanics, the proxied-device ID convention, and where proxy-side knowledge lives. The framework spec may in a future revision absorb the full proxy specification, at which point this file becomes a stub; for now, this file is authoritative for the detailed mechanics.
 
 ## Proxy Model
 
@@ -44,7 +44,7 @@ Per the eBus vendor-neutrality principle, vendors publishing devices natively us
 
 ## Proxy-side knowledge stays on the proxy
 
-Information that a non-proxying eBus-native publisher of the proxied device could not have lives on the proxier's surfaces, not on the proxied child. This is a direct application of [Design Principle 7 in data-models/README.md](README.md#design-principles) ("Properties belong on the device that authoritatively knows them"): the property contract for the proxied device must be satisfiable by *any* conformant publisher — native or proxy — so any property that only the proxier can populate belongs on the proxier, not on the device being proxied.
+Information that a non-proxying eBus-native publisher of the proxied device could not have lives on the proxier's surfaces, not on the proxied child. This is a direct application of [Design Principle 7 in framework.md](../framework.md#design-principles) ("Properties belong on the device that authoritatively knows them"): the property contract for the proxied device must be satisfiable by *any* conformant publisher — native or proxy — so any property that only the proxier can populate belongs on the proxier, not on the device being proxied.
 
 Typical categories of proxy-side knowledge include:
 
