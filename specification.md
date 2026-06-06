@@ -14,9 +14,10 @@ Electrification Bus composes existing, well-known protocols — **mDNS**, **MQTT
 
 ### Terminology
 
-- **eBus entity** — A network host implementing the device role, the controller role, or both.
+- **eBus entity** — A network host implementing the device role, the controller role, the broker-host role, or any combination.
 - **Device role** — Publishes Homie devices to the MQTT broker, representing HEI device state and capabilities.
 - **Controller role** — Discovers and subscribes to Homie devices, reads state, and issues `/set` commands.
+- **Broker-host role** — Provides an MQTT broker for eBus entities to publish to and subscribe through. May implement device or controller roles in addition (co-resident broker host — typical for products like a SPAN panel that hosts its own broker), or stand alone (a dedicated broker host that is not itself a device — e.g., a NUC or Raspberry Pi running just the broker).
 - **Native publisher** — A device-role entity that publishes a Homie device representing itself (or, for a vendor-built publisher, representing one of the vendor's own products).
 - **Proxy publisher** — A device-role entity that publishes a Homie device on behalf of a non-eBus-native device — typically bridging from the device's native protocol (Modbus, Matter, CTA-2045, vendor cloud API, etc.). The published representation is a *proxy*. Disambiguation between proxy and native publication is defined in [`data-models/proxy.md`](data-models/proxy.md).
 
@@ -67,25 +68,30 @@ This section is the normative core of the eBus specification. Each requirement i
 
 22. An eBus entity's configuration SHOULD include a broker URL and a broker mode: `configured-only`, `discovery-with-fallback`, or `discovery-only` (the default).
 
+### Broker-Host
+
+23. A broker-host entity MUST include `broker-host` in the `roles` TXT record of its `_ebus._tcp` mDNS advertisement, in addition to any other roles it implements.
+24. A broker-host entity SHOULD authenticate clients connecting to its broker. The authentication mechanism is implementation-defined; common patterns are a REST registration endpoint hosted by the broker host (same shape as §"Registration Endpoint"), pre-configured credentials, or mTLS client-certificate authentication (per §"mTLS Client Authentication (Optional)").
+
 ### TLS and Security
 
-23. An eBus entity SHOULD use TLS for MQTT and HTTP connections; MAY fall back to non-TLS if not feasible.
-24. When TLS is supported, TLS 1.2 or later MUST be used; TLS 1.3 is RECOMMENDED.
-25. An eBus entity whose TLS certificate is not publicly verifiable (typically self-signed) SHOULD provide a REST endpoint to download its CA certificate (unauthenticated).
-26. An eBus entity that connects to an MQTT broker whose TLS certificate is not publicly verifiable SHOULD provide a REST endpoint to upload that broker's CA certificate.
-27. An eBus entity that supports mTLS client-certificate authentication SHOULD provide an authenticated REST endpoint to upload trust-anchor CA certificates against which inbound client certificates are validated.
+25. An eBus entity SHOULD use TLS for MQTT and HTTP connections; MAY fall back to non-TLS if not feasible.
+26. When TLS is supported, TLS 1.2 or later MUST be used; TLS 1.3 is RECOMMENDED.
+27. An eBus entity whose TLS certificate is not publicly verifiable (typically self-signed) SHOULD provide a REST endpoint to download its CA certificate (unauthenticated).
+28. An eBus entity that connects to an MQTT broker whose TLS certificate is not publicly verifiable SHOULD provide a REST endpoint to upload that broker's CA certificate.
+29. An eBus entity that supports mTLS client-certificate authentication SHOULD provide an authenticated REST endpoint to upload trust-anchor CA certificates against which inbound client certificates are validated.
 
 ### OTA Firmware Updates
 
-28. An eBus entity SHOULD support a REST endpoint to initiate OTA firmware updates.
-29. The OTA update server URL SHOULD be obtained from configuration.
-30. An OTA update MUST NOT permanently brick the device (rollback or dual-partition boot SHOULD be supported).
+30. An eBus entity SHOULD support a REST endpoint to initiate OTA firmware updates.
+31. The OTA update server URL SHOULD be obtained from configuration.
+32. An OTA update MUST NOT permanently brick the device (rollback or dual-partition boot SHOULD be supported).
 
 ### Proxy Publishers
 
-31. A proxy publisher is a device-role entity that publishes a Homie device representation on behalf of a non-eBus-native device.
-32. A proxy publisher's Homie device MUST be functionally equivalent to a native eBus publication of the same device (same property contracts, same `$state` lifecycle, same discovery) and MAY be discoverable as a proxy via its `root.$type` per [`data-models/proxy.md`](data-models/proxy.md).
-33. A proxy publisher that bridges from a vendor cloud API SHOULD cache data locally and serve last-known state when cloud connectivity is unavailable.
+33. A proxy publisher is a device-role entity that publishes a Homie device representation on behalf of a non-eBus-native device.
+34. A proxy publisher's Homie device MUST be functionally equivalent to a native eBus publication of the same device (same property contracts, same `$state` lifecycle, same discovery) and MAY be discoverable as a proxy via its `root.$type` per [`data-models/proxy.md`](data-models/proxy.md).
+35. A proxy publisher that bridges from a vendor cloud API SHOULD cache data locally and serve last-known state when cloud connectivity is unavailable.
 
 ---
 
@@ -163,7 +169,7 @@ Every eBus entity MUST advertise this service to make itself discoverable.
 |-----|-------------|---------|
 | `txtvers` | TXT record version | `1` |
 | `ebus_version` | eBus spec version | `0.2` |
-| `roles` | Comma-separated: `device`, `controller` | `device` |
+| `roles` | Comma-separated: `device`, `controller`, `broker-host` | `device,broker-host` |
 | `device_id` | Unique device identifier | `nt-2025-c123y` |
 
 **Recommended TXT records:**
@@ -251,7 +257,7 @@ An entity that does not self-host a broker MUST browse mDNS for brokers, preferr
 3. `_mqtt-ws._tcp`
 4. `_mqtt._tcp` (fallback)
 
-If multiple brokers are discovered, the entity SHOULD connect to the first that responds and authenticates successfully. If no broker is found, the entity SHOULD retry periodically (MAY use exponential backoff).
+If multiple brokers are discovered, automatic selection between them is **out of scope for this specification**. Entities in multi-broker deployments SHOULD be configured with the URL of the intended broker (see §"MQTT Broker Configuration"). Implementations MAY apply vendor-specific selection heuristics in the absence of configuration, but consumers MUST NOT assume a particular automatic-resolution behavior. If no broker is found, the entity SHOULD retry periodically (MAY use exponential backoff).
 
 ---
 
@@ -340,6 +346,50 @@ The Homie 5 specification is the normative reference for the parent-child mechan
 ### Units
 
 Properties representing physical measurements MUST include a `unit` attribute, using units defined by the [Homie Convention specification][homie5].
+
+---
+
+## Detail: Broker Hosts
+
+The broker-host role provides an MQTT broker for eBus entities. A broker host may be **co-resident** with a device-role entity (the common pattern: a SPAN panel hosts its own broker alongside publishing its own enclosure device), or **standalone** (a dedicated broker host on a NUC, Raspberry Pi, NAS, or similar — useful in deployments where multiple eBus devices share one broker, or where the participating device-role entities cannot themselves host a broker).
+
+### Discovery
+
+A broker host advertises itself like any other eBus entity:
+
+- An mDNS `.local` hostname (per §"Hostname" above).
+- An `_ebus._tcp` service whose `roles` TXT record includes `broker-host`. Standalone broker hosts publish `roles=broker-host`; co-resident broker hosts publish e.g. `roles=device,broker-host`.
+- A `_device-info._tcp` service (manufacturer, model, serial).
+
+And, per §"MQTT Broker Advertisement," advertises the broker itself via `_secure-mqtt._tcp` (preferred) and/or `_mqtt-wss._tcp`, `_mqtt-ws._tcp`, `_mqtt._tcp` as applicable.
+
+### Client Authentication
+
+A broker host SHOULD authenticate clients connecting to its broker. Three patterns are conventional, each suited to a different deployment shape:
+
+**Broker-issued credentials.** The broker host runs its own REST registration endpoint with the same shape as §"Registration Endpoint" above. Clients exchange a broker-host-issued bootstrap secret (a passphrase printed on the enclosure, a token shown on a setup screen, a value handed out during vendor onboarding, etc.) for MQTT credentials. The specific bootstrap-secret format and provisioning flow are implementation-defined; only the registration-endpoint shape (`POST /…/auth/register` returning `accessToken`, `ebusBrokerUsername`, `ebusBrokerPassword`, broker host and ports) is specified. Best fit for homeowner-installable broker hosts where each home has its own setup flow.
+
+**Pre-configured credentials.** The broker host's accounts are managed out-of-band (admin UI, config file, vendor onboarding portal). Clients are configured with their credentials at provisioning time. Best fit for enterprise / professional-installer scenarios where credentials can be distributed via a managed deployment system.
+
+**mTLS client-certificate authentication.** The broker host validates inbound client certificates against one or more configured trust-anchor CAs (per §"mTLS Client Authentication (Optional)" below). Best fit for cross-OEM integration scenarios where two or more OEMs have arranged a CA trust relationship and want partner devices to authenticate to the broker without homeowner-mediated provisioning.
+
+A broker host MAY support more than one of these patterns concurrently.
+
+### Authorization (Broker-Side ACLs)
+
+When a broker host enforces topic-level access controls (subscribe / publish ACLs), it SHOULD use the role taxonomy defined in §"mTLS Client Authentication (Optional)" (`observer`, `sensor`, `controller`, `automation`, `admin`). The mapping from authenticated identity to role is broker-implementation-defined. Reusing the same taxonomy across mTLS and broker ACLs lets consumers reason about access control with one vocabulary regardless of where it is enforced.
+
+### Standalone vs. Co-Resident
+
+In a **co-resident** deployment, the broker host also implements the device role (e.g., the SPAN panel hosts a broker AND publishes its own enclosure device). A single REST registration endpoint typically serves both roles — one exchange of the broker host's bootstrap secret yields both REST API credentials and MQTT credentials.
+
+In a **standalone** deployment, the broker host implements only the broker-host role. It publishes no Homie device of its own. Its REST endpoint surface is narrower — primarily a registration endpoint for MQTT credentials, plus credential-management endpoints for ongoing administration. From a consumer's perspective the mDNS discovery flow is identical to the co-resident case: browse for brokers via `_secure-mqtt._tcp` (et al.) and for entities via `_ebus._tcp`. A controller need not know whether the broker host is also a device-role entity.
+
+### Multi-Broker LANs
+
+A LAN MAY host more than one broker — for example, three SPAN panels in a single home each running their own co-resident broker; a single-vendor install plus a separate standalone broker for a different set of devices; or a cross-vendor install where each vendor's gateway runs its own broker for its own devices.
+
+This specification does not attempt to define automatic resolution between multiple brokers on a LAN (see §"Broker Discovery"). Entities in multi-broker deployments SHOULD be configured with the URL of their intended broker. Each broker is its own Homie tree — a controller that needs to observe devices across multiple brokers connects to each broker separately and stitches the per-broker views together in its application layer. Cross-broker federation (a single logical Homie tree spanning multiple brokers) is a possible future direction but is not in scope here.
 
 ---
 
@@ -545,7 +595,7 @@ An entity connecting to a broker requiring authentication MUST use credentials f
 
 An eBus deployment MAY use mutual TLS (mTLS) with client certificates as a client-authentication mechanism — independent of, or in addition to, the passphrase-based registration flow defined in §"Registration Endpoint" above. With mTLS, the entity (typically a device hosting an MQTT broker or REST endpoint) validates the inbound client's certificate against one or more configured trust-anchor CAs, and accepts the connection if validation succeeds.
 
-**Trust-anchor configuration.** An entity supporting mTLS is configured with the CA certificate(s) it should trust for inbound client validation. These are managed via the authenticated trust-anchor REST endpoint required by requirement 27. Trust anchors are distinct from the entity's own CA cert (covered by requirement 25 and §"Certificate Management" above), which clients use to trust the entity; trust anchors are the CAs the entity uses to validate inbound clients.
+**Trust-anchor configuration.** An entity supporting mTLS is configured with the CA certificate(s) it should trust for inbound client validation. These are managed via the authenticated trust-anchor REST endpoint required by requirement 29. Trust anchors are distinct from the entity's own CA cert (covered by requirement 27 and §"Certificate Management" above), which clients use to trust the entity; trust anchors are the CAs the entity uses to validate inbound clients.
 
 **Identity assertion.** A successfully-authenticated client's identity is the subject of its certificate — typically the certificate's Subject DN, but a publisher MAY use a SAN or other configured attribute. The mapping from cert subject to authorization role is publisher-defined and out of scope for this specification.
 
