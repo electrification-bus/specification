@@ -12,15 +12,15 @@ This document is the registry of currently-defined tag values. It is descriptive
 
 **What `info/tags` does not cover.** The distribution-enclosure data model carries circuit-level metadata that is orthogonal to load identification, and which `info/tags` deliberately does not duplicate:
 
-- Single-load vs mixed-load circuits → `capability.info`'s `dedicated` boolean property
-- Load-shedding policy and priority → `capability.priority` (`shed-priority`, `relay-controllable`, `pcs-priority`)
-- What is wired upstream / downstream of the circuit, including chained enclosures → `capability.connection` (`feeds-*` and `fed-by-*` triplets, with `feeds-device-type` discriminating eBus device classes)
+- Single-load vs mixed-load circuits → `info`'s `dedicated` boolean property
+- Load-shedding policy and priority → `priority` (`shed-priority`, `relay-controllable`, `pcs-priority`)
+- What is wired upstream / downstream of the circuit, including chained enclosures → `connection` (`feeds-*` and `fed-by-*` triplets, with `feeds-device-type` discriminating eBus device classes)
 
 This registry covers only "what kind of load is on the circuit."
 
 ## Format rules
 
-Tag values are semantically Homie enum values — `info/tags` is multi-valued, but each individual tag is drawn from the enum vocabulary defined here. The case convention matches Homie's existing enum convention (`OK`, `LOST`, `DEGRADED` on `capability.status`; `ON_GRID`, `OFF_GRID` on `capability.grid`).
+Tag values are semantically Homie enum values — `info/tags` is multi-valued, but each individual tag is drawn from the enum vocabulary defined here. The case convention matches Homie's existing enum convention (`OK`, `LOST`, `DEGRADED` on `status`; `ON_GRID`, `OFF_GRID` on `grid`).
 
 - Tags are SCREAMING_SNAKE_CASE ASCII strings: uppercase letters, digits, and underscores only.
 - No leading or trailing underscores; no consecutive underscores.
@@ -155,7 +155,7 @@ Grouped into categories for readability. Categories are descriptive only — the
 | Tag | Description | See also |
 |---|---|---|
 | `SURGE_PROTECTOR` | Whole-panel surge protector / SPD | IEC 61643 |
-| `SUBPANEL` | Circuit (feeder) feeding a downstream panel — eBus-aware or conventional. Whether the downstream panel is itself an eBus device is discoverable from `capability.connection`'s `feeds-device-type` (a value of `energy.ebus.device.distribution-enclosure` indicates a chained eBus enclosure). | NEC Article 408; IEC 61439 |
+| `SUBPANEL` | Circuit (feeder) feeding a downstream panel — eBus-aware or conventional. Whether the downstream panel is itself an eBus device is discoverable from `connection`'s `feeds-device-type` (a value of `energy.ebus.device.distribution-enclosure` indicates a chained eBus enclosure). | NEC Article 408; IEC 61439 |
 | `ELEVATOR` | Elevator / lift | EN 81; OmniClass 23-23 11 11 |
 | `SMOKE_CO_DETECTOR` | Smoke / CO detectors (smoke, carbon monoxide, fire-alarm, sprinkler-system control panels) | IEC 60839 / EN 14604 / EN 50291 |
 | `SECURITY_SYSTEM` | Security system (alarm, burglar, intrusion-detection panel) | IEC 62642 / EN 50131 |
@@ -184,7 +184,7 @@ A subset of tags identifies loads with life-safety, property-protection, or heal
 - **Hard-critical** (absolute hold; never curtail): `LIFE_SUPPORT`
 - **Soft-critical** (very low shed priority; prioritize during outages but accept trade-offs in long outages): `MEDICAL_DEVICE`, `SUMP_PUMP`, `SEPTIC_PUMP`, `SMOKE_CO_DETECTOR`, `SECURITY_SYSTEM`, `ELEVATOR`
 
-The shed-priority decision is ultimately implemented through `capability.priority`'s `shed-priority` and `relay-controllable` properties on the circuit device. The tags above are a *categorical hint* a publisher can use when initializing `shed-priority` defaults, and a consumer can use when surfacing critical loads in a UI.
+The shed-priority decision is ultimately implemented through `priority`'s `shed-priority` and `relay-controllable` properties on the circuit device. The tags above are a *categorical hint* a publisher can use when initializing `shed-priority` defaults, and a consumer can use when surfacing critical loads in a UI.
 
 ## Reserved values
 
@@ -199,8 +199,8 @@ The shed-priority decision is ultimately implemented through `capability.priorit
 
 Some additional dimensions are recorded here for awareness but are not currently represented in `info/tags`:
 
-- **Circuit role** (single-load vs mixed-load, dedicated vs general-purpose) is already represented by `capability.info`'s `dedicated` property on the circuit device.
-- **Shedding / DR participation** is represented by `capability.priority` (`shed-priority`, `relay-controllable`, `pcs-priority`) and is independent of the load identification in `info/tags`.
+- **Circuit role** (single-load vs mixed-load, dedicated vs general-purpose) is already represented by `info`'s `dedicated` property on the circuit device.
+- **Shedding / DR participation** is represented by `priority` (`shed-priority`, `relay-controllable`, `pcs-priority`) and is independent of the load identification in `info/tags`.
 - **Location** (basement, bathroom, bedroom, kitchen, garage). The existing `info/name` property already carries homeowner-assigned location labels in free-text form. A structured location tag is not currently needed.
 
 ## Adding new tags

@@ -34,7 +34,7 @@ For example: a BESS device whose root has type `energy.ebus.device.bess` is publ
 
 Per the eBus vendor-neutrality principle, vendors publishing devices natively use the same type identifier as proxies — vendor identity lives in `info/vendor-name`, not in the device type string. The general heuristic is "prefer the native (vendor-published) representation over a proxied one." This works without any new property: every Homie 5 device already publishes `root`, and the consumer just inspects the root's existing `$description.type`.
 
-**Explicit, via an optional `proxied` boolean (secondary mechanism).** A publisher MAY publish a `proxied` boolean property on a device's `capability.info` for direct disambiguation:
+**Explicit, via an optional `proxied` boolean (secondary mechanism).** A publisher MAY publish a `proxied` boolean property on a device's `info` for direct disambiguation:
 
 - `proxied = true` — this representation is proxied.
 - `proxied = false` — this representation is published natively (by the device or its vendor).
