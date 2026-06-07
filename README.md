@@ -49,7 +49,11 @@ The Electrification Bus initiative aims to roll into an established open-standar
 
 ## Contributing
 
-Detailed contribution guidance will be added as the project takes on additional contributors. For now, please open an issue to discuss proposed changes.
+Issues, Discussions, and pull requests are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow. In short:
+
+- **Questions, ideas, proposed new device or capability types** → [Discussions](https://github.com/electrification-bus/specification/discussions)
+- **Confirmed errors, omissions, or agreed-upon changes** → [Issues](https://github.com/electrification-bus/specification/issues)
+- **Patches** → pull requests; please open a Discussion or Issue first for non-trivial changes
 
 ## License
 
