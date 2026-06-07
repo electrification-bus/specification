@@ -27,7 +27,7 @@ The guide covers:
 
 - The pub / sub flow.
 - The mapping from `doe` properties on the meter to `pcs` properties on the enclosure.
-- The PCS CSL composition when a meter-driven input is one of several active limits.
+- The PCS Configurable Service Limit (CSL) composition when a meter-driven input is one of several active limits.
 - Source-attribution propagation.
 - Valid-until handling.
 - Commissioning, discovery, and authorization at install time.
@@ -121,6 +121,8 @@ DOE values change infrequently relative to instantaneous measurements — typica
 ---
 
 ## Property mapping: `doe` → `pcs`
+
+**About CSLs.** This section and the next refer to *Configurable Service Limits* (CSLs) repeatedly. A CSL is one of the panel's per-source upper bounds on power flow that the PCS enforces — `feed-import-limit` (the commissioned static feed capacity), `grid-import-limit` (the utility-signaled dynamic limit; the slot the panel mirrors the meter's DOE into), `off-grid-import-limit` (when islanded), and `requested-import-limit` (user / operator override). The PCS composes them via `min()` to produce the effective limit; the most restrictive wins. The full definition lives in [`data-models/distribution-enclosure.md` §pcs](../data-models/distribution-enclosure.md#pcs) under "What a CSL is." *Configurable Service Limit* is Electrification Bus vocabulary, not UL 3141 standard terminology.
 
 When the enclosure receives a publish on a DOE property, it updates one or more of its own `pcs` properties. The mapping:
 
