@@ -43,4 +43,4 @@ Be respectful and constructive. The Electrification Bus is an open-standards pro
 
 ## Maintenance posture
 
-The Electrification Bus specification is an active draft. Updates and maintenance, including responses to issues filed on GitHub, will take place on an "as time and resources permit" basis. The specification's long-term home is intended to be an established open-standards organization — see the [main README's §Long-term direction](README.md#long-term-direction) for context.
+The Electrification Bus specification is an active draft. Updates and maintenance, including responses to issues filed on GitHub, will take place on an "as time and resources permit" basis. The specification's long-term home is intended to be an established open-standards organization — see the [main README's §Governance](README.md#governance) for context, including the criteria the project applies when evaluating potential homes.

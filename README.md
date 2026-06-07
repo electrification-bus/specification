@@ -43,9 +43,22 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | **Integration Guides** | |
 | [`integration-guides/utility-meter-and-distribution-enclosure.md`](integration-guides/utility-meter-and-distribution-enclosure.md) | DRAFT v0.1 (2026-06-06) |
 
-## Long-term direction
+## Governance
 
-The Electrification Bus initiative aims to roll into an established open-standards organization (for example, [LF Energy](https://lfenergy.org)) once the framework and core data models stabilize. License and contribution structure are chosen with that path in mind.
+The Electrification Bus aims to be a vendor-neutral framework for Home Energy Infrastructure integration and interoperability. The schema vocabulary excludes vendor trademarks and product-specific terminology; participation in the spec's development and consumption of the spec are intended to be open and free.
+
+**Today**, the project is a small-scale, early-stage open-standards effort led by Don Jackson (Clark Communications) acting in a benevolent-dictator capacity. This is a workable starting posture for early-stage spec development but is acknowledged to be unsustainable at scale — a single-person dependency is a fragile foundation for a standard that aspires to broad adoption, and one steward's preferences should not be the long-term arbiter of an open specification.
+
+**Long-term**, the intent is to roll the project into an established open-standards organization once the framework and core data models have stabilized enough to make the transition meaningful. The license ([Community Specification License 1.0](LICENSE.md)) and the contribution workflow ([`CONTRIBUTING.md`](CONTRIBUTING.md)) are chosen for compatibility with that path.
+
+Criteria the project applies when evaluating potential homes:
+
+- **Open and free participation in the technical work.** Anyone interested in HEI interoperability should be able to contribute substantively without paying for the privilege.
+- **Vendor neutrality.** No single vendor or vendor consortium should hold structural control over the spec's direction.
+- **Continuity.** Succession planning visible from the outside; the project's bus factor should grow as it matures.
+- **Technical fit.** Compatible with the framework's foundations (the Homie Convention, MQTT, mDNS, HTTP/REST).
+
+[LF Energy](https://lfenergy.org) is the current leading candidate. Direct experience with LF Energy's hosted projects suggests that participation in a project's technical work is open and free regardless of LF Energy membership tier — membership is required for participation in LF Energy's own governance, but not for contributing to the technical work of an individual hosted project. Other paths remain under consideration.
 
 ## Contributing
 
