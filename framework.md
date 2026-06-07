@@ -1,8 +1,8 @@
 # Electrification Bus Specification
 
-**Version:** 0.3.0 (Draft)
+**Status:** DRAFT
+**Version:** 0.3
 **Date:** 2026-06-06
-**Status:** Working Draft
 
 ---
 
@@ -24,6 +24,16 @@ Electrification Bus composes existing, well-known protocols — **mDNS**, **MQTT
 ### Conformance Language
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" are to be interpreted as described in [RFC 2119][rfc2119].
+
+---
+
+## Relationship to Homie
+
+Electrification Bus uses three well-known protocols — MQTT for messaging, mDNS for discovery, and HTTP/REST for configuration — and layers the [Homie Convention](https://homieiot.github.io/specification/) (currently version 5; a general-purpose IoT convention for self-describing devices) on top of MQTT to provide structured device representations. Within that stack, the eBus value-add is HEI specialization: HEI-specific device types (`energy.ebus.device.*`), capability types (`energy.ebus.capability.*`), and the property catalogs within them. Homie features (the parent-child device model, the `$state` lifecycle, the `$description` mutability rules, the `$settable` attribute, retained-message semantics) belong to the Homie Convention and are credited to Homie, not to eBus.
+
+Schema vocabulary defined by eBus is vendor-neutral; vendor trademarks and product-specific terminology are explicitly excluded from the schema. The Homie `name` string attribute on each property is implementation-defined and may carry vendor-specific labels — its contents are presentation, not part of the standard.
+
+This division of responsibilities is the precise normative line. Any concept named in the eBus device-type or capability-type registries is eBus's responsibility; anything in the Homie Convention itself is Homie's. Where the two interact (the way eBus device structures are encoded as Homie `$description` trees, the way Homie's `$type` attribute carries eBus type identifiers, the way Homie lifecycle states cascade across eBus parent / child relationships), the encoding follows the Homie Convention with the eBus specialization adding only the HEI-specific vocabulary.
 
 ---
 
