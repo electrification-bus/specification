@@ -17,3 +17,7 @@ This file is used to record notices required by the [Community Specification Lic
 ## Withdrawals
 
 *(none)*
+
+## Trademark
+
+"Electrification Bus" is the name used by this project to identify the specification and the open framework it defines. A US trademark application for the term is pending; no claim of registered mark is made at this time. Implementers and third parties may refer to the project by name when describing their products' compatibility with or use of the specification.
