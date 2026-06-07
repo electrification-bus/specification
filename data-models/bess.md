@@ -1,4 +1,4 @@
-# Electrification Bus Battery Energy Storage System (BESS) Data Model Specification
+# Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
 **Version:** 0.6
@@ -32,15 +32,6 @@ The spec defines a **device hierarchy** (parent BESS device with child devices f
 - If a device cannot provide a property, it MUST omit it from `$description` rather than publishing sentinel values
 - Property IDs use kebab-case (e.g., `active-power`, `serial-number`)
 
-### References
-
-- [eBus — ebus.energy](https://ebus.energy/) — eBus specification home
-- [Homie 5 Specification](https://homieiot.github.io/specification/) — the underlying IoT convention this data model builds on
-- [Homie Units](https://homieiot.github.io/specification/#units)
-- [IEC 62053 — Electricity metering equipment](https://webstore.iec.ch/en/publication/62053)
-- [Electrification Bus distribution-enclosure data model](distribution-enclosure.md) — companion data-model spec for distribution enclosures
-- [SPAN-API-Client-Docs (public)](https://github.com/spanio/SPAN-API-Client-Docs) — public API documentation for the SPAN distribution-enclosure implementation, which currently uses the proxy publication pattern defined in this spec
-
 ---
 
 ## Device Hierarchy
@@ -63,6 +54,8 @@ This spec recognizes two BESS variants, distinguished by whether the BESS can ac
 - A **grid-following-only BESS** (**GFL-only**) operates only as a current source synchronized to an existing grid-forming reference (the utility). It cannot back up the home during a grid outage; its value is energy management (TOU shift, NEM3 self-consumption, demand response). Smaller, lower-cost batteries fall into this class.
 
 **A grid-forming-capable BESS publisher MUST include a MID child device.** The MID is the canonical home for grid-connection and islanding state (`grid`) and for the grid-forming-entity signal. When the underlying hardware does not present a separable MID, the publisher synthesizes a minimal MID child exposing at least `info` and `grid`.
+
+**The MID-as-child treatment reflects current commercial reality.** Every grid-forming-capable BESS shipping today (Tesla Powerwall + Gateway, Enphase IQ Battery + IQ System Controller, SolarEdge Energy Bank + StorEdge, etc.) integrates the MID into the BESS vendor's gateway, so publishing the MID as a child of the BESS is the natural representation. An architecturally valid alternative — a **standalone MID** that publishes itself as a first-class eBus device (`energy.ebus.device.mid` as its own root, not as a BESS child) and coordinates with one or more BESSs (and possibly other DERs) over the eBus broker, rather than being topologically embedded in any single DER — is not yet present in commercial products. Its data model and BESS-↔-MID coordination protocol are the subject of a separate, forthcoming Electrification Bus MID specification. A BESS publisher conforming to this spec may need future extension to interoperate with a standalone MID; that extension is out of scope here.
 
 **A grid-following-only BESS publisher MAY omit the MID child** — the absence of the MID child is itself the signal that the BESS does not support backup / off-grid operation. A grid-following-only BESS is always on-grid (when operating) and never grid-forms, so `islanding-state` / `grid-state` / `grid-forming-entity` are not meaningful for it.
 
@@ -114,6 +107,86 @@ ebus/5/{device-id}/{capability-node-id}/{property-id}
 ```
 
 Parent-child relationships are declared in the parent's `$description` via the Homie 5 `children` attribute.
+
+---
+
+## Device Specifications
+
+### Parent BESS Device
+
+**Type:** `energy.ebus.device.bess`
+
+The parent device represents the BESS system as a whole. It provides aggregated state across all children and system-level configuration.
+
+**Capabilities:**
+
+| Capability | Required | Notes |
+|---|---|---|
+| `info` | MUST | Includes `data-model-version` |
+| `soc` | MUST | Aggregated across all battery children |
+| `meter` | MUST | Aggregated power/energy at the BESS's external boundary (i.e., what the BESS exchanges with the rest of the system); `active-power` MUST be published. |
+| `config` | MAY | System-level settings (backup-reserve, etc.) |
+| `dispatch` | MAY | External-dispatch controls (charge-rate setpoint, SOC ceilings, etc.). See §"dispatch" below. |
+| `status` | MUST | System-level fault status |
+
+Grid connection and islanding state live on the MID child device (`grid`) when the BESS is grid-forming-capable (see §"Device Hierarchy"). A grid-following-only BESS omits the MID child.
+
+### Battery Device
+
+**Type:** `energy.ebus.device.battery`
+
+Represents an individual battery pack. A BESS may have one or many.
+
+**Capabilities:**
+
+| Capability | Required | Notes |
+|---|---|---|
+| `info` | MUST | Per-pack serial, capacity |
+| `soc` | MUST | This pack's SOC/SOE |
+| `meter` | SHOULD | This pack's power/energy |
+| `status` | MAY | Per-pack fault status |
+
+### Inverter Device
+
+**Type:** `energy.ebus.device.inverter`
+
+Represents the DC-AC inverter. May handle both battery and solar conversion (e.g., Tesla Powerwall 3).
+
+**Capabilities:**
+
+| Capability | Required | Notes |
+|---|---|---|
+| `info` | MUST | |
+| `meter` | SHOULD | AC-side power/energy |
+| `status` | MAY | |
+| `grid-forming` | MAY | Per-inverter grid-forming capability and state; published only when the vendor exposes this detail |
+
+### MID Device
+
+**Type:** `energy.ebus.device.mid`
+
+Represents the Microgrid Interconnect Device (MID). Manages grid connection and islanding. A **grid-forming-capable** BESS publisher MUST include a MID child device. A grid-following-only BESS publisher MAY omit it — see §"Grid-forming-capable vs grid-following-only BESS".
+
+**Capabilities:**
+
+| Capability | Required | Notes |
+|---|---|---|
+| `info` | MUST | |
+| `grid` | MUST | `islanding-state` MUST, `grid-state` SHOULD, `grid-forming-entity` SHOULD |
+| `status` | MAY | |
+
+### Meter Device
+
+**Type:** `energy.ebus.device.meter`
+
+Represents a metering point. Used for site-level, load, or solar metering when the BESS provides this data.
+
+**Capabilities:**
+
+| Capability | Required | Notes |
+|---|---|---|
+| `info` | MUST | `product-name` identifies the metering point (e.g., "Site Meter", "Solar Meter") |
+| `meter` | MUST | |
 
 ---
 
@@ -261,86 +334,6 @@ Operational status and fault reporting. Each property represents a standard faul
 | `authentication` | enum | SHOULD | Credential/auth status: `OK`, `FAILED`, `EXPIRED`, `MISSING` |
 | `discovery` | enum | SHOULD | Device discovery status: `OK`, `NOT_FOUND`, `SERIAL_MISMATCH` |
 | `device-fault` | enum | SHOULD | BESS-reported fault: `OK`, `FAULTED` |
-
----
-
-## Device Specifications
-
-### Parent BESS Device
-
-**Type:** `energy.ebus.device.bess`
-
-The parent device represents the BESS system as a whole. It provides aggregated state across all children and system-level configuration.
-
-**Capabilities:**
-
-| Capability | Required | Notes |
-|---|---|---|
-| `info` | MUST | Includes `data-model-version` |
-| `soc` | MUST | Aggregated across all battery children |
-| `meter` | MUST | Aggregated power/energy at the BESS's external boundary (i.e., what the BESS exchanges with the rest of the system); `active-power` MUST be published. |
-| `config` | MAY | System-level settings (backup-reserve, etc.) |
-| `dispatch` | MAY | External-dispatch controls (charge-rate setpoint, SOC ceilings, etc.). See §"dispatch" below. |
-| `status` | MUST | System-level fault status |
-
-Grid connection and islanding state live on the MID child device (`grid`) when the BESS is grid-forming-capable (see §"Device Hierarchy"). A grid-following-only BESS omits the MID child.
-
-### Battery Device
-
-**Type:** `energy.ebus.device.battery`
-
-Represents an individual battery pack. A BESS may have one or many.
-
-**Capabilities:**
-
-| Capability | Required | Notes |
-|---|---|---|
-| `info` | MUST | Per-pack serial, capacity |
-| `soc` | MUST | This pack's SOC/SOE |
-| `meter` | SHOULD | This pack's power/energy |
-| `status` | MAY | Per-pack fault status |
-
-### Inverter Device
-
-**Type:** `energy.ebus.device.inverter`
-
-Represents the DC-AC inverter. May handle both battery and solar conversion (e.g., Tesla Powerwall 3).
-
-**Capabilities:**
-
-| Capability | Required | Notes |
-|---|---|---|
-| `info` | MUST | |
-| `meter` | SHOULD | AC-side power/energy |
-| `status` | MAY | |
-| `grid-forming` | MAY | Per-inverter grid-forming capability and state; published only when the vendor exposes this detail |
-
-### MID Device
-
-**Type:** `energy.ebus.device.mid`
-
-Represents the Microgrid Interconnect Device (MID). Manages grid connection and islanding. A **grid-forming-capable** BESS publisher MUST include a MID child device. A grid-following-only BESS publisher MAY omit it — see §"Grid-forming-capable vs grid-following-only BESS".
-
-**Capabilities:**
-
-| Capability | Required | Notes |
-|---|---|---|
-| `info` | MUST | |
-| `grid` | MUST | `islanding-state` MUST, `grid-state` SHOULD, `grid-forming-entity` SHOULD |
-| `status` | MAY | |
-
-### Meter Device
-
-**Type:** `energy.ebus.device.meter`
-
-Represents a metering point. Used for site-level, load, or solar metering when the BESS provides this data.
-
-**Capabilities:**
-
-| Capability | Required | Notes |
-|---|---|---|
-| `info` | MUST | `product-name` identifies the metering point (e.g., "Site Meter", "Solar Meter") |
-| `meter` | MUST | |
 
 ---
 
@@ -543,6 +536,19 @@ ebus/5/202211182691-load-meter/                   energy.ebus.device.meter
 ```
 
 Note: Enphase microinverters (PCU) could optionally be represented as individual `energy.ebus.device.inverter` child devices, each with per-inverter `meter/active-power`. This is MAY — the system-level solar meter provides the aggregate.
+
+---
+
+## References
+
+- [eBus — ebus.energy](https://ebus.energy/) — Electrification Bus specification home
+- [Electrification Bus framework specification](../framework.md) — the framework spec this data model layers on
+- [Homie 5 Specification](https://homieiot.github.io/specification/) — the underlying IoT convention this data model builds on
+- [Homie Units](https://homieiot.github.io/specification/#units)
+- [IEC 62053 — Electricity metering equipment](https://webstore.iec.ch/en/publication/62053)
+- [Electrification Bus distribution-enclosure data model](distribution-enclosure.md) — companion data-model spec for distribution enclosures
+- [Electrification Bus proxy model](proxy.md) — the canonical proxy convention referenced throughout this spec
+- [SPAN-API-Client-Docs (public)](https://github.com/spanio/SPAN-API-Client-Docs) — public API documentation for the SPAN distribution-enclosure implementation, which currently uses the proxy publication pattern defined in this spec
 
 ---
 
