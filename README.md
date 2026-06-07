@@ -45,7 +45,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 
 ## Governance
 
-The Electrification Bus aims to be a vendor-neutral framework for Home Energy Infrastructure integration and interoperability. The schema vocabulary excludes vendor trademarks and product-specific terminology; participation in the spec's development and consumption of the spec are intended to be open and free.
+Electrification Bus aims to be a vendor-neutral framework for Home Energy Infrastructure integration and interoperability. The schema vocabulary excludes vendor trademarks and product-specific terminology; participation in the spec's development and consumption of the spec are intended to be open and free.
 
 **Today**, the project is a small-scale, early-stage open-standards effort led by Don Jackson (Clark Communications) acting in a benevolent-dictator capacity. This is a workable starting posture for early-stage spec development but is acknowledged to be unsustainable at scale — a single-person dependency is a fragile foundation for a standard that aspires to broad adoption, and one steward's preferences should not be the long-term arbiter of an open specification.
 

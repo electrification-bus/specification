@@ -39,7 +39,7 @@ Pull requests are welcome.
 
 ## Code of conduct
 
-Be respectful and constructive. The Electrification Bus is an open-standards project that depends on contributions from vendors, integrators, and consumers across the home-energy-infrastructure ecosystem. We appreciate everyone who takes the time to file an issue, start a discussion, or send a pull request.
+Be respectful and constructive. Electrification Bus is an open-standards project that depends on contributions from vendors, integrators, and consumers across the home-energy-infrastructure ecosystem. We appreciate everyone who takes the time to file an issue, start a discussion, or send a pull request.
 
 ## Maintenance posture
 
