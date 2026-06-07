@@ -1,6 +1,6 @@
 # Circuit Tag Registry
 
-**Status:** DRAFT
+**Status:** DRAFT v0.1
 **Date:** 2026-05-23
 **Authors:** Don Jackson
 
