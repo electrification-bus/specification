@@ -346,7 +346,7 @@ What is wired downstream of (or upstream of) this lugs device. See §"Connection
 
 Some enclosures have an integrated MID (Microgrid Interconnect Device) that participates in islanding decisions and identifies the grid-forming entity. Enclosures with an integrated MID publish it as a direct child of the enclosure device.
 
-When the MID is external (e.g., shipped as part of a BESS), it is a child of that BESS device per the eBus BESS data-model specification (an in-progress companion document). The enclosure does not publish a separate MID in that case.
+When the MID is external (e.g., shipped as part of a BESS), it is a child of that BESS device per the [Electrification Bus BESS data model](bess.md). The enclosure does not publish a separate MID in that case.
 
 **Device ID:** `{enclosure-id}-mid`.
 
@@ -441,7 +441,7 @@ When no eBus-native BESS publisher is available, the enclosure proxies a BESS ch
 
 **Type:** `energy.ebus.device.bess` (same type as an eBus-native BESS)
 
-A conformant BESS publisher MUST include a MID child device — including for proxied BESSs. The proxied BESS child therefore consists of the parent BESS device (typically with `info`, `soc`, `status`) plus a MID child device (`<bess-id>-mid`) carrying `info` and `grid` (with `islanding-state`, `grid-state`, and `grid-forming-entity`). When the underlying BESS hardware does not present a separable MID, the enclosure synthesizes a minimal MID child — the islanding state and grid-forming-entity values are enclosure-known (from the same internal integration) and are always populatable. Individual battery / inverter children are omitted unless the internal integration provides per-component data. The full BESS device shape is defined in the eBus BESS data-model specification (an in-progress companion document).
+A conformant BESS publisher MUST include a MID child device — including for proxied BESSs. The proxied BESS child therefore consists of the parent BESS device (typically with `info`, `soc`, `status`) plus a MID child device (`<bess-id>-mid`) carrying `info` and `grid` (with `islanding-state`, `grid-state`, and `grid-forming-entity`). When the underlying BESS hardware does not present a separable MID, the enclosure synthesizes a minimal MID child — the islanding state and grid-forming-entity values are enclosure-known (from the same internal integration) and are always populatable. Individual battery / inverter children are omitted unless the internal integration provides per-component data. The full BESS device shape is defined in the [Electrification Bus BESS data model](bess.md).
 
 ### Proxied PV Child
 
@@ -879,7 +879,7 @@ Consumer derivation: a scan of enclosure-side connection records finds `<circuit
 - [eBus — ebus.energy](https://ebus.energy/) — eBus specification home
 - [Homie 5 Specification](https://homieiot.github.io/specification/) — the underlying IoT convention this data model builds on
 - [Homie Convention Discussion #338](https://github.com/homieiot/convention/discussions/338) — parent-child device model rationale
-- eBus BESS data-model specification — in-progress companion document (separate spec covering the BESS device shape; not part of this distribution)
+- [Electrification Bus BESS data model](bess.md) — companion data-model spec covering the BESS device shape (proxied or natively published).
 - [SPAN-API-Client-Docs (public)](https://github.com/spanio/SPAN-API-Client-Docs) — public API documentation for the SPAN-panel implementation of this data model
 - [Connectivity Standards Alliance (CSA)](https://csa-iot.org/) — home of the Matter Energy Management Working Group, source of the "distribution enclosure" terminology used in this document
 - [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) — Standard for Power Control Systems (referenced by `pcs`)

@@ -345,9 +345,9 @@ This data model introduces or broadens entries in [`registries/capability-types.
 - `energy.ebus.capability.doe` — **new** capability type. Utility-signaled import / export power limits (IEEE 2030.5 / CSIP "dynamic operating envelope" terminology). Defined in the context of utility meters but publisher-agnostic — applicable to any device that authoritatively knows a utility-signaled envelope (DERMS adapters, IEEE 2030.5 / CSIP gateways, aggregator site controllers).
 - `energy.ebus.capability.demand` — **new** capability type. Peak-average demand quantities; primarily used on utility-meter devices but applicable wherever interval-demand integration is computed.
 - `energy.ebus.capability.power-quality` — **new** capability type. Quantitative power-quality measurements (THD, TDD, unbalance); primarily used on utility-meter devices.
-- `energy.ebus.capability.grid` — **broadened source.** Currently scoped to MID devices in the registry; the registry note will be updated to acknowledge utility-meter as a second publisher class. The MID and the utility-meter publish disjoint subsets of the capability's vocabulary; both are conformant.
+- `energy.ebus.capability.grid` — **broadened source.** Currently scoped to MID devices in the registry; the registry note remains to be updated to acknowledge utility-meter as a second publisher class. The MID and the utility-meter publish disjoint subsets of the capability's vocabulary; both are conformant.
 
-The new capability identifiers and the broadened `grid` source are documentation in this data model document; the registry will be updated in a companion commit when this data model lands as a non-exploratory draft.
+The three new capability identifiers (`doe`, `demand`, `power-quality`) are registered in [`registries/capability-types.md`](../registries/capability-types.md) with Source links pointing to this data model.
 
 ---
 

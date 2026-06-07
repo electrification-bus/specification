@@ -8,7 +8,7 @@ This file is used to record notices required by the [Community Specification Lic
 
 ## Implementers
 
-*(none yet)*
+*(none)*
 
 ## Patent Exclusions
 
