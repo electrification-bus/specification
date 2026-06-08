@@ -131,7 +131,7 @@ When the enclosure receives a publish on a DOE property, it updates one or more 
 | `doe/power-import-limit`            | `pcs/grid-import-limit`                 | Direct mirror. The enclosure's published `grid-import-limit` reflects what the meter has signaled, so downstream consumers see the value the enclosure received. |
 | `doe/apparent-power-import-limit`   | (no direct mapping in v0)                          | `pcs` does not currently expose apparent-power CSLs. If the meter publishes only apparent-power and not real-power, the enclosure SHOULD compute an approximate real-power equivalent (using a configured site power factor) and apply it as `grid-import-limit`. |
 | `doe/power-import-limit-source`     | (informational, not currently mapped)              | `pcs/grid-import-limit` has no source attribute in v0. See "Source-attribution propagation" below. |
-| `doe/power-import-limit-valid-until`| (informational, not currently mapped)              | The enclosure should remember the valid-until and revert to a default behavior when it elapses. See "Valid-until handling" below. |
+| `doe/power-import-limit-valid-until`| (informational, not currently mapped)              | The enclosure remembers the valid-until and reverts when it elapses without a fresh publish — it clears `pcs/grid-import-limit` so the `min()` composition falls back to the other binding CSL. See "Valid-until handling" below. |
 | `doe/power-export-limit`            | (no current CSL slot)                              | `pcs` does not currently define an export-side CSL family. Enclosures that consume the meter's export limit SHOULD treat it as informational until the dist-enclosure spec adds the corresponding slot. See "Export side" below. |
 | `doe/apparent-power-export-limit`   | (no current CSL slot)                              | Same as above. |
 | `doe/power-export-limit-source`     | (no current CSL slot)                              | Same as above. |
@@ -198,12 +198,14 @@ The meter's `doe/power-import-limit-valid-until`, when published, indicates when
 - A pre-scheduled grid-management action.
 - A regulatory limit with a known sunset date.
 
-When the value is published, the enclosure SHOULD remember it. Two behaviors when the timestamp elapses:
+The enclosure honours `power-import-limit-valid-until` when the meter publishes it. Whether valid-until is present in the publish is the publisher's signal of which behaviour applies — it is not a subscriber-side preference:
 
-1. **Wait for the meter to publish an updated value.** The enclosure continues to enforce the existing `grid-import-limit` until the meter publishes a change. This is the simplest behavior and is appropriate when the meter is expected to publish a new envelope at expiry.
-2. **Revert to a fallback when `valid-until` has passed.** The enclosure stops applying the expired value and reverts `grid-import-limit` to a fallback (e.g., the static feed rating). This is appropriate when there is doubt about whether the meter will publish on time.
+- **When valid-until is present**, the enclosure remembers the timestamp. When it elapses without a fresh publish, the enclosure reverts — it clears its `pcs/grid-import-limit` and the `min()` composition falls back to whichever other CSL is binding (typically `feed-import-limit`). Honouring valid-until is the enclosure's mechanism for ending a DR event at the time the meter said it would end, without requiring a separate "end of event" publish from the meter.
+- **When valid-until is absent**, the limit has no defined end. The enclosure keeps enforcing the current value until the meter publishes a new one. This is the steady-state case — contract limits, persistent envelopes, anything without a known expiry.
 
-Most implementations should default to behavior (1) — the meter is the authoritative source, and "wait for the next publish" is the lowest-surprise behavior. Behavior (2) is a defensive fallback for installations where meter reachability is unreliable.
+A new publish from the meter — with or without a fresh valid-until — always supersedes any prior valid-until the enclosure was tracking.
+
+The reliability concern of a publisher going unreachable around expiry is a separate, defensive-monitoring question, not the default. A subscriber that wants additional robustness MAY independently track a "last seen at" and treat extended publisher silence as a fault, but that is layered on top of honouring valid-until, not a substitute for it.
 
 The enclosure does not republish `power-import-limit-valid-until` on its `pcs`. Consumers that need to know when the current limit expires read the meter's published topic directly.
 
@@ -240,7 +242,7 @@ Both approaches are valid. Implementations SHOULD support discovery-driven subsc
 | Meter offline; broker stops receiving meter publishes | Keep enforcing the last received `grid-import-limit`. The retained MQTT message remains the most recent published value. |
 | Meter explicitly publishes empty / missing `power-import-limit` | Treat as "no meter-signaled limit" — revert `grid-import-limit` to absent (per Homie convention) or to a fallback (typically the static feed rating). |
 | Meter publishes `power-import-limit` exceeding `feed-import-limit` | Store the meter's value on `grid-import-limit` as-is. The `min()` composition automatically caps the effective limit at the feed rating. No clamping at the slot level. |
-| `power-import-limit-valid-until` elapses with no new publish | Default behavior: keep enforcing the existing value (the meter is authoritative, no news = no change). Defensive alternative: revert to fallback. See "Valid-until handling" above. |
+| `power-import-limit-valid-until` elapses with no new publish | Revert: clear `pcs/grid-import-limit` so the `min()` composition falls back to the other binding CSL (typically `feed-import-limit`). Honouring valid-until is how the meter signals the end of a DR event without a separate "end of event" publish. See "Valid-until handling" above. |
 | Subscription disconnects (the enclosure's MQTT client loses its connection to the broker) | Re-subscribe. Because messages are retained, re-subscription delivers the most recent published value immediately. |
 | Enclosure restarts | On startup, the subscriber side re-subscribes and receives the retained DOE values. The PCS resumes enforcement based on the recovered envelope. |
 | Meter publishes a value type the subscriber cannot parse | Treat as if no value were published; log diagnostic; revert to fallback. |
