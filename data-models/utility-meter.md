@@ -204,12 +204,12 @@ The term *dynamic operating envelope* is from [IEEE 2030.5 / CSIP](https://stand
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `power-import-limit` | float | W | MAY | Real power import limit (UL 3141 PIL / Matter `PowerThresholdStruct.powerThreshold`) — the maximum active power the utility is signaling that the site may import. |
-| `apparent-power-import-limit` | float | VA | MAY | Apparent power import limit (Matter `PowerThresholdStruct.apparentPowerThreshold`). Published in addition to or instead of `power-import-limit` when the meter expresses the limit in apparent-power terms. |
+| `power-import-limit` | integer | W | MAY | Real power import limit (UL 3141 PIL / Matter `PowerThresholdStruct.powerThreshold`) — the maximum active power the utility is signaling that the site may import. Non-negative; whole watts (a utility-signaled envelope is a setpoint, not a measurement, and is practically delivered at watt-or-greater granularity). |
+| `apparent-power-import-limit` | integer | VA | MAY | Apparent power import limit (Matter `PowerThresholdStruct.apparentPowerThreshold`). Published in addition to or instead of `power-import-limit` when the meter expresses the limit in apparent-power terms. Non-negative; whole VA. |
 | `power-import-limit-source` | enum | — | MAY | Origin of the import limit: `CONTRACT` (service contract / customer agreement), `REGULATOR` (permanent regulatory mandate), `EQUIPMENT` (equipment / conductor rating), `GRID` (dynamic utility grid-management action — distribution transformer protection, DR event, congestion management), `UNKNOWN` (source not specified). The `GRID` value distinguishes a temporary utility action from a permanent `REGULATOR` mandate and closes the gap [Matter 1.5's `PowerThresholdSourceEnum`](https://csa-iot.org/all-solutions/matter/) currently has between those two cases. |
 | `power-import-limit-valid-until` | datetime | — | MAY | UTC timestamp at which the published import limit is expected to expire or be re-evaluated. Absent or empty when there is no defined end (typical for static / contract limits). Published when known (e.g., a DR event with a defined window) so subscribers can plan for the revert. ISO-8601 UTC. |
-| `power-export-limit` | float | W | MAY | Real power export limit (UL 3141 PEL) — the maximum active power the utility is signaling that the site may export. No Matter 1.5 equivalent; eBus carries this from v0. |
-| `apparent-power-export-limit` | float | VA | MAY | Apparent power export limit. |
+| `power-export-limit` | integer | W | MAY | Real power export limit (UL 3141 PEL) — the maximum active power the utility is signaling that the site may export. No Matter 1.5 equivalent; eBus carries this from v0. Non-negative; whole watts. |
+| `apparent-power-export-limit` | integer | VA | MAY | Apparent power export limit. Non-negative; whole VA. |
 | `power-export-limit-source` | enum | — | MAY | Same value domain as `power-import-limit-source`. |
 | `power-export-limit-valid-until` | datetime | — | MAY | Same semantics as `power-import-limit-valid-until`, for the export side. |
 
