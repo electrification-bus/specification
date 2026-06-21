@@ -1,7 +1,7 @@
 # Electrification Bus Capability Type Registry
 
-**Status:** DRAFT v0.2
-**Date:** 2026-06-06
+**Status:** DRAFT v0.3
+**Date:** 2026-06-20
 **Authors:** Don Jackson
 
 ## Purpose
@@ -34,7 +34,7 @@ The **Source** column references the data-model document where the identifier cu
 | `energy.ebus.capability.door` | Enclosure door state (e.g., `OPEN` / `CLOSED` / `UNKNOWN`). | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.grid` | Grid connection, islanding state, and grid-forming-entity identity. Carries properties like `islanding-state` (`ON_GRID` / `OFF_GRID` / …), `grid-state`, and `grid-forming-entity`. Primarily appears on MID devices. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.grid-forming` | Per-inverter grid-forming capability and current state — exposed by inverters whose vendor surfaces this detail. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
-| `energy.ebus.capability.soc` | State-of-Charge and energy properties for energy storage devices (BESS, batteries). | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
+| `energy.ebus.capability.soc` | State-of-charge and stored-energy properties for a device with a charge-state-bearing energy reservoir — an electrochemical store such as a BESS, or a thermal store such as a water heater's hot-water tank. Carries state-of-charge plus present / total stored energy (and, for thermal stores, heating headroom). Publishers populate the subset that applies. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md), [`data-models/water-heater.md`](../data-models/water-heater.md) |
 | `energy.ebus.capability.pcs` | UL 3141 Power Control Systems (PCS) configuration, state, and the family of Configurable Service Limit (CSL) properties that the PCS manages. Appears on the distribution-enclosure parent device. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.power-flows` | Aggregate power flows between subsystems (grid, battery, solar, load). Typically appears on the distribution-enclosure parent device. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.priority` | Per-circuit load-shedding policy and relay-control authority. Includes `shed-priority` (when to shed: `OFF_GRID`, `SOC_THRESHOLD`, `NEVER`, etc.), `relay-controllable` (whether the relay can be controlled at all), and PCS management metadata. Appears on circuits. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
@@ -43,6 +43,8 @@ The **Source** column references the data-model document where the identifier cu
 | `energy.ebus.capability.doe` | Utility-signaled dynamic operating envelope — the power-import / -export limits the utility is signaling for the site (UL 3141 PIL / PEL, Matter `PowerThresholdStruct` equivalent, IEEE 2030.5 / CSIP "DOE" terminology), with source attribution (`CONTRACT` / `REGULATOR` / `EQUIPMENT` / `GRID` / `UNKNOWN`) and per-limit validity windows. Publish-only — no `/set` topic. Appears on utility-meter devices and on any other publisher with authoritative knowledge of a utility-signaled envelope (a future IEEE 2030.5 / CSIP gateway, a DERMS adapter, an aggregator's site controller). | [`data-models/utility-meter.md`](../data-models/utility-meter.md) |
 | `energy.ebus.capability.demand` | Peak-average demand quantities for commercial demand-charge billing — demand-interval length, current and previous interval demand, peak demand for the current billing period with its occurrence timestamp and reset-time. Appears on utility-meter devices and other publishers with interval-demand computation. | [`data-models/utility-meter.md`](../data-models/utility-meter.md) |
 | `energy.ebus.capability.power-quality` | Quantitative power-quality measurements (THD / TDD, individual harmonics, voltage unbalance, and similar PQ metrics). Appears on utility-meter devices that compute the measurements and on dedicated power-quality analyzers. | [`data-models/utility-meter.md`](../data-models/utility-meter.md) |
+| `energy.ebus.capability.water-heater` | Water-heater thermal state and control: target setpoint (and limits), tank temperature(s) including per-position probes, ambient temperature, operating mode (heat-source / efficiency strategy), and which heat sources are currently firing. Appears on water-heater devices. | [`data-models/water-heater.md`](../data-models/water-heater.md) |
+| `energy.ebus.capability.dr` | Vendor-neutral demand-response control and feedback. Carries an atomic, direction-first event (`SHED` / `LOAD_UP` / `NORMAL`, with optional magnitude, intensity, and duration), the device's response (`NONE` / `CURTAILED` / `BOOSTED` / `NOT_FOLLOWING`), a customer-override (`opted-out`) flag, and the device's throttle granularity. Cross-cutting — defined for water heaters but applicable to any controllable flexible load (HVAC, EV charging, pool pumps). Maps onto CTA-2045 shed/load-up, Matter Boost + Device Energy Management, and similar transports. | [`data-models/water-heater.md`](../data-models/water-heater.md) |
 
 ## Adding new capability types
 

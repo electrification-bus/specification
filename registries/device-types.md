@@ -1,7 +1,7 @@
 # Electrification Bus Device Type Registry
 
-**Status:** DRAFT v0.2
-**Date:** 2026-06-06
+**Status:** DRAFT v0.3
+**Date:** 2026-06-20
 **Authors:** Don Jackson
 
 ## Purpose
@@ -32,7 +32,8 @@ The **Source** column references the data-model document where the identifier cu
 | `energy.ebus.device.pv` | Photovoltaic inverter. May be published natively or proxied as a child of a distribution enclosure. *Full data model pending — currently described in the dist-enclosure spec via the proxied-PV child structure.* | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) (forward reference) |
 | `energy.ebus.device.evse` | Electric Vehicle Supply Equipment. May be published natively or proxied as a child of a distribution enclosure. *Full data model pending — currently described in the dist-enclosure spec via the proxied-EVSE child structure.* | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) (forward reference) |
 | `energy.ebus.device.mid` | Microgrid Interconnect Device — the grid-relay + per-side meters + controller subsystem that handles islanding for a grid-forming-capable site. May appear as a child device of a distribution enclosure (enclosure-integrated MID) or a BESS (BESS-integrated MID or its proxied equivalent); may also be published as a first-class standalone device. *Full data model pending — currently described in the dist-enclosure spec's MID and proxied-BESS sections.* | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) (forward reference) |
-| `energy.ebus.device.bridge` | Standalone proxy host — an entity whose sole role is to bridge one or more non-eBus-native devices into the eBus tree (e.g., a Linux service polling a Tesla cloud API and publishing the Powerwall as a proxy; a Modbus-to-eBus appliance; a developer's CTA-2045 bridge). The bridge anchors the Homie tree as the root of its proxied children; the proxied devices are named per the `{proxier-id}-{proxied-id}` convention in `data-models/proxy.md`. The bridge does not publish HEI-device capabilities of its own. Semantic parallel to Matter's *Bridge* device type. | [`framework.md`](../framework.md#standalone-proxy-hosts-bridges) |
+| `energy.ebus.device.bridge` | Standalone proxy host — an entity whose sole role is to bridge one or more non-eBus-native devices into the eBus tree (e.g., a Linux service polling a Tesla cloud API and publishing the Powerwall as a proxy; a Modbus-to-eBus appliance; a CTA-2045 Universal Communications Module bridging a water heater). The bridge anchors the Homie tree as the root of its proxied children; the proxied devices are named per the `{proxier-id}-{proxied-id}` convention in `data-models/proxy.md`. The bridge does not publish HEI-device capabilities of its own. Semantic parallel to Matter's *Bridge* device type. | [`framework.md`](../framework.md#standalone-proxy-hosts-bridges) |
+| `energy.ebus.device.water-heater` | A storage water heater (heat-pump, electric-resistance, gas, or hybrid) modeled as a controllable, grid-flexible load and dispatchable thermal-storage resource. May be published natively or proxied (e.g., as the child of a CTA-2045 UCM bridge). | [`data-models/water-heater.md`](../data-models/water-heater.md) |
 
 ## Adding new device types
 
