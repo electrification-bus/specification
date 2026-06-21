@@ -11,7 +11,7 @@ This document defines an Electrification Bus (eBus for short) data model for a *
 
 The model captures the water heater's identity and nameplate, its thermal state (setpoint, tank temperature, operating mode), its electrical metering, its standing as a **dispatchable thermal-storage resource** (how much hot water is stored, how much heating headroom remains), and a vendor-neutral **demand-response control surface** for shedding and loading-up the appliance. It is layered on Homie 5 plus eBus's HEI-specific device and capability types.
 
-Four real control surfaces inform the model and serve as the worked example bindings in [§Examples](#examples): **CTA-2045-B** (the demand-response-minimal floor — a generic shed/load-up interface with no setpoint), an **[ESPHome integration to a Rheem EcoNet heat-pump water heater](https://github.com/esphome-econet/esphome-econet)** (the rich case — setpoint, dual tank temperatures, operating modes, heat-pump internals), **Matter's water-heater clusters** (the emerging-standard case — Water Heater Management, Water Heater Mode, and Device Energy Management), and the **[Cala Systems water heater](https://www.calasystems.com)** (the MQTT-native, self-optimizing case — boost-only control plus advisory solar/battery context). Where the model's vocabulary aligns with any of these, the alignment is deliberate; the model is the union of what real water heaters expose, designed so each surface maps cleanly onto it rather than the model copying any one of them.
+Four real control surfaces inform the model and serve as the worked example bindings in [§Examples](#examples): **CTA-2045-B** (the demand-response-minimal floor — a generic shed/load-up interface with no setpoint), an **[ESPHome integration to a Rheem EcoNet heat-pump water heater](https://github.com/esphome-econet/esphome-econet)** (the rich case — setpoint, dual tank temperatures, operating modes, heat-pump internals), **Matter's water-heater clusters** (the emerging-standard case — Water Heater Management, Water Heater Mode, and Device Energy Management), and the **[Cala Systems water heater](https://www.calasystems.com)** (the self-optimizing case — boost-only control plus advisory solar/battery context). Where the model's vocabulary aligns with any of these, the alignment is deliberate; the model is the union of what real water heaters expose, designed so each surface maps cleanly onto it rather than the model copying any one of them.
 
 ## Terminology: "water heater"
 
@@ -343,9 +343,9 @@ Matter splits the two demand-response directions across two clusters — load-up
 
 ### Example: Cala Systems water heater
 
-A [Cala Systems](https://www.calasystems.com) heat-pump water heater. Cala is **MQTT-native** — it already publishes telemetry to `cala/{id}/state` and accepts commands on `cala/{id}/command` (with an accepted/rejected reply on `…/command/response`) — so the eBus binding is a topic/field re-map rather than a protocol bridge. Its control model is the most restrictive of the four: it accepts **only** a boost (load-up) command, never a shed, and instead consumes *advisory* solar/battery context to self-optimize. The mapping from Cala's `state` payload onto this model:
+A [Cala Systems](https://www.calasystems.com) heat-pump water heater. Its control model is the most restrictive of the four — and the most instructive: it accepts **only** a boost (load-up) command, never a shed, and otherwise self-optimizes from *advisory* solar/battery context. The mapping of Cala's observed quantities and controls onto this model:
 
-| Cala field | eBus property |
+| Cala signal / control | eBus property |
 |---|---|
 | `top_c` / `upper_c` / `lower_c` | `water-heater/tank-temperature-{top,middle,bottom}` |
 | `delivery_c` | `water-heater/delivery-temperature` |
@@ -359,9 +359,9 @@ A [Cala Systems](https://www.calasystems.com) heat-pump water heater. Cala is **
 | `create_boost {hours}` / `cancel_boost` | `dr/event = {mode:LOAD_UP, duration}` / `{mode:NORMAL}` |
 | `boost_mode_on` | `dr/dr-response` (`BOOSTED` when on) |
 
-A Cala-style water heater exposes `dr/event` supporting only `LOAD_UP` and `NORMAL` — no shed, no `level`, `throttle-granularity` absent. This is conformant: the latitude lets a publisher expose only the demand-response directions it implements. Cala's connection model (Connected → Offline after a 5-minute telemetry gap, observed by the integration) is the surviving-observer rule in practice — the bridge, not the device, declares the device stale.
+A Cala-style water heater exposes `dr/event` supporting only `LOAD_UP` and `NORMAL` — no shed, no `level`, `throttle-granularity` absent. This is conformant: the latitude lets a publisher expose only the demand-response directions it implements. Its liveness follows the surviving-observer rule — when the device stops reporting, the bridge (not the device) marks it stale.
 
-**Advisory context, the eBus way.** Cala's separate `cala/{id}/context` topic feeds the device advisory solar production and battery state-of-charge so it can self-optimize (heat when local generation is surplus), with no direct control accepted. In eBus this needs **no new water-heater property**: a self-optimizing water heater is simply a *consumer* of other devices' published capabilities — the PV inverter's `meter`, the BESS's `soc`, the utility meter's `doe` — and decides locally. Which devices it watches is a commissioning concern (framework territory), not a property on the water heater.
+**Advisory context, the eBus way.** Cala feeds the device advisory solar production and battery state-of-charge so it can self-optimize (heat when local generation is surplus), accepting no direct control over it. In eBus this needs **no new water-heater property**: a self-optimizing water heater is simply a *consumer* of other devices' published capabilities — the PV inverter's `meter`, the BESS's `soc`, the utility meter's `doe` — and decides locally. Which devices it watches is a commissioning concern (framework territory), not a property on the water heater.
 
 ---
 
@@ -391,7 +391,7 @@ The new identifiers are registered in [`registries/capability-types.md`](../regi
 - California Title 24 / Joint Appendix JA-13 — the regulatory driver for water-heater load-shifting; defines the light / deep / full shed levels and the basic / advanced load-up energy-shift requirements.
 - EcoPort — the water-heater-industry certification brand for CTA-2045 water heaters.
 - [esphome-econet](https://github.com/esphome-econet/esphome-econet) — open-source ESPHome component for Rheem / Ruud EcoNet water heaters (and EcoNet HVAC), communicating over the appliance's RS-485 bus. The integration informing the Rheem EcoNet example binding (`info`, `water-heater`, `soc`, `meter`, `status` property mappings).
-- [Cala Systems](https://www.calasystems.com) — heat-pump water heater with an MQTT-native interface (`cala/{id}/state` telemetry, `…/command` boost control, `…/context` advisory input). The `cala-home-assistant` integration is the source of the Cala example binding and of the `delivery-temperature`, `available-volume`, and `water-flow` properties.
+- [Cala Systems](https://www.calasystems.com) — heat-pump water heater; its `cala-home-assistant` integration is the source of the Cala example binding and of the `delivery-temperature`, `available-volume`, and `water-flow` properties.
 - Matter — the water-heater device type and clusters that inform the Matter example binding, published by the Connectivity Standards Alliance:
   - Water Heater device type (`0x050F`) — Matter Device Library; composes the clusters below.
   - Water Heater Management cluster (`0x0094`) — heat sources, tank volume / percentage, estimated heat required, `Boost` / `CancelBoost`.
