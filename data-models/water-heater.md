@@ -11,7 +11,7 @@ This document defines an Electrification Bus (eBus for short) data model for a *
 
 The model captures the water heater's identity and nameplate, its thermal state (setpoint, tank temperature, operating mode), its electrical metering, its standing as a **dispatchable thermal-storage resource** (how much hot water is stored, how much heating headroom remains), and a vendor-neutral **demand-response control surface** for shedding and loading-up the appliance. It is layered on Homie 5 plus eBus's HEI-specific device and capability types.
 
-Three real control surfaces inform the model and serve as the worked example bindings in [§Examples](#examples): **CTA-2045-B** (the demand-response-minimal floor — a generic shed/load-up interface with no setpoint), an **[ESPHome integration to a Rheem EcoNet heat-pump water heater](https://github.com/esphome-econet/esphome-econet)** (the rich case — setpoint, dual tank temperatures, operating modes, heat-pump internals), and **Matter's water-heater clusters** (the emerging-standard case — Water Heater Management, Water Heater Mode, and Device Energy Management). Where the model's vocabulary aligns with any of these, the alignment is deliberate; the model is the union of what real water heaters expose, designed so each surface maps cleanly onto it rather than the model copying any one of them.
+Four real control surfaces inform the model and serve as the worked example bindings in [§Examples](#examples): **CTA-2045-B** (the demand-response-minimal floor — a generic shed/load-up interface with no setpoint), an **[ESPHome integration to a Rheem EcoNet heat-pump water heater](https://github.com/esphome-econet/esphome-econet)** (the rich case — setpoint, dual tank temperatures, operating modes, heat-pump internals), **Matter's water-heater clusters** (the emerging-standard case — Water Heater Management, Water Heater Mode, and Device Energy Management), and the **[Cala Systems water heater](https://www.calasystems.com)** (the MQTT-native, self-optimizing case — boost-only control plus advisory solar/battery context). Where the model's vocabulary aligns with any of these, the alignment is deliberate; the model is the union of what real water heaters expose, designed so each surface maps cleanly onto it rather than the model copying any one of them.
 
 ## Terminology: "water heater"
 
@@ -125,8 +125,10 @@ Thermal state and the primary control surface — the setpoint, tank temperature
 | `tank-temperature` | float | °C | MAY | — | Representative / average stored-water temperature. |
 | `tank-temperature-{top,middle,bottom}` | float | °C | MAY | — | Per-position tank temperature at the named probe height (see [§Per-position representation](#per-position-representation)). |
 | `ambient-temperature` | float | °C | MAY | — | Air temperature around the unit. Relevant to heat-pump efficiency. |
+| `delivery-temperature` | float | °C | MAY | — | Temperature of the water currently being delivered at the outlet, when separately sensed — distinct from the stored tank temperatures. (Cala reports this as `delivery_c`.) |
 | `operating-mode` | enum | — | MAY | yes | Heat-source / efficiency strategy: `OFF`, `HEAT_PUMP`, `ELECTRIC`, `HYBRID`, `HIGH_DEMAND`, `ENERGY_SAVER`, `VACATION`. `HEAT_PUMP` = heat-pump only (most efficient, slowest recovery); `ELECTRIC` = resistance only; `HYBRID` = automatic blend; `HIGH_DEMAND` = maximum recovery (all sources); `ENERGY_SAVER` = efficiency-biased; `VACATION` = minimal maintenance heating; `OFF` = not maintaining temperature. Publishers MAY extend the value space via Homie `$format` for vendor-specific modes. |
 | `heat-demand` | string | — | MAY | — | Comma-separated set of heat sources *currently firing*, drawn from the `heat-sources` vocabulary; empty or absent means the unit is not heating. Mirrors Matter's `HeatDemand`. A consumer that only needs a boolean "is heating now" treats any non-empty value as true. |
+| `water-flow` | float | L/min | MAY | — | Current hot-water draw — the outlet flow rate — when the unit meters it. (Cala reports this as `liters_used`.) |
 
 The mapping between this model's `operating-mode` and any specific product's modes is in the example bindings. Matter separates *structural* mode (Off / Manual = hold-setpoint / Timed = schedule) from *preference* tags; this model folds the user-facing strategy into `operating-mode` and carries the setpoint as its own property, deferring schedule (Timed) handling to a future revision.
 
@@ -142,13 +144,16 @@ This is the same capability type used for batteries on BESS devices, reused here
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `state-of-charge` | float | % | MAY | Approximate fraction of the tank that is hot water (Matter `TankPercentage`). For a stratified tank, the height of the hot layer; for a single-probe unit, derivable from temperature. `0` = fully drawn down, `100` = fully heated to setpoint. |
-| `present-energy-storage` | float | Wh | MAY | Thermal energy currently stored — the energy the device can *take now* before reaching its maximum (CTA-2045 "Present Energy Storage"). |
-| `total-energy-storage` | float | Wh | MAY | Total thermal storage capacity — the energy to move the tank from its minimum operating temperature to its maximum (CTA-2045 "Total Energy Storage"). |
-| `heat-required` | float | Wh | MAY | Estimated heat energy needed to bring the tank to its target setpoint (Matter `EstimatedHeatRequired`). Note this is *heat* energy; for a heat pump the *electrical* energy is lower by the COP. |
-| `loadup-headroom` | float | Wh | MAY | Additional thermal storage available beyond the normal maximum when the unit is permitted to over-heat (CTA-2045 "Advanced Load Up" energy-take capacity; the gap to Matter `Boost` `TargetPercentage`). The extra dispatchable charge a load-up event can absorb. |
+| `soc` | float | % | MAY | State of charge — approximate fraction of the tank that is hot water (Matter `TankPercentage`). Conceptually the same quantity as the BESS `soc`, and — being a dimensionless ratio — directly comparable across both. For a stratified tank, the height of the hot layer; for a single-probe unit, derivable from temperature. `0` = fully drawn down, `100` = fully heated to setpoint. |
+| `soe` | float | Wh | MAY | State of energy — *thermal* energy currently stored and available to draw. The conceptual analogue of the BESS `soe`, but a different physical quantity (see note below): a water heater stores heat, not electricity. |
+| `available-volume` | float | L | MAY | The stored-hot-water quantity expressed as usable *volume* — often the more natural measure for a water heater, and the one Cala reports (`liters_available`). The volumetric companion to `soe`. |
+| `total-energy-storage` | float | Wh | MAY | Total thermal storage capacity — the thermal energy to move the tank from its minimum to its maximum operating temperature (CTA-2045 "Total Energy Storage"). |
+| `loadup-headroom` | float | Wh | MAY | Thermal energy the tank can absorb *now* — the present load-up (charging) headroom, ≈ `total-energy-storage − soe` (CTA-2045 "Present Energy Storage", i.e. its energy-*take* capacity). When over-heating is permitted it includes the extra beyond the normal maximum (CTA-2045 Advanced Load Up; the gap to Matter `Boost` `TargetPercentage`). The dispatchable charge a load-up event can absorb. |
+| `heat-required` | float | Wh | MAY | Estimated thermal energy needed to bring the tank to its target setpoint (Matter `EstimatedHeatRequired`). The *electrical* energy is lower by the heat source's COP. |
 
-**Encoding.** `state-of-charge` is a percentage; the energy quantities are in Wh of *thermal* energy. A consumer converting load-up headroom to an electrical dispatch must apply the relevant heat source's COP (≈1 for resistance, ≈2–4 for a heat pump); the COP is out of scope for this capability.
+**Two opposite quantities.** `soc` / `soe` / `available-volume` describe how much hot water is **stored and available to draw** (the discharge side); `loadup-headroom` describes how much energy the tank can still **absorb** (the charge side). They are complementary — roughly `soe + loadup-headroom ≈ total-energy-storage`.
+
+**Thermal, not electrical — the BESS analogy is conceptual, not dimensional.** A water heater's stored energy is *thermal* (Wh of heat, or equivalently a hot-water volume); a battery's `soe` is *electrical* (the kWh it can discharge to the grid). These are **not** the same unit and **not** directly summable: a water heater can shift *when* it draws electrical power (load-shifting), but it cannot discharge electricity. The `soc` ratio is comparable across both; the stored-energy magnitudes are not. This model expresses the water heater's thermal quantities in Wh (matching CTA-2045 and the device's own `meter`), where the BESS expresses electrical energy in kWh — deliberately different units for different physical quantities. The heat source's COP (≈1 for resistance, ≈2–4 for a heat pump) relates these thermal quantities to the electrical energy a controller actually dispatches; the COP is out of scope for this capability.
 
 #### meter
 
@@ -251,15 +256,16 @@ ebus/5/ucm-20f85e/connection/feeds-device-id     = "ucm-20f85e-wh01"
 ebus/5/ucm-20f85e/connection/feeds-device-type   = "energy.ebus.device.water-heater"
 ebus/5/ucm-20f85e/connection/feeds-device-status = "OK"        # UCM ↔ water heater (CTA-2045 socket; bridge is surviving observer)
 
-ebus/5/ucm-20f85e-wh01/$description.type          = energy.ebus.device.water-heater
-ebus/5/ucm-20f85e-wh01/info/fuel-type             = "HEAT_PUMP"
-ebus/5/ucm-20f85e-wh01/meter/active-power         = 421.0
-ebus/5/ucm-20f85e-wh01/meter/imported-energy      = 2709860
-ebus/5/ucm-20f85e-wh01/soc/present-energy-storage = 6800
-ebus/5/ucm-20f85e-wh01/soc/total-energy-storage   = 9200
-ebus/5/ucm-20f85e-wh01/dr/throttle-granularity    = "DISCRETE"
-ebus/5/ucm-20f85e-wh01/dr/dr-response             = "NONE"
-ebus/5/ucm-20f85e-wh01/dr/opted-out               = false
+ebus/5/ucm-20f85e-wh01/$description.type        = energy.ebus.device.water-heater
+ebus/5/ucm-20f85e-wh01/info/fuel-type           = "HEAT_PUMP"
+ebus/5/ucm-20f85e-wh01/meter/active-power       = 421.0
+ebus/5/ucm-20f85e-wh01/meter/imported-energy    = 2709860
+ebus/5/ucm-20f85e-wh01/soc/soe                  = 2400
+ebus/5/ucm-20f85e-wh01/soc/total-energy-storage = 9200
+ebus/5/ucm-20f85e-wh01/soc/loadup-headroom      = 6800
+ebus/5/ucm-20f85e-wh01/dr/throttle-granularity  = "DISCRETE"
+ebus/5/ucm-20f85e-wh01/dr/dr-response           = "NONE"
+ebus/5/ucm-20f85e-wh01/dr/opted-out             = false
 ```
 
 A controller sheds this water heater for one hour by setting:
@@ -300,7 +306,7 @@ ebus/5/q242051522/water-heater/tank-temperature-bottom = 46.8
 ebus/5/q242051522/water-heater/ambient-temperature     = 19.4
 ebus/5/q242051522/water-heater/operating-mode          = "ENERGY_SAVER"
 ebus/5/q242051522/water-heater/heat-demand             = ""
-ebus/5/q242051522/soc/state-of-charge                  = 71
+ebus/5/q242051522/soc/soc                              = 71
 ebus/5/q242051522/meter/active-power                   = 116.2
 ebus/5/q242051522/meter/imported-energy                = 2709860
 ebus/5/q242051522/status/fault-state                   = "OK"
@@ -326,7 +332,7 @@ A Matter water heater (device type `0x050F`) bridged to eBus. The mapping from M
 | Water Heater Mode (Off/Manual/Timed + tags) | `water-heater/operating-mode` |
 | Water Heater Management `HeaterTypes` / `HeatDemand` | `info/heat-sources` / `water-heater/heat-demand` |
 | Water Heater Management `TankVolume` | `info/tank-volume` |
-| Water Heater Management `TankPercentage` | `soc/state-of-charge` |
+| Water Heater Management `TankPercentage` | `soc/soc` |
 | Water Heater Management `EstimatedHeatRequired` | `soc/heat-required` |
 | Water Heater Management `Boost(BoostInfo)` / `CancelBoost` | `dr/event = {mode:LOAD_UP, duration, target-percentage, temporary-setpoint}` / `{mode:NORMAL}` |
 | Water Heater Management `BoostState` | `dr/dr-response` (`BOOSTED` when Active) |
@@ -334,6 +340,28 @@ A Matter water heater (device type `0x050F`) bridged to eBus. The mapping from M
 | Electrical Power / Energy Measurement | `meter/active-power` / `meter/imported-energy` |
 
 Matter splits the two demand-response directions across two clusters — load-up is the Water Heater Management `Boost` command, shed is delegated to Device Energy Management — whereas this model unifies them under `dr/event`'s `mode`. Matter's `Boost` is a rich load-up (target tank percentage, temporary setpoint, reheat hysteresis); the `dr/event` object carries the same optional refinements, so the eBus surface is a superset.
+
+### Example: Cala Systems water heater
+
+A [Cala Systems](https://www.calasystems.com) heat-pump water heater. Cala is **MQTT-native** — it already publishes telemetry to `cala/{id}/state` and accepts commands on `cala/{id}/command` (with an accepted/rejected reply on `…/command/response`) — so the eBus binding is a topic/field re-map rather than a protocol bridge. Its control model is the most restrictive of the four: it accepts **only** a boost (load-up) command, never a shed, and instead consumes *advisory* solar/battery context to self-optimize. The mapping from Cala's `state` payload onto this model:
+
+| Cala field | eBus property |
+|---|---|
+| `top_c` / `upper_c` / `lower_c` | `water-heater/tank-temperature-{top,middle,bottom}` |
+| `delivery_c` | `water-heater/delivery-temperature` |
+| `ambient_c` | `water-heater/ambient-temperature` |
+| `liters_available` | `soc/available-volume` |
+| `upper_element_on` / `lower_element_on` / compressor running | `water-heater/heat-demand` (`RESISTANCE_UPPER` / `RESISTANCE_LOWER` / `HEAT_PUMP`) |
+| `energy_used_kwh` (per-minute) | `meter/active-power` (and cumulative `meter/imported-energy`) |
+| `liters_used` | `water-heater/water-flow` |
+| `compressor_hz`, `fan_on`, `fan_speed_high` | `status` diagnostics (MAY) |
+| `wifi_rssi_dbm`, `fw_version`, connection state | bridge `info` / availability |
+| `create_boost {hours}` / `cancel_boost` | `dr/event = {mode:LOAD_UP, duration}` / `{mode:NORMAL}` |
+| `boost_mode_on` | `dr/dr-response` (`BOOSTED` when on) |
+
+A Cala-style water heater exposes `dr/event` supporting only `LOAD_UP` and `NORMAL` — no shed, no `level`, `throttle-granularity` absent. This is conformant: the latitude lets a publisher expose only the demand-response directions it implements. Cala's connection model (Connected → Offline after a 5-minute telemetry gap, observed by the integration) is the surviving-observer rule in practice — the bridge, not the device, declares the device stale.
+
+**Advisory context, the eBus way.** Cala's separate `cala/{id}/context` topic feeds the device advisory solar production and battery state-of-charge so it can self-optimize (heat when local generation is surplus), with no direct control accepted. In eBus this needs **no new water-heater property**: a self-optimizing water heater is simply a *consumer* of other devices' published capabilities — the PV inverter's `meter`, the BESS's `soc`, the utility meter's `doe` — and decides locally. Which devices it watches is a commissioning concern (framework territory), not a property on the water heater.
 
 ---
 
@@ -344,7 +372,7 @@ This data model introduces entries in the eBus registries:
 - `energy.ebus.device.water-heater` — **new** device type. A storage water heater (heat-pump, electric, gas, or hybrid) as a controllable grid-flexible load. Registered in [`registries/device-types.md`](../registries/device-types.md).
 - `energy.ebus.capability.water-heater` — **new** capability type. Water-heater thermal state and control (setpoint, tank temperatures, operating mode, heat demand).
 - `energy.ebus.capability.dr` — **new** capability type. Vendor-neutral demand-response control + feedback (direction-first shed / load-up event, response, customer-override). Cross-cutting — applicable to any controllable flexible load.
-- `energy.ebus.capability.soc` — reused for the water heater's dispatchable thermal storage (tank state-of-charge, present / total stored energy, heating headroom). The BESS and water-heater publishers populate overlapping but distinct property subsets; both are conformant.
+- `energy.ebus.capability.soc` — reused (its `soc` / `soe` vocabulary) for the water heater's dispatchable thermal storage: state of charge (`soc`), stored *thermal* energy (`soe`), an `available-volume` companion, total capacity, and load-up headroom. The BESS and water-heater publishers populate overlapping but distinct property subsets; both are conformant. The energy quantities differ in physical kind (the water heater's are thermal, the BESS's electrical) and unit, but the `soc` ratio and the `soc`/`soe` property names are shared.
 - `energy.ebus.capability.meter`, `energy.ebus.capability.info`, `energy.ebus.capability.status` — reused unchanged.
 
 The new identifiers are registered in [`registries/capability-types.md`](../registries/capability-types.md) and [`registries/device-types.md`](../registries/device-types.md) with Source links pointing to this data model.
@@ -363,6 +391,7 @@ The new identifiers are registered in [`registries/capability-types.md`](../regi
 - California Title 24 / Joint Appendix JA-13 — the regulatory driver for water-heater load-shifting; defines the light / deep / full shed levels and the basic / advanced load-up energy-shift requirements.
 - EcoPort — the water-heater-industry certification brand for CTA-2045 water heaters.
 - [esphome-econet](https://github.com/esphome-econet/esphome-econet) — open-source ESPHome component for Rheem / Ruud EcoNet water heaters (and EcoNet HVAC), communicating over the appliance's RS-485 bus. The integration informing the Rheem EcoNet example binding (`info`, `water-heater`, `soc`, `meter`, `status` property mappings).
+- [Cala Systems](https://www.calasystems.com) — heat-pump water heater with an MQTT-native interface (`cala/{id}/state` telemetry, `…/command` boost control, `…/context` advisory input). The `cala-home-assistant` integration is the source of the Cala example binding and of the `delivery-temperature`, `available-volume`, and `water-flow` properties.
 - Matter — the water-heater device type and clusters that inform the Matter example binding, published by the Connectivity Standards Alliance:
   - Water Heater device type (`0x050F`) — Matter Device Library; composes the clusters below.
   - Water Heater Management cluster (`0x0094`) — heat sources, tank volume / percentage, estimated heat required, `Boost` / `CancelBoost`.
