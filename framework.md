@@ -410,6 +410,7 @@ This specification does not attempt to define automatic resolution between multi
 ### When to Use REST vs. MQTT
 
 **Use REST for:**
+
 - Infrequent operations (initial setup, reconfiguration)
 - Request/response semantics (authentication, file uploads/downloads)
 - Pre-MQTT bootstrap (credential provisioning)
@@ -417,6 +418,7 @@ This specification does not attempt to define automatic resolution between multi
 - Browser accessibility (configuration GUIs, API docs)
 
 **Use MQTT for:**
+
 - Continuous/frequent state updates (sensor readings, power measurements)
 - Fan-out to multiple subscribers
 - Retained messages (new subscribers get current state immediately)
@@ -649,11 +651,13 @@ This pattern is principle 6 of the design principles above ("Proxying is first-c
 ### Proxy Publisher Responsibilities
 
 A proxy publisher MUST:
+
 - Publish a Homie `$description` for the proxied device.
 - Translate native-protocol data into Homie property values, populating the property contracts defined by the relevant data-model document for the proxied device class.
 - Manage the proxy's Homie `$state` to reflect the underlying device's availability.
 
 A proxy publisher SHOULD:
+
 - Translate `/set` commands into the native protocol's command format where the underlying device supports control.
 - Republish data promptly to minimize observable latency.
 - Stop publishing a given proxied device once an eBus-native publisher for that device is detected (so the eBus tree converges on a single representation per physical device). Coexistence during the detection window is expected; see [`data-models/proxy.md`](data-models/proxy.md) for consumer-side dedup.
@@ -722,13 +726,7 @@ Practical entry points to the CIM model:
 - **Zepben Evolve CIM100 documentation** — [https://zepben.github.io/evolve/docs/cim/cim100/](https://zepben.github.io/evolve/docs/cim/cim100/) — browsable class reference for the CIM 100 distribution profile, maintained alongside the open-source [Zepben Evolve](https://github.com/zepben/evolve-sdk-jvm) implementation. More readable than the IEC source documents for getting oriented.
 - **CIM Users Group** — [https://cimug.ucaiug.org/](https://cimug.ucaiug.org/) — community, working groups, profile registry.
 
-[mqtt]: https://mqtt.org/mqtt-specification/
-[mqtt5]: https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html
 [homie5]: https://homieiot.github.io/specification/
-[rfc6762]: https://www.rfc-editor.org/rfc/rfc6762
-[rfc6763]: https://www.rfc-editor.org/rfc/rfc6763
-[rfc8446]: https://www.rfc-editor.org/rfc/rfc8446
-[rfc9110]: https://www.rfc-editor.org/rfc/rfc9110
 [rfc8259]: https://www.rfc-editor.org/rfc/rfc8259
 [rfc2119]: https://www.rfc-editor.org/rfc/rfc2119
 [openapi]: https://spec.openapis.org/oas/latest.html
