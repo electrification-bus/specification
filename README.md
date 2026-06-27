@@ -33,11 +33,13 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`data-models/proxy.md`](data-models/proxy.md) | DRAFT v0.1 (2026-05-22) |
 | [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.1 (2026-05-17) |
 | [`data-models/utility-meter.md`](data-models/utility-meter.md) | DRAFT v0.1 (2026-06-06) |
-| [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.6 (2026-06-06) |
+| [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.7 (2026-06-26) |
+| [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-06-26) |
+| [`data-models/outlet.md`](data-models/outlet.md) | DRAFT v0.1 (2026-06-26) |
 | `data-models/mid.md` | Planned — see standalone-MID note in [`data-models/bess.md`](data-models/bess.md) §Device Hierarchy |
 | **Registries** | |
-| [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.2 (2026-06-06) |
-| [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.2 (2026-06-06) |
+| [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.3 (2026-06-26) |
+| [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.3 (2026-06-26) |
 | [`registries/circuit-tags.md`](registries/circuit-tags.md) | DRAFT v0.1 (2026-05-23) |
 | [`registries/external-id-schemes.md`](registries/external-id-schemes.md) | DRAFT v0.1 (2026-05-16) |
 | **Integration Guides** | |

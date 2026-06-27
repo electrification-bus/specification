@@ -20,6 +20,7 @@ Electrification Bus composes existing, well-known protocols — **mDNS**, **MQTT
 - **Broker-host role** — Provides an MQTT broker for eBus entities to publish to and subscribe through. May implement device or controller roles in addition (co-resident broker host — typical for products like a SPAN panel that hosts its own broker), or stand alone (a dedicated broker host that is not itself a device — e.g., a NUC or Raspberry Pi running just the broker).
 - **Native publisher** — A device-role entity that publishes a Homie device representing itself (or, for a vendor-built publisher, representing one of the vendor's own products).
 - **Proxy publisher** — A device-role entity that publishes a Homie device on behalf of a non-eBus-native device — typically bridging from the device's native protocol (Modbus, Matter, CTA-2045, vendor cloud API, etc.). The published representation is a *proxy*. Disambiguation between proxy and native publication is defined in [`data-models/proxy.md`](data-models/proxy.md).
+- **eBus consumer** (or just **consumer**): a controller-role entity that consumes eBus data (it discovers and subscribes to Homie devices, reads their state, and may issue `/set` commands). Includes controllers, dashboards, energy-management systems (EMS / HEMS), DERMS adapters, and analytics jobs. This is distinct from the energy-domain sense of *consumer* (the ratepayer or homeowner), which is not an eBus role; where confusion with that sense is likely, the specifications write **eBus consumer**.
 
 ### Conformance Language
 

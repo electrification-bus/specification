@@ -1,7 +1,7 @@
 # Electrification Bus Device Type Registry
 
-**Status:** DRAFT v0.2
-**Date:** 2026-06-06
+**Status:** DRAFT v0.3
+**Date:** 2026-06-26
 **Authors:** Don Jackson
 
 ## Purpose
@@ -28,11 +28,13 @@ The **Source** column references the data-model document where the identifier cu
 | `energy.ebus.device.distribution-enclosure` | Parent device for an electrical distribution enclosure (panel / load center / consumer unit / switchboard). Hosts child devices for circuits, feed points, and (in some installations) integrated DERs. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.device.circuit` | Child device representing one branch circuit within a distribution enclosure. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.device.lugs` | Child device representing a feed point (upstream or downstream lugs) on a distribution enclosure. Carries the meter for that feed. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
-| `energy.ebus.device.bess` | Battery Energy Storage System. May be published natively (as its own Homie root) or proxied as a child of a distribution enclosure. *Full data model pending — currently described in the dist-enclosure spec via the proxied-BESS child structure.* | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) (forward reference) |
+| `energy.ebus.device.bess` | Battery Energy Storage System (whole-home grid-forming, plug-in / UPS, or grid-following-only). May be published natively (as its own Homie root) or proxied as a child of a distribution enclosure. | [`data-models/bess.md`](../data-models/bess.md) |
 | `energy.ebus.device.pv` | Photovoltaic inverter. May be published natively or proxied as a child of a distribution enclosure. *Full data model pending — currently described in the dist-enclosure spec via the proxied-PV child structure.* | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) (forward reference) |
 | `energy.ebus.device.evse` | Electric Vehicle Supply Equipment. May be published natively or proxied as a child of a distribution enclosure. *Full data model pending — currently described in the dist-enclosure spec via the proxied-EVSE child structure.* | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) (forward reference) |
 | `energy.ebus.device.mid` | Microgrid Interconnect Device — the grid-relay + per-side meters + controller subsystem that handles islanding for a grid-forming-capable site. May appear as a child device of a distribution enclosure (enclosure-integrated MID) or a BESS (BESS-integrated MID or its proxied equivalent); may also be published as a first-class standalone device. *Full data model pending — currently described in the dist-enclosure spec's MID and proxied-BESS sections.* | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) (forward reference) |
 | `energy.ebus.device.bridge` | Standalone proxy host — an entity whose sole role is to bridge one or more non-eBus-native devices into the eBus tree (e.g., a Linux service polling a Tesla cloud API and publishing the Powerwall as a proxy; a Modbus-to-eBus appliance; a developer's CTA-2045 bridge). The bridge anchors the Homie tree as the root of its proxied children; the proxied devices are named per the `{proxier-id}-{proxied-id}` convention in `data-models/proxy.md`. The bridge does not publish HEI-device capabilities of its own. Semantic parallel to Matter's *Bridge* device type. | [`framework.md`](../framework.md#standalone-proxy-hosts-bridges) |
+| `energy.ebus.device.pdu` | Parent device for a Power Distribution Unit: distributes power to switchable, metered `outlet` children. No storage and no generation. | [`data-models/pdu.md`](../data-models/pdu.md) |
+| `energy.ebus.device.outlet` | One switchable, metered output port (an AC receptacle, or a USB / DC port). Used as a child of a host (PDU, plug-in BESS / UPS) or standalone (a smart plug / smart receptacle). | [`data-models/outlet.md`](../data-models/outlet.md) |
 
 ## Adding new device types
 
