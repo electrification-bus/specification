@@ -48,7 +48,7 @@ The model does **not** cover:
 
 - **High-sample-rate waveform data.** Voltage and current waveform streams (per-cycle samples, oscillography records) are out of scope. Such streams are not well-suited to the eBus/Homie/MQTT publish model — they belong on a dedicated streaming transport. A meter that captures waveforms continues to be a valid utility-meter publisher; it simply does not expose the waveform data via this data model.
 - **Vendor-specific configuration, provisioning, or programming.** Meter sealing, certificate provisioning, register configuration, AMI command-and-control, firmware update flows — all out of scope.
-- **Tariff content and time-of-use schedules.** A consumer that needs to compute tariffed charges from the meter's quantities obtains the tariff schedule out-of-band; the meter publishes raw quantities only.
+- **Tariff content and time-of-use schedules.** An eBus consumer that needs to compute tariffed charges from the meter's quantities obtains the tariff schedule out-of-band; the meter publishes raw quantities only.
 
 ## Design Principles
 

@@ -17,7 +17,7 @@ Some devices do not yet represent themselves on eBus. An early-adopter publisher
 
 When a device becomes available on eBus — either through a vendor adapter or natively — the proxy SHOULD stop publishing that device, leaving the eBus-native publisher as the sole representation. Determining when to proxy is publisher-implementation-specific; commissioning configuration is the typical source.
 
-During an adoption transition, both publishers may coexist (e.g., an enclosure proxies a Tesla Powerwall today; Tesla someday begins publishing the same Powerwall natively, and the enclosure publisher has not yet detected the new publisher and stopped proxying). This is expected and the data model accommodates it — see §"Disambiguating proxied from native publishers" below for how consumers identify and prefer the native representation. The proxy-suppression behavior above is an optimization to keep the eBus tree clean; it is not a hard contract guarantee against duplication.
+During an adoption transition, both publishers may coexist (e.g., an enclosure proxies a Tesla Powerwall today; Tesla someday begins publishing the same Powerwall natively, and the enclosure publisher has not yet detected the new publisher and stopped proxying). This is expected and the data model accommodates it — see §"Disambiguating proxied from native publishers" below for how eBus consumers identify and prefer the native representation. The proxy-suppression behavior above is an optimization to keep the eBus tree clean; it is not a hard contract guarantee against duplication.
 
 Consumers identify all devices by the same `$description.type` regardless of whether the device is being proxied or self-representing. The distinction is transparent to consumers.
 

@@ -43,7 +43,7 @@ The model covers:
 The model does **not** cover:
 
 - **Vendor-specific configuration, provisioning, or firmware update.** Commissioning, Wi-Fi setup, firmware flows, register programming — out of scope.
-- **Schedule / time-of-use programming.** A consumer that needs to drive the water heater on a schedule does so by issuing demand-response events over time, or out-of-band; the model publishes current state and accepts current commands, not stored schedules. (This mirrors Matter's "Timed" mode, whose schedule lives in the Thermostat cluster — deferred here to a future revision.)
+- **Schedule / time-of-use programming.** An eBus consumer that needs to drive the water heater on a schedule does so by issuing demand-response events over time, or out-of-band; the model publishes current state and accepts current commands, not stored schedules. (This mirrors Matter's "Timed" mode, whose schedule lives in the Thermostat cluster — deferred here to a future revision.)
 - **Detailed refrigerant-cycle telemetry** beyond a handful of MAY-level diagnostic temperatures. Full heat-pump cycle analytics belong on a vendor diagnostic channel.
 
 ## Design Principles
