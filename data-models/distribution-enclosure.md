@@ -563,6 +563,7 @@ For stability across a proxy-to-native transition, see [proxy.md → ID stabilit
 **All child device classes are identified by the `type` field in their `$description`**, not by device ID format or naming conventions. Device IDs are opaque identifiers.
 
 Each child device's `$description` includes:
+
 - `type` — authoritative device class (e.g., `energy.ebus.device.circuit`, `energy.ebus.device.lugs`)
 - `root` — the root device ID (the enclosure serial) — required per Homie 5 for non-root devices
 - `parent` — the parent device ID — required per Homie 5 when parent is not the root
@@ -598,6 +599,7 @@ Child `$state` topics are **not** updated by the broker on disconnect — consum
 ### Adding / Removing Children
 
 Per Homie 5, adding a child device follows this protocol:
+
 1. Publish child `$state` → `init`
 2. Publish child `$description` (with `root` and `parent` fields)
 3. Set child `$state` → `ready`

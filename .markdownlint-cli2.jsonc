@@ -1,0 +1,27 @@
+// Project-local markdownlint-cli2 config for the Electrification Bus
+// specification repo.
+//
+// markdownlint-cli2 auto-discovers this file from the directory tree and
+// MERGES it (at the individual-rule level) on top of whatever `--config`
+// is passed. So the canonical invocation still works and stays fully
+// configured by the global rules, with this file's one override added:
+//
+//   markdownlint-cli2 --config ~/.markdownlint-cli2.jsonc framework.md
+//
+// (Global disables like MD013 come from --config; MD029 below is added on
+// top. Running with no --config also picks this file up, but then the
+// global rule set is not applied, so prefer the --config form above.)
+//
+// Repo-specific override:
+//
+// - MD029 (ol-prefix): framework.md numbers its normative requirements
+//   continuously (1, 2, 3, ...) ACROSS the Networking / mDNS / MQTT / REST
+//   subsections of "## Requirements" so they can be cited by stable number
+//   ("requirement 12"). MD029 sees each `###` heading as restarting the
+//   list and demands each subsection renumber from 1, which would break
+//   those citations. The continuous numbering is intentional.
+{
+  "config": {
+    "MD029": false
+  }
+}
