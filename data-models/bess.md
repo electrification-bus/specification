@@ -1,8 +1,8 @@
 # Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.6
-**Date:** 2026-06-06
+**Version:** 0.7
+**Date:** 2026-06-26
 **Authors:** Don Jackson
 
 ## Overview
@@ -42,24 +42,43 @@ A BESS is represented as a **parent Homie device** with **child devices** for it
 energy.ebus.device.bess (parent device)
   ├── energy.ebus.device.battery    (child, one per battery pack)
   ├── energy.ebus.device.inverter   (child, if applicable)
-  ├── energy.ebus.device.mid        (child, REQUIRED for grid-forming-capable BESSs)
+  ├── energy.ebus.device.mid        (child, REQUIRED for premises-wiring grid-forming BESS)
+  ├── energy.ebus.device.outlet     (child, one per output port; plug-in BESS / UPS)
   └── energy.ebus.device.meter      (child, per metering point: site, load, solar)
 ```
 
-### Grid-forming-capable vs grid-following-only BESS
+### BESS topologies and the two islanding scopes
 
-This spec recognizes two BESS variants, distinguished by whether the BESS can act as the AC voltage/frequency reference for an islanded microgrid:
+A BESS that provides backup does so by forming an AC island, and there are **two distinct island scopes**. Which one a BESS supports, if any, is the primary structural variable in this data model.
 
-- A **grid-forming-capable BESS** (sometimes abbreviated **GFM-capable**) is able to form a microgrid — to act as the voltage/frequency reference when the home is islanded from the utility grid. This is the typical residential backup product (Tesla Powerwall, Enphase IQ Battery, SolarEdge Energy Bank, etc.).
-- A **grid-following-only BESS** (**GFL-only**) operates only as a current source synchronized to an existing grid-forming reference (the utility). It cannot back up the home during a grid outage; its value is energy management (TOU shift, NEM3 self-consumption, demand response). Smaller, lower-cost batteries fall into this class.
+- **Premises-wiring (segment) island.** A MID or automatic transfer switch (or a gateway's backup breaker) opens a disconnect and islands a *segment of the shared premises wiring*. That segment is most commonly a **critical-loads (backup) subpanel**, and at the upper limit is the whole home. Everything on the segment (its circuits, its outlets, and anything plugged into them) is carried by the island. This is the typical residential backup product: Tesla Powerwall + Backup Gateway, Enphase IQ Battery + IQ System Controller, SolarEdge Energy Bank + StorEdge. Its island state lives on a **MID child device** (`grid`); the *extent* of the segment (which circuits are protected) is discovered from the distribution-enclosure topology, not from a BESS property.
+- **Device-output island.** A plug-in battery or UPS forms an island of *its own output ports* (its outlets), physically isolated from the premises wiring by an internal transfer switch, on loss of input. It never energizes the shared premises wiring, so it never backfeeds the grid. Its island state lives on an **`output-island` capability** on the BESS itself (see §"output-island"), and the loads it backs up are its `outlet` children (see [`outlet.md`](outlet.md)).
 
-**A grid-forming-capable BESS publisher MUST include a MID child device.** The MID is the canonical home for grid-connection and islanding state (`grid`) and for the grid-forming-entity signal. When the underlying hardware does not present a separable MID, the publisher synthesizes a minimal MID child exposing at least `info` and `grid`.
+A BESS supports one of these scopes, or neither:
+
+- **Premises-wiring grid-forming BESS** (hardwired): forms a premises-wiring segment island (a critical-loads subpanel, up to the whole home). MUST include a MID child. Has no outlets. The canonical residential backup product.
+- **Plug-in BESS / UPS** (plug-and-play): grid-following on its input (it plugs into a wall outlet) but grid-forming on its *own output bus*. Serves loads through `outlet` children and backs them up via `output-island` on a grid outage. No MID; it never islands the premises wiring. Example: the Pila Mesh Home Battery. A smart **UPS** is the degenerate case, a plug-in BESS publishing the minimal subset (storage plus outlets plus `output-island`, with no `dispatch`).
+- **Grid-following BESS with no backup** (hardwired or plug-in): never forms any island; its value is energy management (TOU shift, self-consumption, demand response) via `dispatch`. Neither a MID child nor `output-island`. Without `dispatch`, the rest of the home sees it much as it would a PV system.
+
+**Islands nest.** The two scopes compose hierarchically, because each island's state lives on its own device or capability rather than as a single global flag. A typical stack:
+
+```
+utility (grid-forming while grid-tied)
+  └── premises-segment island      a MID / ATS; grid-forming-entity = the premises-segment BESS
+        └── device-output island   a plug-in BESS / UPS forms its own outlet island, nested inside
+```
+
+For example, a plug-in battery plugged into a critical-loads subpanel that a centralized premises-wiring BESS is backing up gives two concurrent, nested islands: the centralized BESS's `mid/grid/grid-forming-entity` names it as the segment's grid-forming entity, while the plug-in battery's `output-island/state = ON_BATTERY` says it forms its own outlet island within it. Two grid-forming entities at two scopes, fully consistent. An eBus consumer reads each island's state at its own scope; there is no single "islanded?" bit to reconcile. This is also why `grid-forming-entity` lives per-MID on the `grid` capability rather than as a global property: each island names its own.
+
+**Reading the topology from the capability set.** An eBus consumer distinguishes the variants without any dedicated type property: a MID `grid` child means premises-segment backup; an `output-island` capability (with `outlet` children) means plug-in / device-output backup; neither means no backup. The two islanding capabilities are the classifier, and the backup scope is derivable from which one is present.
+
+**Plug-in batteries keep grid-up and grid-down separate.** A plug-in battery's two functions live in two grid states over two electrical paths, and the model keeps them apart. Grid-up, it passes power through to its outlets and shifts those loads in time; by default it does not export into the premises wiring. (Exporting into the wall is a future, separately-regulated grid-following-source function, reserved for a forthcoming `grid-export` capability and out of scope here.) Grid-down, it drops to its device-output island (UPS mode), powering only its own outlets.
+
+**A premises-wiring grid-forming BESS publisher MUST include a MID child device.** The MID is the canonical home for grid-connection and islanding state (`grid`) and for the grid-forming-entity signal. When the underlying hardware does not present a separable MID, the publisher synthesizes a minimal MID child exposing at least `info` and `grid`.
 
 **The MID-as-child treatment reflects current commercial reality.** Every grid-forming-capable BESS shipping today (Tesla Powerwall + Gateway, Enphase IQ Battery + IQ System Controller, SolarEdge Energy Bank + StorEdge, etc.) integrates the MID into the BESS vendor's gateway, so publishing the MID as a child of the BESS is the natural representation. An architecturally valid alternative — a **standalone MID** that publishes itself as a first-class eBus device (`energy.ebus.device.mid` as its own root, not as a BESS child) and coordinates with one or more BESSs (and possibly other DERs) over the eBus broker, rather than being topologically embedded in any single DER — is not yet present in commercial products. Its data model and BESS-↔-MID coordination protocol are the subject of a separate, forthcoming Electrification Bus MID specification. A BESS publisher conforming to this spec may need future extension to interoperate with a standalone MID; that extension is out of scope here.
 
-**A grid-following-only BESS publisher MAY omit the MID child** — the absence of the MID child is itself the signal that the BESS does not support backup / off-grid operation. A grid-following-only BESS is always on-grid (when operating) and never grid-forms, so `islanding-state` / `grid-state` / `grid-forming-entity` are not meaningful for it.
-
-For a grid-following-only BESS, the value to a coordinating distribution-enclosure or HEMS comes primarily through `dispatch` (charge / discharge setpoint control — see below). Without dispatch, a grid-following-only BESS is functionally indistinguishable from a PV system to the rest of the home.
+**A plug-in BESS / UPS publisher MAY omit the MID child** and instead publish the `output-island` capability and `outlet` children. **A grid-following BESS with no backup MAY omit both.** The MID child is specifically the signal for premises-wiring (segment) backup; its absence does not mean "no backup," only "no premises-wiring backup."
 
 ### Design Principles
 
@@ -127,9 +146,11 @@ The parent device represents the BESS system as a whole. It provides aggregated 
 | `meter` | MUST | Aggregated power/energy at the BESS's external boundary (i.e., what the BESS exchanges with the rest of the system); `active-power` MUST be published. |
 | `config` | MAY | System-level settings (backup-reserve, etc.) |
 | `dispatch` | MAY | External-dispatch controls (charge-rate setpoint, SOC ceilings, etc.). See §"dispatch" below. |
+| `output-island` | MAY | Device-output island (UPS) state and control, for a plug-in BESS / UPS. See §"output-island" below. |
+| `power-flows` | MAY | Aggregate grid / battery / solar / load flows reported on the device, for an all-in-one (plug-in) unit. Reused from [`distribution-enclosure.md`](distribution-enclosure.md). |
 | `status` | MUST | System-level fault status |
 
-Grid connection and islanding state live on the MID child device (`grid`) when the BESS is grid-forming-capable (see §"Device Hierarchy"). A grid-following-only BESS omits the MID child.
+Premises-wiring grid connection and islanding state live on the MID child device (`grid`) when the BESS forms a premises-wiring (segment) island. A plug-in BESS / UPS instead exposes the `output-island` capability and `outlet` children; a grid-following BESS with no backup exposes neither. See §"BESS topologies and the two islanding scopes". Outlet children are defined in [`outlet.md`](outlet.md).
 
 ### Battery Device
 
@@ -187,6 +208,12 @@ Represents a metering point. Used for site-level, load, or solar metering when t
 |---|---|---|
 | `info` | MUST | `product-name` identifies the metering point (e.g., "Site Meter", "Solar Meter") |
 | `meter` | MUST | |
+
+### Outlet Device (child)
+
+**Type:** `energy.ebus.device.outlet`
+
+A plug-in BESS / UPS serves loads through `outlet` children, one per output port (the device's receptacles and USB ports). The `outlet` child device type is defined in [`outlet.md`](outlet.md): each is an `info` (port type, ratings, assigned name) plus `switch` (on/off) plus, where the hardware meters it, `meter`. A premises-wiring grid-forming BESS has no outlets.
 
 ---
 
@@ -272,6 +299,22 @@ Per-inverter grid-forming capability and current state. **Optional** — publish
 | `active` | boolean | SHOULD (when `capable = true`) | Current state — is this inverter actively grid-forming right now? When `false` and the inverter is energized, it is grid-following. |
 
 The two layers of representation are coherent: `<mid>/grid/grid-forming-entity == <bess-parent-id>` says "this BESS is the grid-forming entity" (externally observable, all systems); `<inverter-child-id>/grid-forming/active == true` says "this specific inverter is the one actively grid-forming" (vendor-specific, when published). The MID-level value is authoritative for which DER is grid-forming; the inverter-level flags are descriptive detail when available.
+
+### output-island
+
+Device-output island (UPS) state and control, for a plug-in BESS or UPS. This is the **device-output** island scope: the device forms a clean island of its own `outlet` children, physically isolated from the premises wiring by an internal transfer switch, and never energizes premises wiring. It is kept strictly separate from the premises-wiring island scope, which lives on the MID `grid` capability, and nests inside it. A plug-in BESS / UPS publishes `output-island`; a premises-wiring grid-forming BESS does not (it uses the MID `grid`); a no-backup BESS publishes neither. See §"BESS topologies and the two islanding scopes".
+
+**Node type:** `energy.ebus.capability.output-island`
+
+| Property ID | Datatype | Unit | Req | Settable | Description |
+|---|---|---|---|---|---|
+| `state` | enum | — | SHOULD | no | Current output state: `PASS_THROUGH` (input present; the outlets are powered through from the input, the battery idle or charging), `ON_BATTERY` (islanded; the outlets are powered from battery / solar, isolated from the input), `NO_OUTPUT` (no input and no output), `UNKNOWN`. |
+| `mode` | enum | — | MAY | yes | Requested output mode: `FOLLOW_INPUT` (normal; island automatically only on loss of input) or `ISLAND` (force the device-output island now, running the outlets from battery even with input present). Mirrors a plug-in battery's manual grid-mode control. |
+| `transfer-time` | float | ms | MAY | no | Nameplate input-to-battery switchover time (e.g., `15`). The UPS ride-through spec. |
+
+`state` answers "is the device powering its outlets from the input or from its own battery." `mode` is the control: a plug-in battery typically runs `FOLLOW_INPUT` and transfers to its island automatically on an outage, but may be told to `ISLAND` on demand. This capability never energizes premises wiring; that is exclusively the MID `grid` scope.
+
+**Backup-runtime forecast.** This capability does not carry a backup-time-remaining figure. A plug-in BESS that forecasts its backup runtime publishes the existing `shed-forecast` capability (`total-time-remaining`, and `time-to-priority-shed` if it sheds its outlets by priority), computing it itself because it authoritatively knows its own outlet loads. This is the same capability and property a distribution enclosure publishes for a centralized BESS (see [`distribution-enclosure.md`](distribution-enclosure.md)); the only difference is who knows the backup loads (the plug-in BESS itself, versus the enclosure). Per principle #7, the forecast lives on whichever device knows both the stored energy and the loads, so a centralized BESS does not publish it (the enclosure does), and a plug-in BESS does.
 
 ### config
 
@@ -538,6 +581,50 @@ ebus/5/202211182691-load-meter/                   energy.ebus.device.meter
 Note: Enphase microinverters (PCU) could optionally be represented as individual `energy.ebus.device.inverter` child devices, each with per-inverter `meter/active-power`. This is MAY — the system-level solar meter provides the aggregate.
 
 ---
+
+## Example: Pila Mesh Home Battery (plug-in)
+
+A Pila Mesh Home Battery: a grid-following, plug-in battery (1.6 kWh, 2.4 kW) that serves loads through four switchable, metered 120 V outlets plus USB-C ports, and backs them up as a UPS on a grid outage. There is **no MID child**: it never islands the premises wiring. Shown grid-up, charging from the wall while passing power through to its outlets.
+
+```
+ebus/5/PILA-7K2/                          energy.ebus.device.bess (parent, plug-in; no MID)
+  info/vendor-name                        "Pila Energy"
+  info/serial-number                      "PILA-7K2"
+  info/product-name                       "Mesh Home Battery"
+  info/nameplate-capacity                 1.6
+  soc/soc                                 64.0
+  soc/soe                                 1.02
+  meter/active-power                      -380.0       (negative = charging, into the device)
+  meter/imported-energy                   412000.0     (lifetime charge)
+  meter/exported-energy                   365000.0     (lifetime discharge)
+  output-island/state                     PASS_THROUGH
+  output-island/mode                      FOLLOW_INPUT
+  output-island/transfer-time             15
+  shed-forecast/total-time-remaining      258
+  status/communication                    OK
+
+ebus/5/PILA-7K2-outlet-1/                 energy.ebus.device.outlet
+  info/name                               "Fridge"
+  info/port-type                          AC_OUTLET
+  info/nominal-voltage                    120
+  switch/state                            ON
+  meter/active-power                      142.0
+  meter/exported-energy                   84210.0
+
+ebus/5/PILA-7K2-outlet-2/                 energy.ebus.device.outlet
+  info/name                               "Back Lower Outlet"
+  switch/state                            OFF
+  meter/active-power                      0.0
+
+ebus/5/PILA-7K2-usb-1/                    energy.ebus.device.outlet
+  info/name                               "Right USB Port"
+  info/port-type                          USB_C
+  info/nameplate-power                    100
+  switch/state                            ON
+  meter/active-power                      18.0
+```
+
+Pila's grid-up / grid-down behavior maps to `output-island/state`: Pila's `on_grid` is `PASS_THROUGH`, `off_grid` (islanded, running its outlets from battery) is `ON_BATTERY`, and `idle_off_grid` is `NO_OUTPUT`. Pila's settable grid-mode maps to `output-island/mode`. Loads plug into the `outlet` children. Pila's "Backup Forecast" maps to `shed-forecast/total-time-remaining` (here 258 min), which Pila computes itself from its SOE and metered outlet load, the same capability an enclosure publishes for a centralized BESS. Pila's whole-device flows (total grid input, solar input, load, battery rate) map to the optional `power-flows` capability on the parent, which an all-in-one unit publishes in lieu of separate site / solar / load `meter` children. Multiple Pila units that mesh are published as independent `bess` devices, aggregated by a coordinator.
 
 ## References
 
