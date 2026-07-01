@@ -1,8 +1,8 @@
 # Electrification Bus Specification
 
 **Status:** DRAFT
-**Version:** 0.3
-**Date:** 2026-06-06
+**Version:** 0.4
+**Date:** 2026-07-01
 
 ---
 
@@ -143,6 +143,7 @@ The following principles guide the structure of every eBus data model and the fr
 7. **Properties belong on the device that authoritatively knows them**, even when proxying makes other placements convenient. A property that could not be populated by a non-proxying publisher belongs elsewhere. This is a direct consequence of principle 6: the property contract must be satisfiable by *any* conformant publisher, native or proxy, and a property smuggled onto an adjacent device because only the proxy happens to know it breaks the contract for the native publisher.
 8. **Forward compatibility is a design goal.** The data model defines slots for richer data than current implementations capture. Properties are MAY-level by default; datatypes are chosen for extensibility (open-vocabulary strings, not hardcoded enums where the value space is open); capabilities accept new properties additively. The model serves as a contract for the evolving ecosystem, not as a transcript of any one current feature set.
 9. **Multi-instance from the outset.** Identifying attributes and inter-device relationships are recorded per-device rather than enumerated as class-level properties on a containing parent, so N instances of any class can coexist without model changes (for example, multiple BESSs, PV inverters, or EVSEs in a single distribution enclosure).
+10. **Scalars by default; `json` only for atomic compounds.** Property values use scalar datatypes (`float`, `integer`, `enum`, `datetime`, and so on) by default: they are directly readable, chartable, and validatable by generic Homie tooling. The `json` datatype is used sparingly, and only where a value is a compound whose parts must be read or applied as a single atomic unit. Splitting such a value across separately-retained scalar topics would let a consumer observe a torn state: parts from different updates, with no way to tell which belong together, or when each was published. Current uses: the water-heater `dr` event and the utility-meter `doe` per-direction envelope.
 
 ---
 
