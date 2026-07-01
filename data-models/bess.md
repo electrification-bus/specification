@@ -1,8 +1,8 @@
 # Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.7
-**Date:** 2026-06-26
+**Version:** 0.8
+**Date:** 2026-07-01
 **Authors:** Don Jackson
 
 ## Overview
@@ -143,7 +143,7 @@ The parent device represents the BESS system as a whole. It provides aggregated 
 |---|---|---|
 | `info` | MUST | Includes `data-model-version` |
 | `soc` | MUST | Aggregated across all battery children |
-| `meter` | MUST | Aggregated power/energy at the BESS's external boundary (i.e., what the BESS exchanges with the rest of the system); `active-power` MUST be published. |
+| `meter` | MUST | Aggregated power/energy at the BESS's external boundary (i.e., what the BESS exchanges with the rest of the system); `active-power` MUST be published. The external boundary may be a single connection point or, for a multi-unit system that lands on separate enclosure circuits, several; the parent `meter` aggregates across them. See §"Multi-unit systems and connection to the enclosure". |
 | `config` | MAY | System-level settings (backup-reserve, etc.) |
 | `dispatch` | MAY | External-dispatch controls (charge-rate setpoint, SOC ceilings, etc.). See §"dispatch" below. |
 | `output-island` | MAY | Device-output island (UPS) state and control, for a plug-in BESS / UPS. See §"output-island" below. |
@@ -166,6 +166,12 @@ Represents an individual battery pack. A BESS may have one or many.
 | `soc` | MUST | This pack's SOC/SOE |
 | `meter` | SHOULD | This pack's power/energy |
 | `status` | MAY | Per-pack fault status |
+
+### Multi-unit systems and connection to the enclosure
+
+A BESS is one Homie device per **unit of coordinated control**, not per breaker or circuit. A multi-unit system whose units a shared controller manages as one resource (site-level SOC balancing, coordinated dispatch, synchronized islanding) is a single `bess` device with one `battery` child per unit, however many breakers or circuits it lands on. A Tesla Powerwall site is the canonical example: N Powerwalls coordinated as one system (internally one unit is the leader and the rest are followers, over a private daisy-chain bus). That internal coordination, the leader/follower roles and the inter-unit comm bus, is a vendor implementation detail and is **not** modeled by eBus: the `bess` parent represents the coordinated whole, and `grid-forming-entity` names that `bess`, not an individual unit. Separate, independently-controlled systems (each with its own controller/MID) are separate `bess` devices, which the enclosure aggregates across (framework principle #9).
+
+A `bess` may connect to a distribution enclosure at **one point or several**. When its units land on separate enclosure circuits, the enclosure records each connection on the relevant circuit's `connection` node (see [`distribution-enclosure.md`](distribution-enclosure.md)). Either form is valid: the circuits may reference the `bess` parent (each `feeds-device-id = {bess}`), or, for per-unit visibility, each may reference the specific `battery` child it feeds (`feeds-device-id = {bess}-battery-{n}`). A consumer recovers "these circuits are one system" from the shared `bess` parent (the children's Homie `root` / `parent`), regardless of which form the enclosure used.
 
 ### Inverter Device
 
