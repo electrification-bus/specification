@@ -36,6 +36,8 @@ Schema vocabulary defined by eBus is vendor-neutral; vendor trademarks and produ
 
 This division of responsibilities is the precise normative line. Any concept named in the eBus device-type or capability-type registries is eBus's responsibility; anything in the Homie Convention itself is Homie's. Where the two interact (the way eBus device structures are encoded as Homie `$description` trees, the way Homie's `$type` attribute carries eBus type identifiers, the way Homie lifecycle states cascade across eBus parent / child relationships), the encoding follows the Homie Convention with the eBus specialization adding only the HEI-specific vocabulary.
 
+Beyond specializing the Homie vocabulary, Electrification Bus MAY also define **Homie extensions** under its `energy.ebus.<suffix>` namespace (distinct from the `energy.ebus.device.*` and `energy.ebus.capability.*` type namespaces). Each extension is documented in [`extensions/`](extensions/README.md) following the Homie extension convention; a device advertises an extension by adding its versioned entry (`<id>:<version>:[<homie-versions>]`) to the `extensions` array of its Homie `$description`. Extensions are the mechanism by which eBus contributes reusable, Homie-general capabilities back to the broader Homie ecosystem, and extension documents are individually licensed to permit that (see [`extensions/README.md`](extensions/README.md)).
+
 ---
 
 ## Requirements
