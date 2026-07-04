@@ -17,7 +17,7 @@ See the [main README](../README.md) for the status of each document.
 
 | ID | Version | Status | Document | Summary |
 |----|---------|--------|----------|---------|
-| `energy.ebus.imported` | 1.0.0 | DRAFT | [imported.md](imported.md) | Marks a device that was bridged in from another ecosystem, and records the source ecosystem. |
+| `energy.ebus.imported` | 1.0.0 | STABLE | [imported.md](imported.md) | Marks a device that was bridged in from another ecosystem, and records the source ecosystem. |
 
 ## Adding an extension
 

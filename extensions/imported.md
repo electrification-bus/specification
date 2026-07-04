@@ -1,6 +1,6 @@
 # Imported Extension
 
-**Status:** DRAFT
+**Status:** STABLE
 **Version:** 1.0.0
 **Date:** 2026-07-04
 **Authors:** Don Jackson
