@@ -233,8 +233,8 @@ System and device identification.
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `vendor-name` | string | — | MUST | Manufacturer name (e.g., "Tesla", "Enphase") |
-| `serial-number` | string | — | MUST | Device serial number |
+| `vendor-name` | string | — | SHOULD | Manufacturer name (e.g., "Tesla", "Enphase") |
+| `serial-number` | string | — | SHOULD | Device serial number |
 | `product-name` | string | — | SHOULD | Product name (e.g., "Powerwall 2 AC") |
 | `model` | string | — | MAY | Model/part number |
 | `firmware-version` | string | — | SHOULD | Device firmware/software version |

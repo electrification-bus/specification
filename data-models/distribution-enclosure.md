@@ -57,11 +57,11 @@ The distribution enclosure device represents the enclosure itself — its system
 ```
 ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclosure
   info                          Enclosure identity (vendor, serial, model, firmware)
-  door                          Door state sensor (when applicable)
-  meter                         Enclosure-level aggregate metering
-  power-flows                   Site-level power flow aggregation
-  pcs                           UL 3141 Power Control Systems (PCS) configuration and state
-  status                        Enclosure system status
+  door                          Door state sensor (when present)
+  meter                         Enclosure-level aggregate metering (when the enclosure meters its feed)
+  power-flows                   Site-level power flow aggregation (when computed)
+  pcs                           UL 3141 Power Control Systems (PCS) configuration and state (when the enclosure runs a PCS)
+  status                        Enclosure system status (when reported)
   shed-forecast                 Off-grid time-remaining forecast (when a BESS is commissioned)
   shed                          Enclosure-wide shed-policy controls (when a BESS is commissioned)
 
@@ -75,6 +75,8 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
     <evse-id>                              energy.ebus.device.evse       (proxied or eBus-native)
 ```
 
+**Conformance latitude.** Only `info` (identity) and the child circuits the enclosure hosts are intrinsic to a distribution enclosure. `meter`, `power-flows`, `pcs`, `status`, `door`, `shed`, and `shed-forecast` are optional capabilities, published when the product provides them: a smart panel publishes all of them, while a dumb load center or a proxied third-party panel may publish only `info` and its child circuits. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a distribution enclosure.
+
 Each enclosure-side device that *is* an electrical connection point — every circuit, both lugs devices, and the enclosure-integrated MID — also exposes a `connection` node that records what is wired to it (downstream feed) and, where the publisher knows, what feeds it (upstream). The connection records are the enclosure-side topology surface: they identify which circuit feeds which DER, where an UPSTREAM DER (e.g., a BESS wired between utility and the enclosure main lugs) sits, and how enclosures chain together in multi-enclosure installs.
 
 ### Enclosure Capabilities
@@ -85,11 +87,11 @@ Each enclosure-side device that *is* an electrical connection point — every ci
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `vendor-name` | string | MUST | Enclosure manufacturer (e.g., "SPAN"). |
-| `serial-number` | string | MUST | Enclosure serial number. |
-| `model` | string | MUST | Vendor-defined model identifier (e.g., "MAIN_32"). The set of valid values is publisher-defined and may be advertised via Homie `$format` on this property. |
-| `hardware-version` | string | SHOULD | Hardware revision. |
-| `firmware-version` | string | MUST | Firmware version. |
+| `vendor-name` | string | SHOULD | Enclosure manufacturer (e.g., "SPAN"). |
+| `serial-number` | string | SHOULD | Enclosure serial number. |
+| `model` | string | SHOULD | Vendor-defined model identifier (e.g., "MAIN_32"). The set of valid values is publisher-defined and may be advertised via Homie `$format` on this property. |
+| `hardware-version` | string | MAY | Hardware revision. |
+| `firmware-version` | string | SHOULD | Firmware version. Published when the device has firmware; omitted for a bare/surveyed enclosure. |
 | `data-model-version` | string | SHOULD | Version of the eBus distribution-enclosure data model this device publishes (e.g., `"1.0"`). |
 
 Publishers MAY add vendor-specific informational properties (subsystem versions, hardware-revision sub-identifiers, etc.) to `info` as additional properties; the spec mandates only the properties listed above.
@@ -110,33 +112,33 @@ Enclosure-level aggregate metering — measurements at the enclosure's main rela
 
 **Node type:** `energy.ebus.capability.meter`
 
-Property definitions and the `-a` / `-b` / `-c` / `-n` per-conductor convention are in [`capabilities/meter.md`](../capabilities/meter.md); `active-power` uses the default reference direction (positive = imported). On an enclosure:
+Published when the enclosure meters its feed; a panel without integrated metering omits this capability. Property definitions and the `-a` / `-b` / `-c` / `-n` per-conductor convention are in [`capabilities/meter.md`](../capabilities/meter.md); `active-power` uses the default reference direction (positive = imported). On an enclosure that meters:
 
 | Property | Req | Notes |
 |---|---|---|
-| `active-power` | MUST | Total enclosure active power. |
-| `imported-energy` | MUST | Cumulative energy imported from grid. |
-| `exported-energy` | MUST | Cumulative energy exported to grid. |
+| `active-power` | SHOULD | Total enclosure active power. |
+| `imported-energy` | SHOULD | Cumulative energy imported from grid. |
+| `exported-energy` | SHOULD | Cumulative energy exported to grid. |
 | `voltage-{a,b}` | SHOULD | Per-leg voltage (split-phase legs a, b). |
 | `current-{a,b}` | SHOULD | Per-leg current. |
 | `imported-energy-{a,b}`, `exported-energy-{a,b}` | MAY | Per-leg energy. |
 
 #### power-flows
 
-Site-level aggregate power flows across all energy sources. The enclosure computes these from its children and connected DER devices.
+Site-level aggregate power flows across all energy sources. The enclosure computes these from its children and connected DER devices. Published when the enclosure computes them; a panel that does not aggregate site power omits this capability.
 
 **Node type:** `energy.ebus.capability.power-flows`
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `grid` | float | W | MUST | Grid power flow (positive = importing from grid) |
+| `grid` | float | W | SHOULD | Grid power flow (positive = importing from grid) |
 | `battery` | float | W | SHOULD | Battery power flow (positive = discharging) |
 | `pv` | float | W | SHOULD | Solar PV power flow (positive = producing) |
-| `site` | float | W | MUST | Total site power consumption |
+| `site` | float | W | SHOULD | Total site power consumption |
 
 #### pcs
 
-UL 3141 Power Control Systems (PCS) configuration, state, and the family of Configurable Service Limit (CSL) properties that the PCS manages.
+UL 3141 Power Control Systems (PCS) configuration, state, and the family of Configurable Service Limit (CSL) properties that the PCS manages. Published when the enclosure runs a PCS; a panel without a PCS omits this capability.
 
 **What a CSL is.** A *Configurable Service Limit* is a per-source upper bound on power flow into the enclosure that the PCS enforces. (The enclosure's feed is the service entrance in single-panel installs; in multi-enclosure chains a downstream enclosure's feed is the feedthrough from an upstream enclosure — the CSL applies at the enclosure's own feed point either way, not specifically at the utility service entrance.) The enclosure publishes one CSL slot per logical source of constraint:
 
@@ -153,8 +155,8 @@ Service rating and capability properties:
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `breaker-rating` | integer | A | MUST | Main breaker rating |
-| `grid-islandable` | boolean | — | MUST | Enclosure can operate off-grid |
+| `breaker-rating` | integer | A | SHOULD | Main breaker rating |
+| `grid-islandable` | boolean | — | SHOULD | Enclosure can operate off-grid |
 
 PCS state:
 
@@ -185,13 +187,13 @@ Grid-forming-entity identity is **not** carried here — it is published as `gri
 
 #### status
 
-Enclosure system status.
+Enclosure system status. Published when the enclosure reports system status; omitted otherwise.
 
 **Node type:** `energy.ebus.capability.status`
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `relay` | enum | MUST | Main relay state: `OPEN`, `CLOSED`, `UNKNOWN` |
+| `relay` | enum | SHOULD | Main relay state (when the enclosure has a whole-panel relay): `OPEN`, `CLOSED`, `UNKNOWN` |
 | `cloud-connection` | enum | SHOULD | Cloud connectivity: `CONNECTED`, `UNCONNECTED`, `UNKNOWN` |
 | `ethernet` | boolean | SHOULD | Is the Ethernet network interface operational? |
 | `wifi` | boolean | SHOULD | Is the Wi-Fi network interface operational? |
@@ -427,7 +429,7 @@ Published when solar is commissioned but no eBus-native PV publisher exists. The
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `vendor-name` | string | — | MUST | PV system manufacturer (e.g., "Enphase Energy", "SolarEdge"). |
+| `vendor-name` | string | — | SHOULD | PV system manufacturer (e.g., "Enphase Energy", "SolarEdge"). |
 | `product-name` | string | — | SHOULD | Product name. |
 | `serial-number` | string | — | SHOULD | PV system serial number. May be absent when commissioning did not record a specific serial. |
 | `firmware-version` | string | — | MAY | PV system firmware version, when the integration reports it. |
@@ -458,7 +460,7 @@ The capabilities below cover the EVSE properties carried on the proxied child pl
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `vendor-name` | string | MUST | EVSE manufacturer. |
+| `vendor-name` | string | SHOULD | EVSE manufacturer. |
 | `product-name` | string | SHOULD | Product name. |
 | `part-number` | string | MAY | Part number. |
 | `serial-number` | string | SHOULD | EVSE serial number. |
@@ -496,7 +498,7 @@ The capabilities below cover the EVSE properties carried on the proxied child pl
 
 | Property ID | Datatype | Unit | Req | Settable | Description |
 |---|---|---|---|---|---|
-| `max-charge-current` | integer | A | MUST | no | Installer-configured maximum charge current. Reflects breaker rating and J1772 derating. |
+| `max-charge-current` | integer | A | SHOULD | no | Installer-configured maximum charge current. Reflects breaker rating and J1772 derating. |
 | `user-max-charge-current` | integer | A | SHOULD | yes | User-configured maximum charge current ceiling. MUST be ≤ `max-charge-current`. |
 
 The proxied EVSE child's wiring relationship to the enclosure — specifically, which circuit feeds the EVSE — is recorded on the enclosure-side connection-owner's `connection` (the circuit's `feeds-device-id` references the EVSE), not on the EVSE child itself.

@@ -98,12 +98,12 @@ Identity and nameplate properties. The standard Homie identity properties are re
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `vendor-name` | string | — | MAY | Manufacturer (e.g., `"Rheem"`, `"A. O. Smith"`, `"Bradford White"`). |
-| `serial-number` | string | — | MAY | Appliance serial number. |
-| `model` | string | — | MAY | Vendor-defined model identifier (e.g., `"PROPH50 T2 RH350 DCB"`). |
+| `vendor-name` | string | — | SHOULD | Manufacturer (e.g., `"Rheem"`, `"A. O. Smith"`, `"Bradford White"`). |
+| `serial-number` | string | — | SHOULD | Appliance serial number. |
+| `model` | string | — | SHOULD | Vendor-defined model identifier (e.g., `"PROPH50 T2 RH350 DCB"`). |
 | `hardware-version` | string | — | MAY | Hardware revision. |
-| `firmware-version` | string | — | MAY | Firmware version. |
-| `data-model-version` | string | — | MAY | Version of the eBus water-heater data model this device publishes (e.g., `"0.1"`). |
+| `firmware-version` | string | — | SHOULD | Firmware version. |
+| `data-model-version` | string | — | SHOULD | Version of the eBus water-heater data model this device publishes (e.g., `"0.1"`). |
 | `fuel-type` | enum | — | MAY | Primary energy source: `ELECTRIC`, `GAS`, `HEAT_PUMP`, `HYBRID`, `OTHER`. `HYBRID` denotes a unit with both a heat pump and electric-resistance backup. |
 | `heat-sources` | string | — | MAY | Comma-separated set of the heat sources the unit *can* call on, drawn from the vocabulary `HEAT_PUMP`, `RESISTANCE_UPPER`, `RESISTANCE_LOWER`, `RESISTANCE`, `GAS`, `OTHER` (e.g., `"HEAT_PUMP,RESISTANCE_UPPER,RESISTANCE_LOWER"`). Mirrors Matter's `HeaterTypes`. Which of these are *currently firing* is reported by `water-heater`/`heat-demand`. |
 | `tank-volume` | float | L | MAY | Nominal tank capacity in litres. (A "50 gallon" unit publishes `≈189`.) Enables an energy manager to estimate heating energy. |
