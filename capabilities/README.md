@@ -15,5 +15,6 @@ This area is being populated incrementally. A data model may still define a capa
 | Capability | Document | Status |
 |---|---|---|
 | `energy.ebus.capability.breaker` | [`breaker.md`](breaker.md) | DRAFT v0.1 (2026-07-05) |
+| `energy.ebus.capability.info` | [`info.md`](info.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.switch` | [`switch.md`](switch.md) | DRAFT v0.1 (2026-07-05) |

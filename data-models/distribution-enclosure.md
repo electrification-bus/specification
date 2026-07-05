@@ -85,14 +85,7 @@ Each enclosure-side device that *is* an electrical connection point — every ci
 
 **Node type:** `energy.ebus.capability.info`
 
-| Property ID | Datatype | Req | Description |
-|---|---|---|---|
-| `vendor-name` | string | SHOULD | Enclosure manufacturer (e.g., "SPAN"). |
-| `serial-number` | string | SHOULD | Enclosure serial number. |
-| `model` | string | SHOULD | Vendor-defined model identifier (e.g., "MAIN_32"). The set of valid values is publisher-defined and may be advertised via Homie `$format` on this property. |
-| `hardware-version` | string | MAY | Hardware revision. |
-| `firmware-version` | string | SHOULD | Firmware version. Published when the device has firmware; omitted for a bare/surveyed enclosure. |
-| `data-model-version` | string | SHOULD | Version of the eBus distribution-enclosure data model this device publishes (e.g., `"1.0"`). |
+The shared identity properties (`vendor-name`, `serial-number`, `model`, `hardware-version`, `firmware-version`, `data-model-version`) are defined in [`capabilities/info.md`](../capabilities/info.md). An enclosure adds no device-specific identity properties beyond them (`model` values such as `"MAIN_32"` MAY be advertised via Homie `$format`).
 
 Publishers MAY add vendor-specific informational properties (subsystem versions, hardware-revision sub-identifiers, etc.) to `info` as additional properties; the spec mandates only the properties listed above.
 
