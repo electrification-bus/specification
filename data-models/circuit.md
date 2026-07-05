@@ -127,35 +127,11 @@ The full per-phase / reactive / apparent / 4-quadrant matrix (as exposed by, for
 
 ### switch
 
-The circuit's remotely-controllable relay. Published when the circuit has a controllable relay; omitted otherwise. This is the **control** surface, distinct from `breaker` (protection): a relay opens on command or load-shed, a breaker trips on fault.
-
-**Node type:** `energy.ebus.capability.switch`
-
-| Property ID | Datatype | Unit | Req | Settable | Description |
-|---|---|---|---|---|---|
-| `relay` | enum | — | MUST | when `relay-controllable` | Relay state: `OPEN`, `CLOSED`, `UNKNOWN`. Settable when `relay-controllable = true`. |
-| `relay-controllable` | boolean | — | SHOULD | no | True = the relay can be opened/closed by command or auto-shed. False = locked. |
-| `relay-requester` | enum | — | SHOULD | no | Source attribution for the last relay change: `USER`, `LOAD_SHED`, `PCS`, `CONFIGURATION`, `FAULT`, `NONE`, `UNKNOWN`. Publishers MAY extend via `$format`. |
-
-Implementation note: some remote-relay mechanisms use a fail-safe timeout (for example the Eaton SBLCP remote handle requires a command refresh within 10 seconds); that is a publisher concern, not a property of this capability.
+The circuit's remotely-controllable relay. Published when the circuit has a controllable relay; omitted otherwise. This is the **control** surface, distinct from `breaker` (protection): a relay opens on command or load-shed, a breaker trips on fault. The full property catalog (`relay`, `relay-controllable`, `relay-requester`, and the fail-safe-timeout note) is defined in [`capabilities/switch.md`](../capabilities/switch.md).
 
 ### breaker
 
-Overcurrent / fault **protection**. Published when the circuit is protected by a breaker; omitted otherwise (a bare monitored conductor or feedthrough has no `breaker`). Distinct from `switch`: protection is not remote control. In Eaton's SBLCP protocol these are literally two handles (a primary/protective handle and a remote/control handle), which validates the split at the hardware level. Matter models the same separation (On/Off cluster vs Electrical Protection Alarm cluster on the Electrical Circuit Breaker device type).
-
-**Node type:** `energy.ebus.capability.breaker`
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `rating` | integer | A | SHOULD | Continuous current rating. (Matter `MaxContinuousCurrent`.) |
-| `poles` | integer | — | MAY | Number of poles (1-4). A US split-phase 240 V breaker is `2`. (Matter `NumberOfPoles`.) |
-| `interrupting-rating` | integer | kA | MAY | Interrupting capacity (kAIC), e.g. `10`, `65`, `100`. |
-| `protection-functions` | enum | — | MAY | Multi-valued set of the protections this breaker provides: `OVERCURRENT`, `SHORT_CIRCUIT`, `GROUND_FAULT` (GFCI), `ARC_FAULT` (AFCI). |
-| `trip-curve` | enum | — | MAY | Instantaneous trip curve: `B`, `C`, `D`, `K`, … (Matter `CurrentTripCurveEnum`.) |
-| `trip-state` | enum | — | SHOULD | `OK`, `TRIPPED`, `STUCK`, `UNKNOWN`. A tripped breaker carries no current even if a downstream `switch/relay` reads `CLOSED`, so `trip-state` is not a relay state. |
-| `trip-cause` | enum | — | MAY | Cause of the most recent trip: `OVERCURRENT`, `SHORT_CIRCUIT`, `GROUND_FAULT`, `ARC_FAULT`, `OVERVOLTAGE`, `UNKNOWN`. |
-
-Optional further properties aligned to Matter for crosswalk (adopt as needed): `gfci-class` (Matter `GroundFaultClassEnum`), `max-voltage` (`MaxVoltage`), `end-of-life` (`EndOfLife`, relevant for solid-state breakers), `service-entrance-rated` (`ServiceEntranceRated`).
+Overcurrent / fault **protection**. Published when the circuit is protected by a breaker; omitted otherwise (a bare monitored conductor or feedthrough has no `breaker`). Distinct from `switch`: protection is not remote control. In Eaton's SBLCP protocol these are literally two handles (a primary/protective handle and a remote/control handle), which validates the split at the hardware level. The full property catalog (`rating`, `poles`, `interrupting-rating`, `protection-functions`, `trip-curve`, `trip-state`, `trip-cause`, and the optional further properties) is defined in [`capabilities/breaker.md`](../capabilities/breaker.md).
 
 ### load-shed
 
@@ -311,4 +287,4 @@ ebus/5/<enc>-c31b/$description.type  = energy.ebus.device.circuit
 - [Electrification Bus distribution-enclosure data model](distribution-enclosure.md) — hosts circuits as child devices; defines the `lugs` specialization, the `connection` catalog, and the enclosure-specific load-shed interaction.
 - [Electrification Bus utility-meter data model](utility-meter.md) — precedent for wide conformance latitude and per-phase suffixes.
 - [Electrification Bus capability-type registry](../registries/capability-types.md)
-- Matter Electrical Circuit Breaker device type `0x0516` and its clusters Electrical Distribution (0x00A2), Electrical Protection Alarm (0x00A3), Electrical Alarm (0x00A1), Power Topology (0x009C). Provisional in the Matter master/tip specification (not in the 1.5.1 release). Cross-reference for the `breaker` vocabulary.
+- [Electrification Bus `breaker`](../capabilities/breaker.md) and [`switch`](../capabilities/switch.md) capabilities: the canonical property catalogs for the protection and control surfaces referenced above.

@@ -9,6 +9,7 @@
 - **[`framework.md`](framework.md)** — the framework spec. Defines how devices participate in the bus: network architecture, discovery (mDNS), messaging (MQTT/Homie), broker hosting, credentials and TLS (including mTLS client authentication), proxy publishers, design principles, and the device-and-node-type taxonomy that data-model documents build on.
 - **`data-models/`** — vendor-neutral data models for specific device categories. Each data-model document defines the canonical Homie device structure (parent device + child devices, capabilities, properties) for that category. Data-model documents reference the framework but stand on their own — vendors implementing a specific device category will read the relevant data-model document directly.
 - **`registries/`** — canonical registries for device-type identifiers (`energy.ebus.device.*`) and capability-type identifiers (`energy.ebus.capability.*`) used across all data models. Registries grow as new device categories are added.
+- **`capabilities/`** — canonical property-catalog documents for cross-cutting `energy.ebus.capability.*` capabilities (metering, overcurrent protection, remote relay control, and similar). Each capability is defined once and referenced by the data models that use it, rather than restated in each; the capability-type registry indexes them.
 - **`integration-guides/`** — informative guides describing how two or more data-model surfaces compose at runtime. Integration guides reference the relevant data-model documents but do not redefine their normative contracts; they describe the end-to-end flow (subscription topology, value transformations, commissioning, failure handling) when both sides of an integration are present together.
 - **`examples/`** — reference snippets, reference implementations, and integration examples. *Currently empty; content will be added as the framework and data-model specifications stabilize.*
 
@@ -43,6 +44,9 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.5 (2026-07-01) |
 | [`registries/circuit-tags.md`](registries/circuit-tags.md) | DRAFT v0.1 (2026-05-23) |
 | [`registries/external-id-schemes.md`](registries/external-id-schemes.md) | DRAFT v0.1 (2026-05-16) |
+| **Capabilities** | |
+| [`capabilities/breaker.md`](capabilities/breaker.md) | DRAFT v0.1 (2026-07-05) |
+| [`capabilities/switch.md`](capabilities/switch.md) | DRAFT v0.1 (2026-07-05) |
 | **Integration Guides** | |
 | [`integration-guides/utility-meter-and-distribution-enclosure.md`](integration-guides/utility-meter-and-distribution-enclosure.md) | DRAFT v0.2 (2026-07-01) |
 | **Extensions** | |
