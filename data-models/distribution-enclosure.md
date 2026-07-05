@@ -321,7 +321,7 @@ When the MID is external (e.g., shipped as part of a BESS), it is a child of tha
 
 **info:**
 
-Standard identity properties (`vendor-name`, `serial-number`, `product-name`, `model`, `firmware-version`, `hardware-version`). The enclosure-integrated MID's `vendor-name` is the enclosure vendor, and the `data-model-version` on the MID device tracks the MID's data-model spec version (independent of the enclosure's `data-model-version`).
+The shared identity properties (`vendor-name`, `serial-number`, `model`, `firmware-version`, `hardware-version`, `data-model-version`) are defined in [`capabilities/info.md`](../capabilities/info.md); the MID MAY also carry `product-name`. The enclosure-integrated MID's `vendor-name` is the enclosure vendor, and its `data-model-version` tracks the MID's own data-model spec version (independent of the enclosure's `data-model-version`).
 
 **grid:**
 
@@ -420,12 +420,11 @@ Published when solar is commissioned but no eBus-native PV publisher exists. The
 
 **Node type:** `energy.ebus.capability.info`
 
+The shared identity properties (`vendor-name`, `serial-number`, `firmware-version`) are defined in [`capabilities/info.md`](../capabilities/info.md). PV-specific identity properties:
+
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `vendor-name` | string | — | SHOULD | PV system manufacturer (e.g., "Enphase Energy", "SolarEdge"). |
 | `product-name` | string | — | SHOULD | Product name. |
-| `serial-number` | string | — | SHOULD | PV system serial number. May be absent when commissioning did not record a specific serial. |
-| `firmware-version` | string | — | MAY | PV system firmware version, when the integration reports it. |
 | `nameplate-capacity` | float | W | SHOULD | Nameplate capacity. |
 
 #### meter
@@ -451,13 +450,12 @@ The capabilities below cover the EVSE properties carried on the proxied child pl
 
 **Node type:** `energy.ebus.capability.info`
 
+The shared identity properties (`vendor-name`, `serial-number`, `firmware-version`) are defined in [`capabilities/info.md`](../capabilities/info.md). EVSE-specific identity properties:
+
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `vendor-name` | string | SHOULD | EVSE manufacturer. |
 | `product-name` | string | SHOULD | Product name. |
 | `part-number` | string | MAY | Part number. |
-| `serial-number` | string | SHOULD | EVSE serial number. |
-| `firmware-version` | string | MAY | EVSE firmware version. |
 
 #### meter
 
