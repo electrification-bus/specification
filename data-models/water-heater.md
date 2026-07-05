@@ -157,7 +157,7 @@ This is the same capability type used for batteries on BESS devices, reused here
 
 #### meter
 
-Instantaneous electrical power and cumulative energy. Reused from the eBus `meter` capability; a water heater populates the small subset below.
+Instantaneous electrical power and cumulative energy. Reused from the eBus [`meter`](../capabilities/meter.md) capability; a water heater populates the small subset below.
 
 **Node type:** `energy.ebus.capability.meter`
 

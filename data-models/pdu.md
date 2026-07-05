@@ -77,7 +77,7 @@ Reuses the standard identity properties (`vendor-name`, `serial-number`, `model`
 
 #### meter
 
-**Node type:** `energy.ebus.capability.meter`. Whole-unit (inlet) metering, using the standard `meter` properties (`active-power`, `imported-energy`, etc.). Present on whole-unit-metered PDUs; on per-outlet-metered PDUs it is the optional aggregate over the per-outlet meters.
+**Node type:** `energy.ebus.capability.meter`. Whole-unit (inlet) metering, using the standard [`meter`](../capabilities/meter.md) properties (`active-power`, `imported-energy`, etc.). Present on whole-unit-metered PDUs; on per-outlet-metered PDUs it is the optional aggregate over the per-outlet meters.
 
 ---
 
