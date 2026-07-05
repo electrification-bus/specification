@@ -349,32 +349,13 @@ An enclosure-side device that is itself an *electrical connection point* — eve
 
 **Node type:** `energy.ebus.capability.connection`
 
-| Property ID | Datatype | Req | Description |
-|---|---|---|---|
-| `feeds-device-id` | string | MAY | Homie device ID of the device wired *downstream* of this connection point. Published only when the specific downstream device is known. Omitted when unknown, when the circuit is mixed-load with no specific commissioned downstream device, or when nothing is connected. |
-| `feeds-device-type` | string | MAY | `$description.type` of the downstream-connected device (e.g., `energy.ebus.device.bess`, `.pv`, `.evse`, `.distribution-enclosure`, or a DER sub-device such as `.battery` when a circuit feeds one unit of a multi-unit BESS). Published when the downstream device class is known, even if the specific device ID is not. Omitted when the class is not known. |
-| `feeds-device-status` | enum | MAY | Enclosure's view of communication-link health to the fed device: `OK`, `LOST`, `DEGRADED`. Published only when `feeds-device-id` is published AND the enclosure has a communication integration with that device (typical for commissioned DERs the enclosure polls via an internal backup integration; never applicable for regular branch-circuit loads). |
-| `fed-by-device-id` | string | MAY | Homie device ID of the device wired *upstream* of this connection point. Published only when known. Typical populated cases: an UPSTREAM BESS wired between utility and the enclosure main lugs, or an upstream sister enclosure in a multi-enclosure chain. Omitted when the upstream side is the utility (not modeled as an eBus device), when the upstream side is the enclosure busbar (implicit, not modeled), or when the publisher does not know. |
-| `fed-by-device-type` | string | MAY | `$description.type` of the upstream-connected device. Published with `fed-by-device-id`. Omitted when the latter is omitted. |
-| `fed-by-device-status` | enum | MAY | Enclosure's view of communication-link health to the upstream device. Same value domain and applicability rules as `feeds-device-status`. |
-| `count` | integer | MAY | When the connected node aggregates multiple physical units (e.g., 4 microinverters on one AC string reported as one solar device, or 6 battery packs in one BESS), how many. |
-
-**Absent properties mean "unknown."** A property in this capability is published only when the publisher has data for it. Empty strings are not used as sentinels for "unknown" — an unpublished property is the unknown signal, in keeping with Homie convention. The seven properties divide into three groups that are typically published together as a unit: the `feeds-*` triplet, the `fed-by-*` triplet, and `count`. Each group is independent.
-
-**Both directions are MAY-level; populate when known.** The model defines both the `feeds-*` and `fed-by-*` triplets so any enclosure implementation can record connection metadata in either direction as it learns it. A publisher populates the side(s) it knows. Implementations that, today, know what feeds them via the upstream lugs device (the `fed-by-*` side, in the inter-enclosure chain or the upstream-BESS case) and what is fed by circuits and feedthrough lugs when a specific DER is commissioned (the `feeds-*` side) will populate those sides; the other side stays unpublished until commissioning data captures it. Consumers must not assume both directions are populated; the absence of a counterpart record is information, not error.
+The full property catalog — the `feeds-*` / `fed-by-*` device references, `count`, and the topology attributes `backed-up`, `feeds-role`, `service-rating`, and `overcurrent-protection` — and the general semantics (absence means unknown, both directions are MAY, and how the distributed edges assemble into a site graph) are defined in [`capabilities/connection.md`](../capabilities/connection.md). Within an enclosure, the `feeds-device-status` / `fed-by-device-status` link-health is the enclosure's view of a commissioned DER it polls (never a branch-circuit load); `service-rating` sits on the service-entrance `lugs`; and `backed-up` distinguishes which downstream feeders survive off-grid. The rest of this section documents enclosure-specific usage.
 
 **Mixed-load and unsurveyed circuits.** Most residential branch circuits feed multiple unmarked loads (a "Kitchen" circuit serves several outlets, none of which is individually commissioned). For these circuits the `connection/feeds-*` properties are simply not published — the circuit child device still exists with its `info/name`, `breaker/rating`, `meter/*`, etc., but no specific commissioned downstream-device record is available. A spare breaker with nothing wired to it looks the same. The absence of `feeds-*` does not distinguish "no load wired" from "we have no record" from "multiple loads, none commissioned" — and functionally there is no need to distinguish those cases, because the enclosure has nothing further to say about the connection.
 
 **A single BESS may connect via multiple circuits.** A multi-unit BESS whose units land on separate circuits (rather than aggregating through one gateway feed) is fed by more than one circuit. Each such circuit publishes its own `connection/feeds-*`, and more than one circuit MAY reference the same BESS: either the `bess` parent (each `feeds-device-id = {bess}`) or the specific unit child it feeds (`feeds-device-id = {bess}-battery-{n}`, with `feeds-device-type = energy.ebus.device.battery`). A consumer sums the circuits that reference one BESS (directly, or via a child's Homie `parent` / `root`) to obtain that BESS's total flow. This is distinct from `count`, which stands in for multiple physical units aggregated behind a **single** connection point; here the units are on **distinct** circuits. See [`bess.md`](bess.md) for why a coordinated multi-unit system is one `bess`.
 
-**Connection-point class is implicit in the publisher's device class.** Consumers do not need an extra discriminator field — they read the publisher's `$description.type`:
-
-| Publishing device's `$description.type` | Connection-point class |
-|---|---|
-| `energy.ebus.device.circuit` | feeder-circuit (load fed through a breaker) |
-| `energy.ebus.device.lugs` (downstream) | feedthrough-lugs |
-| `energy.ebus.device.lugs` (upstream) | main-lugs (service entrance) |
-| `energy.ebus.device.mid` | MID passthrough |
+**Connection-point class** is implicit in the publisher's `$description.type` (circuit = feeder-circuit, upstream `lugs` = main-lugs / service entrance, downstream `lugs` = feedthrough, MID = interconnect passthrough); see [`capabilities/connection.md`](../capabilities/connection.md).
 
 **Upstream vs IN_PANEL DERs (no separate `relative-position` property).** The position of a DER relative to the enclosure is derivable from which enclosure-side connection-owner references the DER:
 

@@ -85,29 +85,11 @@ Physical position within a panel (which space(s) the breaker occupies) is an att
 
 ### connection
 
-The circuit's topological position: what is wired downstream of it (`feeds-*`) and what is wired upstream (`fed-by-*`). **SHOULD be published** when known; absence means topology is unknown, not "nothing connected". This is the same capability published by every device that is an electrical connection point (circuits, lugs, the enclosure-integrated MID). It is how a consumer reconciles overlapping measurements (for example an eGauge CT and a native device measuring the same conductor) by co-location.
+The circuit's topological position: what is wired downstream of it (`feeds-*`) and upstream (`fed-by-*`). **SHOULD be published** when known; absence means topology is unknown, not "nothing connected". The full property catalog (the device references, `count`, and the topology attributes `backed-up`, `feeds-role`, `service-rating`, `overcurrent-protection`) and the topology semantics are defined in [`capabilities/connection.md`](../capabilities/connection.md). Publishing it is how a consumer reconciles overlapping measurements (for example an external CT and a native device measuring the same conductor) by co-location.
 
 **Node type:** `energy.ebus.capability.connection`
 
-| Property ID | Datatype | Req | Description |
-|---|---|---|---|
-| `feeds-device-id` | string | MAY | Homie device ID of the device wired *downstream* of this circuit. Published only when the specific downstream device is known. Omitted when unknown, mixed-load with no commissioned downstream device, or nothing connected. |
-| `feeds-device-type` | string | MAY | `$description.type` of the downstream device (e.g., `energy.ebus.device.bess`, `.pv`, `.evse`, `.water-heater`, or a DER sub-device such as `.battery`). Published when the class is known even if the specific ID is not. |
-| `feeds-device-status` | enum | MAY | Publisher's view of communication-link health to the fed device: `OK`, `LOST`, `DEGRADED`. Published only when `feeds-device-id` is published AND the publisher has a communication integration with that device. |
-| `fed-by-device-id` | string | MAY | Homie device ID of the device wired *upstream* of this circuit. Published only when known (e.g., an UPSTREAM BESS, or an upstream sister enclosure). Omitted when the upstream side is the utility, an implicit busbar, or unknown. |
-| `fed-by-device-type` | string | MAY | `$description.type` of the upstream device. Published with `fed-by-device-id`. |
-| `fed-by-device-status` | enum | MAY | Publisher's view of communication-link health to the upstream device. Same value domain and applicability as `feeds-device-status`. |
-| `count` | integer | MAY | When the connected node aggregates multiple physical units (e.g., 6 battery packs in one BESS behind one connection point), how many. |
-
-**Absent properties mean "unknown."** A property is published only when the publisher has data for it; empty strings are not sentinels. The properties divide into three independently-published groups: the `feeds-*` triplet, the `fed-by-*` triplet, and `count`.
-
-**Both directions are MAY-level; populate the side(s) you know.** Consumers must not assume both directions are populated; the absence of a counterpart record is information, not error.
-
-**Connection-point class is implicit in the publisher's `$description.type`** — a consumer reads whether it is a `circuit`, `lugs`, or MID and needs no extra discriminator field.
-
-> A single DER may connect via multiple circuits: more than one circuit MAY reference the same downstream device (each `feeds-device-id = {device}`, or a specific unit child). A consumer sums the circuits referencing one device to obtain its total flow. This is distinct from `count` (multiple units behind a *single* connection point).
->
-> Conversely, one circuit MAY feed several sibling circuits: a *multi-load breaker* (tandem or quad) is a feed circuit whose shared meter and relay sit above per-load circuits that each carry only their own `breaker`. See §"Multi-load breakers (tandem and quad)".
+> A circuit MAY feed several sibling circuits: a *multi-load breaker* (tandem or quad) is a feed circuit whose shared meter and relay sit above per-load circuits that each carry only their own `breaker`. See §"Multi-load breakers (tandem and quad)".
 
 ### meter
 
