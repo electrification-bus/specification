@@ -1,7 +1,7 @@
 # Electrification Bus Capability Type Registry
 
-**Status:** DRAFT v0.5
-**Date:** 2026-07-01
+**Status:** DRAFT v0.6
+**Date:** 2026-07-05
 **Authors:** Don Jackson
 
 ## Purpose
@@ -21,7 +21,7 @@ This registry is descriptive, not exhaustive: it lists what is currently registe
 
 ## Registered capability types
 
-The **Source** column references the data-model document where the identifier currently appears.
+The **Source** column points to where the identifier is defined: a canonical capability catalog in [`capabilities/`](../capabilities/) where one exists, otherwise the data-model document where the identifier currently appears.
 
 | Identifier | Description | Source |
 |---|---|---|
@@ -30,7 +30,8 @@ The **Source** column references the data-model document where the identifier cu
 | `energy.ebus.capability.status` | Device operational status. On the enclosure: main relay state, cloud connectivity, network interface state, and system configuration (postal code, time zone). On BESS and adapters: fault and operational status. Appears on enclosure, BESS, and adapter devices. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.connection` | Wiring topology — what is wired downstream of (and, where known, upstream of) this device. Properties identify the connected device by Homie ID and `$description.type`; one property carries the enclosure's view of communication-link health to the fed device. Appears on every enclosure-side device that is itself an electrical connection point: every circuit, both lugs devices, and the enclosure-integrated MID. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.meter` | Electrical measurements: active power, imported/exported energy, and per-line voltages, currents, and per-line energies. Appears on devices that report electrical measurements: enclosure (service-entrance aggregate), circuits, lugs, BESS, and dedicated meters. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
-| `energy.ebus.capability.switch` | Switchable on/off control (e.g., a circuit relay). Carries current relay state and accepts `/set` commands. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
+| `energy.ebus.capability.switch` | Remotely-controllable relay: the on/off **control** surface (relay state, controllability, and last-change source attribution). Distinct from `breaker` (protection). Appears on circuits and other devices with a controllable relay. | [`capabilities/switch.md`](../capabilities/switch.md) |
+| `energy.ebus.capability.breaker` | Overcurrent and fault **protection** provided by a circuit breaker: rating, poles, interrupting rating, protection functions, trip curve, and trip state / cause. Distinct from `switch` (remote control). Appears on circuits and proxied smart breakers. | [`capabilities/breaker.md`](../capabilities/breaker.md) |
 | `energy.ebus.capability.door` | Enclosure door state (e.g., `OPEN` / `CLOSED` / `UNKNOWN`). | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.grid` | Grid connection, islanding state, and grid-forming-entity identity. Carries properties like `islanding-state` (`ON_GRID` / `OFF_GRID` / …), `grid-state`, and `grid-forming-entity`. Primarily appears on MID devices. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.grid-forming` | Per-inverter grid-forming capability and current state — exposed by inverters whose vendor surfaces this detail. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
