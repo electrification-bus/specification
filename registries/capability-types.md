@@ -1,6 +1,6 @@
 # Electrification Bus Capability Type Registry
 
-**Status:** DRAFT v0.7
+**Status:** DRAFT v0.8
 **Date:** 2026-07-05
 **Authors:** Don Jackson
 
@@ -25,7 +25,7 @@ The **Source** column points to where the identifier is defined: a canonical cap
 
 | Identifier | Description | Source |
 |---|---|---|
-| `energy.ebus.capability.info` | Device identity and metadata. On the enclosure parent: vendor name, serial number, model, hardware/firmware version, data-model version. On circuits, lugs, and other child devices: device-specific identifiers and descriptive properties. Appears on all devices. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
+| `energy.ebus.capability.info` | Device identity and descriptive metadata, present on every device. Its shared identity core (`vendor-name`, `serial-number`, `model`, `hardware-version`, `firmware-version`, `data-model-version`) is canonical in `capabilities/info.md`; device models add device-specific `info` properties (a circuit's load-facing name / tags, a meter's metrology nameplate, and so on). | [`capabilities/info.md`](../capabilities/info.md) |
 | `energy.ebus.capability.config` | Settable configuration properties for a device — runtime-tunable values controlling operational behavior. Appears on BESS and EVSE (e.g., EVSE's `user-max-charge-current`). | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.status` | Device operational status. On the enclosure: main relay state, cloud connectivity, network interface state, and system configuration (postal code, time zone). On BESS and adapters: fault and operational status. Appears on enclosure, BESS, and adapter devices. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.connection` | Wiring topology — what is wired downstream of (and, where known, upstream of) this device. Properties identify the connected device by Homie ID and `$description.type`; one property carries the enclosure's view of communication-link health to the fed device. Appears on every enclosure-side device that is itself an electrical connection point: every circuit, both lugs devices, and the enclosure-integrated MID. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |

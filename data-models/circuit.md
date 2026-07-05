@@ -79,6 +79,8 @@ Circuit identity. **Always published.**
 | `external-ids` | string | — | MAY | no | Multi-valued list of `<scheme>:<identifier>` references from external systems. See [`registries/external-id-schemes.md`](../registries/external-id-schemes.md). |
 | `dedicated` | boolean | — | MAY | no | True when commissioned as serving a single load; false when explicitly mixed-load; omitted when undetermined. Absence is *not* equivalent to false. |
 
+A circuit **realized by a distinct physical instrument** (for example a proxied standalone sub-meter, an EKM or eGauge measuring one conductor) MAY additionally carry the shared identity properties (`vendor-name`, `serial-number`, `model`, `firmware-version`) defined in [`capabilities/info.md`](../capabilities/info.md), recording that instrument's nameplate: `info/name` names the conductor, while `info/vendor-name` and its siblings name the measuring instrument. A bare panel branch, which is a conductor and not an instrument, omits them. The instrument serial MAY also appear in `info/external-ids` (e.g. `ekm:<serial>`) as a cross-system reference.
+
 Physical position within a panel (which space(s) the breaker occupies) is an attribute of the *hosting enclosure*, not of the general circuit, and is defined by the enclosure's model (see [`distribution-enclosure.md`](distribution-enclosure.md)'s `info/spaces`). A two-pole breaker occupies two spaces, a tandem puts two circuits in one space, so a circuit's electrical pole count (`breaker/poles`) and its physical footprint are modelled separately.
 
 ### connection

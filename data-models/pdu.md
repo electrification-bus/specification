@@ -73,7 +73,7 @@ An eBus consumer reads whichever `meter` nodes are present. Absence of per-outle
 
 **Node type:** `energy.ebus.capability.info`
 
-Reuses the standard identity properties (`vendor-name`, `serial-number`, `model`, `firmware-version`, `data-model-version`). A PDU MAY add `outlet-count` (integer) for convenience; consumers can also count the `outlet` children.
+Reuses the shared identity properties defined in [`capabilities/info.md`](../capabilities/info.md) (`vendor-name`, `serial-number`, `model`, `firmware-version`, `data-model-version`). A PDU MAY add `outlet-count` (integer) for convenience; consumers can also count the `outlet` children.
 
 #### meter
 

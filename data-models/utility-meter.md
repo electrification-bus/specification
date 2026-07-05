@@ -102,18 +102,12 @@ A property whose corresponding phase position is not present on this meter's ser
 
 #### info
 
-Meter identity and nameplate properties. The standard Homie identity properties are reused from the eBus convention; meter-specific nameplate properties are added below them.
+Meter identity and nameplate properties. The shared identity properties are defined in [`capabilities/info.md`](../capabilities/info.md); the meter-specific metrology and nameplate properties are added below.
 
 **Node type:** `energy.ebus.capability.info`
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `vendor-name` | string | — | SHOULD | Meter manufacturer (e.g., `"Landis+Gyr"`, `"Aclara"`, `"Honeywell"`). |
-| `serial-number` | string | — | SHOULD | Meter serial number. |
-| `model` | string | — | SHOULD | Vendor-defined model identifier. |
-| `hardware-version` | string | — | MAY | Hardware revision. |
-| `firmware-version` | string | — | SHOULD | Firmware version. |
-| `data-model-version` | string | — | SHOULD | Version of the eBus utility-meter data model this device publishes (e.g., `"0.1"`). |
 | `meter-class` | string | — | MAY | Accuracy class designator (e.g., `"0.2"`, `"0.2S"`, `"0.5"`, `"0.5S"`, `"1.0"`). Free-text; the set of valid values is governed by the relevant metrology standard, not by this spec. |
 | `meter-form` | string | — | MAY | ANSI meter form designation (e.g., `"2S"`, `"9S"`, `"16S"`, `"45S"`). Free-text. Determines the meter's service configuration (single-phase / split-phase / three-phase, with/without neutral, transformer-rated vs. self-contained) and therefore which `-a` / `-b` / `-c` / `-n` property positions are populated below. |
 | `phases` | integer | — | MAY | Number of phase positions the meter measures (`1`, `2`, or `3`). Distinct from the *wire count* of the service — a US split-phase service is `phases = 2`, not 3. |
