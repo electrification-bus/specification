@@ -381,15 +381,11 @@ Per the proxy model's general rule that [proxy-side knowledge stays on the proxy
 
 The DER child carries no `feed` property, no `relative-position` property, and no enclosure-↔-DER link-health property. A BESS device publishes its own `status/communication` property (the publisher's self-report of adapter-to-BESS communication) — that is a different signal from the enclosure-side link-health, published independently of the enclosure's view.
 
-> **Interim placement.** The next three subsections — *Proxied BESS Child*, *Proxied PV Child*, *Proxied EVSE Child* — are partial BESS / PV / EVSE data models, framed as "what the enclosure publishes when proxying." Rules they state, such as "a conformant BESS publisher MUST include a MID child device," are properly BESS-data-model statements, not enclosure-spec statements. They will move to `data-models/bess.md`, `data-models/pv.md`, and `data-models/evse.md` when those per-device data models land in this repository. The general proxy-publication conventions themselves already live in [`data-models/proxy.md`](proxy.md).
+> **Interim placement.** The *Proxied PV Child* and *Proxied EVSE Child* subsections below are partial PV / EVSE data models, framed as "what the enclosure publishes when proxying." Rules they state are properly per-device-data-model statements, not enclosure-spec statements, and will move to `data-models/pv.md` and `data-models/evse.md` when those per-device data models land. (The BESS equivalent has already moved to [`data-models/bess.md`](bess.md); the general proxy-publication conventions live in [`data-models/proxy.md`](proxy.md).)
 
 ### Proxied BESS Child
 
-When no eBus-native BESS publisher is available, the enclosure proxies a BESS child device.
-
-**Type:** `energy.ebus.device.bess` (same type as an eBus-native BESS)
-
-A conformant BESS publisher MUST include a MID child device — including for proxied BESSs. The proxied BESS child therefore consists of the parent BESS device (typically with `info`, `soc`, `status`) plus a MID child device (`<bess-id>-mid`) carrying `info` and `grid` (with `islanding-state`, `grid-state`, and `grid-forming-entity`). When the underlying BESS hardware does not present a separable MID, the enclosure synthesizes a minimal MID child — the islanding state and grid-forming-entity values are enclosure-known (from the same internal integration) and are always populatable. Individual battery / inverter children are omitted unless the internal integration provides per-component data. The full BESS device shape is defined in the [Electrification Bus BESS data model](bess.md).
+When no eBus-native BESS publisher is available, the enclosure proxies a BESS child (`energy.ebus.device.bess`) following the [Electrification Bus BESS data model](bess.md), under the proxy-publication conventions in [`proxy.md`](proxy.md). The full device shape — including the MID-child requirement (a premises-wiring grid-forming BESS MUST include one), the synthesized-minimal-MID behavior for hardware that does not present a separable MID, and which children may be omitted — is defined in `bess.md`. The enclosure-specific facts (the DER-to-enclosure wiring and the enclosure's link-health view) are recorded per §"Enclosure-side knowledge stays on the enclosure" above.
 
 ### Proxied PV Child
 
