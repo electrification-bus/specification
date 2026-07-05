@@ -257,7 +257,7 @@ On the parent BESS device, these values are aggregated across all battery childr
 
 ### meter
 
-Power and energy metering.
+Power and energy metering. The property catalog is in [`capabilities/meter.md`](../capabilities/meter.md); a BESS publishes `active-power` positive when discharging (out of the device).
 
 **Node type:** `energy.ebus.capability.meter`
 

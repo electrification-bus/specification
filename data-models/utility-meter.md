@@ -85,7 +85,7 @@ The device ID is publisher-defined and opaque to consumers. Common conventions a
 
 ### Per-phase representation
 
-Per-phase electrical measurements use property-name suffixes — `-a`, `-b`, `-c` for the three phase positions, `-n` for the neutral position — rather than phase-as-child-device. This matches the lugs precedent in [`distribution-enclosure.md`](distribution-enclosure.md) (`l1-current`, `l2-current`). System aggregates carry no suffix (`active-power`, not `active-power-system`).
+Per-phase electrical measurements use property-name suffixes: `-a`, `-b`, `-c` for the three phase positions and `-n` for the neutral position, rather than phase-as-child-device. This is the shared eBus per-conductor convention; the full property catalog and the split-phase leg mapping are in [`capabilities/meter.md`](../capabilities/meter.md). System aggregates carry no suffix (`active-power`, not `active-power-system`).
 
 The `-a` / `-b` / `-c` letters denote the abstract phase positions of a polyphase service. Mapping to physical conductors depends on the meter form (ANSI form number, published as `info`/`meter-form`):
 
@@ -96,7 +96,7 @@ The `-a` / `-b` / `-c` letters denote the abstract phase positions of a polyphas
 
 A property whose corresponding phase position is not present on this meter's service is simply not published (framework principle #3).
 
-**Why properties-with-suffix rather than phase-as-child-device.** A utility meter is one physical instrument — one serial number, one firmware, one comm channel, one Homie `$state` lifecycle. Phases are conductors passing through the meter, not sub-entities of it. The Homie device boundary is heavyweight (its own `$description`, `$state`, lifecycle, MQTT presence); using it for phase decomposition would import that weight where it does not pay for itself, break the colocation of system aggregates with their per-phase decomposition, triple device count per meter, and diverge from the Matter, DLMS/COSEM, and DNP3 metering conventions. Full rationale (including the alternative considered and the decision rule for future revisit) is recorded as a decision in the project's bd tracker under issue `SPEC-7si`.
+**Why properties-with-suffix rather than phase-as-child-device.** A utility meter is one physical instrument — one serial number, one firmware, one comm channel, one Homie `$state` lifecycle. Phases are conductors passing through the meter, not sub-entities of it. The Homie device boundary is heavyweight (its own `$description`, `$state`, lifecycle, MQTT presence); using it for phase decomposition would import that weight where it does not pay for itself, break the colocation of system aggregates with their per-phase decomposition, triple device count per meter, and diverge from the Matter, DLMS/COSEM, and DNP3 metering conventions.
 
 ### Utility Meter Capabilities
 
@@ -131,40 +131,16 @@ Publishers MAY add vendor-specific informational properties to `info` as additio
 
 #### meter
 
-Instantaneous electrical measurements and cumulative energy quantities. Properties are grouped below by scope (system aggregate vs. per-phase) for readability; all are sibling properties under the same `meter` node.
+Instantaneous electrical measurements and cumulative energy. The property catalog (system-level and per-phase quantities, the `-a` / `-b` / `-c` / `-n` per-conductor convention, the sign convention, and encoding notes) is defined in [`capabilities/meter.md`](../capabilities/meter.md).
 
 **Node type:** `energy.ebus.capability.meter`
 
-System-level (no phase suffix):
+A utility meter MAY publish any subset, from `imported-energy` alone up to the full system and per-phase instantaneous matrix; all `meter` properties are MAY here (see the wide-latitude stance above). Notes specific to a utility meter:
 
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `frequency` | float | Hz | MAY | System line frequency. |
-| `active-power` | float | W | MAY | Total active power across all phases. Sign convention: positive = imported from utility, negative = exported to utility. |
-| `reactive-power` | float | VAR | MAY | Total reactive power. |
-| `apparent-power` | float | VA | MAY | Total apparent power. Computed per `info`/`calculation-convention` when the meter computes both arithmetic and vectorial forms; the data model exposes only one value. |
-| `power-factor` | float | — | MAY | System power factor, signed: positive = lagging (inductive), negative = leading (capacitive); range `[-1.0, 1.0]`. |
-| `imported-energy` | float | Wh | MAY | Cumulative active energy delivered by the utility to the customer. Monotonically non-decreasing in normal operation. |
-| `exported-energy` | float | Wh | MAY | Cumulative active energy delivered by the customer to the utility. Monotonically non-decreasing. |
-| `imported-reactive-energy` | float | VARh | MAY | Cumulative reactive energy delivered. |
-| `exported-reactive-energy` | float | VARh | MAY | Cumulative reactive energy received. |
-
-Per-phase (suffix `-a` / `-b` / `-c`, plus `-n` for the neutral conductor where present):
-
-| Property ID pattern | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `voltage-{a,b,c}` | float | V | MAY | RMS voltage on the named phase, line-to-neutral (or line-to-virtual-neutral on a delta service). |
-| `current-{a,b,c,n}` | float | A | MAY | RMS current on the named conductor. Neutral current (`current-n`) may be directly measured or imputed from the phase currents; the data model does not distinguish. |
-| `active-power-{a,b,c}` | float | W | MAY | Per-phase active power. Sign convention matches the system `active-power`. |
-| `reactive-power-{a,b,c}` | float | VAR | MAY | Per-phase reactive power. |
-| `apparent-power-{a,b,c}` | float | VA | MAY | Per-phase apparent power. |
-| `power-factor-{a,b,c}` | float | — | MAY | Per-phase power factor, signed as for the system value. |
-| `voltage-angle-{a,b,c}` | float | ° | MAY | Voltage angle of the named phase, measured relative to phase-A voltage. By convention `voltage-angle-a` is `0`; it MAY be published explicitly or omitted. |
-| `current-angle-{a,b,c}` | float | ° | MAY | Current angle of the named phase, measured relative to the same-phase voltage. |
-
-**Encoding notes.** Properties use the engineering-unit values listed (no scaling factor or `µ-` prefix). Cumulative energy quantities are floats in Wh / VARh — sufficient resolution for billing-grade energy from a `float64` Homie property; a publisher whose internal representation is integer micro-Wh converts at publish time. Sign conventions follow IEEE / IEC norms: imported / delivered = positive flow from utility to customer, exported / received = the reverse.
-
-**Forward compatibility.** The full GEISA-style 4-quadrant per-phase + system VA matrix (Q1/Q2/Q3/Q4 × delivered/received × fundamental-only / +harmonics, arithmetic and vectorial flavors) is **not** defined here. The decision is deliberate: the property space above covers the common revenue-metering and energy-management use cases at a manageable surface area, and the quadrant matrix can be added additively to `meter` later when a real consumer (e.g., a commercial demand-charge calculator, a regulated vectorial-jurisdiction billing system) needs it. The vocabulary will be added without renaming existing properties.
+- **Reference direction** is the default: positive = imported from the utility, negative = exported to the utility.
+- **Derived quantities** (`reactive-power`, `apparent-power`, `power-factor`) are computed per the `calculation-convention` on [`info`](#info) (arithmetic vs vectorial).
+- **Nameplate and configuration** properties (accuracy class, meter form, CT / PT ratio, register multiplier, neutral-connected, nominal voltages and frequency) live on [`info`](#info) above, not on `meter`.
+- The full GEISA-style 4-quadrant per-phase and system VA matrix is not defined yet; it can be added additively to `meter` when a consumer needs it, without renaming existing properties.
 
 #### status
 

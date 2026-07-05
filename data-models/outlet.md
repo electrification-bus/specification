@@ -69,7 +69,7 @@ When the outlet is a child of a host, a native publication names it `{host-id}-o
 
 #### meter
 
-**Node type:** `energy.ebus.capability.meter`. Reused. For an outlet, `active-power` is the power currently delivered to the connected load (positive = delivering out of the device, per the eBus convention that positive `active-power` flows out of the device). Cumulative delivered energy is carried in `exported-energy` (energy delivered out through the outlet). An outlet that does not meter individually omits `meter`.
+**Node type:** `energy.ebus.capability.meter`. Reused; property catalog in [`capabilities/meter.md`](../capabilities/meter.md). For an outlet, `active-power` is the power currently delivered to the connected load, with this device's reference direction inverted from the default (positive = delivering out of the outlet; see the sign convention in `meter.md`). Cumulative delivered energy is carried in `exported-energy` (energy delivered out through the outlet). An outlet that does not meter individually omits `meter`.
 
 ---
 

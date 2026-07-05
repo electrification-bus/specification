@@ -110,19 +110,16 @@ Enclosure-level aggregate metering — measurements at the enclosure's main rela
 
 **Node type:** `energy.ebus.capability.meter`
 
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `active-power` | float | W | MUST | Total enclosure active power |
-| `imported-energy` | float | Wh | MUST | Cumulative energy imported from grid |
-| `exported-energy` | float | Wh | MUST | Cumulative energy exported to grid |
-| `l1-voltage` | float | V | SHOULD | Line 1 voltage |
-| `l2-voltage` | float | V | SHOULD | Line 2 voltage |
-| `l1-current` | float | A | SHOULD | Line 1 current |
-| `l2-current` | float | A | SHOULD | Line 2 current |
-| `l1-imported-energy` | float | Wh | MAY | Line 1 imported energy |
-| `l2-imported-energy` | float | Wh | MAY | Line 2 imported energy |
-| `l1-exported-energy` | float | Wh | MAY | Line 1 exported energy |
-| `l2-exported-energy` | float | Wh | MAY | Line 2 exported energy |
+Property definitions and the `-a` / `-b` / `-c` / `-n` per-conductor convention are in [`capabilities/meter.md`](../capabilities/meter.md); `active-power` uses the default reference direction (positive = imported). On an enclosure:
+
+| Property | Req | Notes |
+|---|---|---|
+| `active-power` | MUST | Total enclosure active power. |
+| `imported-energy` | MUST | Cumulative energy imported from grid. |
+| `exported-energy` | MUST | Cumulative energy exported to grid. |
+| `voltage-{a,b}` | SHOULD | Per-leg voltage (split-phase legs a, b). |
+| `current-{a,b}` | SHOULD | Per-leg current. |
+| `imported-energy-{a,b}`, `exported-energy-{a,b}` | MAY | Per-leg energy. |
 
 #### power-flows
 
@@ -307,15 +304,7 @@ Physical lug connection point. Each enclosure has upstream lugs (grid connection
 
 The wiring relationship between a lugs device and what is wired to it is expressed as a structured `feeds-device-id` / `fed-by-device-id` reference on `connection`, which scales to N DERs and distinguishes downstream-feed from upstream-feed. See §"Connection Capability" below.
 
-**meter:**
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `active-power` | float | W | MUST | Active power at this lug connection |
-| `imported-energy` | float | Wh | MUST | Cumulative energy imported |
-| `exported-energy` | float | Wh | MUST | Cumulative energy exported |
-| `l1-current` | float | A | SHOULD | Line 1 current |
-| `l2-current` | float | A | SHOULD | Line 2 current |
+**meter:** property definitions are in [`capabilities/meter.md`](../capabilities/meter.md). On a lugs device: `active-power`, `imported-energy`, `exported-energy` are MUST; `current-{a,b}` SHOULD.
 
 **connection:**
 
@@ -761,8 +750,8 @@ ebus/5/ab-1234-c5d67/                          energy.ebus.device.distribution-e
   info/data-model-version                       "1.0"
   door/state                                    CLOSED
   meter/active-power                            2145.6
-  meter/l1-voltage                              121.3
-  meter/l2-voltage                              121.1
+  meter/voltage-a                               121.3
+  meter/voltage-b                               121.1
   power-flows/grid                              -2750.0
   power-flows/battery                           0.0
   power-flows/pv                                5530.0

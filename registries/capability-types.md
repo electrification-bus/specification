@@ -1,6 +1,6 @@
 # Electrification Bus Capability Type Registry
 
-**Status:** DRAFT v0.6
+**Status:** DRAFT v0.7
 **Date:** 2026-07-05
 **Authors:** Don Jackson
 
@@ -29,7 +29,7 @@ The **Source** column points to where the identifier is defined: a canonical cap
 | `energy.ebus.capability.config` | Settable configuration properties for a device — runtime-tunable values controlling operational behavior. Appears on BESS and EVSE (e.g., EVSE's `user-max-charge-current`). | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.status` | Device operational status. On the enclosure: main relay state, cloud connectivity, network interface state, and system configuration (postal code, time zone). On BESS and adapters: fault and operational status. Appears on enclosure, BESS, and adapter devices. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.connection` | Wiring topology — what is wired downstream of (and, where known, upstream of) this device. Properties identify the connected device by Homie ID and `$description.type`; one property carries the enclosure's view of communication-link health to the fed device. Appears on every enclosure-side device that is itself an electrical connection point: every circuit, both lugs devices, and the enclosure-integrated MID. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
-| `energy.ebus.capability.meter` | Electrical measurements: active power, imported/exported energy, and per-line voltages, currents, and per-line energies. Appears on devices that report electrical measurements: enclosure (service-entrance aggregate), circuits, lugs, BESS, and dedicated meters. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
+| `energy.ebus.capability.meter` | Electrical measurements: instantaneous power (active / reactive / apparent), voltage, current, frequency, power factor, and cumulative energy, with a `-a` / `-b` / `-c` / `-n` per-conductor suffix convention. Appears on the enclosure (service-entrance aggregate), circuits, lugs, utility meters, BESS, PV / EVSE proxies, water heaters, and behind-the-meter sub-meters. | [`capabilities/meter.md`](../capabilities/meter.md) |
 | `energy.ebus.capability.switch` | Remotely-controllable relay: the on/off **control** surface (relay state, controllability, and last-change source attribution). Distinct from `breaker` (protection). Appears on circuits and other devices with a controllable relay. | [`capabilities/switch.md`](../capabilities/switch.md) |
 | `energy.ebus.capability.breaker` | Overcurrent and fault **protection** provided by a circuit breaker: rating, poles, interrupting rating, protection functions, trip curve, and trip state / cause. Distinct from `switch` (remote control). Appears on circuits and proxied smart breakers. | [`capabilities/breaker.md`](../capabilities/breaker.md) |
 | `energy.ebus.capability.door` | Enclosure door state (e.g., `OPEN` / `CLOSED` / `UNKNOWN`). | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |

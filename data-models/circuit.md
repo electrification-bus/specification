@@ -109,19 +109,7 @@ The circuit's topological position: what is wired downstream of it (`feeds-*`) a
 
 ### meter
 
-Electrical measurements at the circuit. Published when the circuit is instrumented; omitted otherwise.
-
-**Node type:** `energy.ebus.capability.meter`
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `active-power` | float | W | SHOULD | Active power. Sign convention: positive = flowing to the load (imported). |
-| `imported-energy` | float | Wh | MAY | Cumulative energy delivered to the load. Monotonic. |
-| `exported-energy` | float | Wh | MAY | Cumulative energy delivered back (backfeed). Monotonic. |
-| `current-{a,b,c}` | float | A | MAY | RMS current on the named conductor. |
-| `voltage-{a,b,c}` | float | V | MAY | RMS voltage on the named conductor. |
-| `active-power-{a,b,c}` | float | W | MAY | Per-phase active power. |
-| `frequency` | float | Hz | MAY | Line frequency. |
+Electrical measurements at the circuit. Published when the circuit is instrumented; omitted otherwise. The full property catalog and the `-a` / `-b` / `-c` / `-n` per-conductor convention are defined in [`capabilities/meter.md`](../capabilities/meter.md). On a circuit, `active-power` SHOULD be published and uses the default reference direction (positive = flowing to the load, i.e. imported).
 
 The full per-phase / reactive / apparent / 4-quadrant matrix (as exposed by, for example, the Eaton SBLCP telemetry) is added additively as consumers require it.
 
