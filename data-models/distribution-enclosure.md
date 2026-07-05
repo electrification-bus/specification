@@ -211,12 +211,12 @@ Computed forecast of how long backup loads will continue to be served when the h
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
 | `total-time-remaining` | integer | min | SHOULD | At current SOE (aggregate across all commissioned BESSs), total time before the enclosure goes dark — all backed-up circuits unpowered. |
-| `time-to-priority-shed` | integer | min | SHOULD | At current SOE, time until circuits with `shed-priority = SOC_THRESHOLD` are auto-shed. |
+| `time-to-priority-shed` | integer | min | SHOULD | At current SOE, time until circuits with `load-shed/priority = SOC_THRESHOLD` are auto-shed. |
 | `full-charge-total-time-remaining` | integer | min | SHOULD | At 100% SOE, total backup duration capability. |
 | `full-charge-time-to-priority-shed` | integer | min | SHOULD | At 100% SOE, capability time until the SOC_THRESHOLD shed event. |
 | `confidence` | enum | — | SHOULD | Algorithm's self-assessed confidence in the forecast: `LOW`, `MEDIUM`, `HIGH`. Reflects accumulated usage history. |
 
-The forecast is **enclosure-knowledge** — it is computed by the enclosure from the aggregate BESS SOE across all commissioned BESS children, the per-circuit `shed-priority` configuration, and the per-circuit consumption history. It cannot be computed by a BESS in isolation; this is why the forecast lives on the enclosure rather than on the BESS child.
+The forecast is **enclosure-knowledge** — it is computed by the enclosure from the aggregate BESS SOE across all commissioned BESS children, the per-circuit `load-shed/priority` configuration, and the per-circuit consumption history. It cannot be computed by a BESS in isolation; this is why the forecast lives on the enclosure rather than on the BESS child.
 
 **Multi-BESS:** when the enclosure has more than one commissioned BESS, the forecast values are computed against the aggregate SOE across all of them. The published surface is a single set of values; per-BESS forecast detail is not currently exposed (and is not needed for the consumer-visible "how long do my loads stay up?" question).
 
@@ -231,11 +231,11 @@ Enclosure-wide shed-policy controls: the consumer-asserted islanding-state for e
 | Property ID | Datatype | Unit | Req | Settable | Description |
 |---|---|---|---|---|---|
 | `asserted-islanding-state` | enum | — | MAY | yes | Consumer-asserted islanding-state, consulted only while the enclosure has lost or degraded communication with the MID/BESS. `$format = "NONE,ON_GRID,OFF_GRID"`; default `NONE`. `ON_GRID` / `OFF_GRID` assert that state as the effective islanding-state (see "Effective islanding-state" below), overriding what the enclosure last sensed; `NONE` means no assertion is in force. A consumer asserts only `ON_GRID` or `OFF_GRID`; `NONE` is enclosure-authored (it is the default, and the value the enclosure publishes when it clears an assertion on comm-restore). The Homie `$settable` attribute is statically `true`; the enclosure enforces eligibility at write time (see Runtime acceptance rule below). |
-| `soc-threshold` | integer | % | MAY | (impl-defined) | BESS SOC threshold (range 0–100) below which circuits with `priority/shed-priority = SOC_THRESHOLD` are auto-shed. Enclosure-wide policy parameter — the same value applies to every SOC_THRESHOLD circuit. Conforming implementations MAY publish this property with `$settable = true` to expose runtime tuning, or MAY publish it read-only with a built-in default. |
+| `soc-threshold` | integer | % | MAY | (impl-defined) | BESS SOC threshold (range 0–100) below which circuits with `load-shed/priority = SOC_THRESHOLD` are auto-shed. Enclosure-wide policy parameter — the same value applies to every SOC_THRESHOLD circuit. Conforming implementations MAY publish this property with `$settable = true` to expose runtime tuning, or MAY publish it read-only with a built-in default. |
 
-**SOC threshold semantics.** A circuit with `priority/shed-priority = SOC_THRESHOLD` is shed when the enclosure's aggregate BESS SOC falls below `soc-threshold`. The `<enclosure>/shed-forecast/time-to-priority-shed` value (see §"shed-forecast") forecasts how long until this threshold is reached given current discharge rate. Asserting `asserted-islanding-state = ON_GRID` (accepted only during comm-loss) makes the effective islanding-state on-grid and thereby short-circuits all auto-shed paths, including SOC-triggered shedding.
+**SOC threshold semantics.** A circuit with `load-shed/priority = SOC_THRESHOLD` is shed when the enclosure's aggregate BESS SOC falls below `soc-threshold`. The `<enclosure>/shed-forecast/time-to-priority-shed` value (see §"shed-forecast") forecasts how long until this threshold is reached given current discharge rate. Asserting `asserted-islanding-state = ON_GRID` (accepted only during comm-loss) makes the effective islanding-state on-grid and thereby short-circuits all auto-shed paths, including SOC-triggered shedding.
 
-**Extensibility — supporting additional shed triggers.** An enclosure's supported shed triggers are discoverable from the `$format` attribute on any circuit's `priority/shed-priority` property — the enum values listed there are exactly the triggers this enclosure implements. The baseline `UNKNOWN` / `NEVER` / `OFF_GRID` are required of every conforming enclosure; other triggers (`SOC_THRESHOLD`, plus future spec- or vendor-defined extensions) are optional and appear in `$format` only when implemented. Each optional trigger that has a tunable parameter publishes that parameter as a sibling property under `shed`, named as the lowercase-hyphenated form of the enum value (`SOC_THRESHOLD` ↔ `soc-threshold`). When a trigger is in `$format`, its companion property SHOULD be published if the spec defines one; triggers with no tunable (e.g., `OFF_GRID`, which fires unconditionally when islanded) publish no companion. Vendors introducing new triggers should propose them upstream so the spec registry can track them and prevent name collisions.
+**Extensibility — supporting additional shed triggers.** An enclosure's supported shed triggers are discoverable from the `$format` attribute on any circuit's `load-shed/priority` property — the enum values listed there are exactly the triggers this enclosure implements. The baseline `UNKNOWN` / `NEVER` / `OFF_GRID` are required of every conforming enclosure; other triggers (`SOC_THRESHOLD`, plus future spec- or vendor-defined extensions) are optional and appear in `$format` only when implemented. Each optional trigger that has a tunable parameter publishes that parameter as a sibling property under `shed`, named as the lowercase-hyphenated form of the enum value (`SOC_THRESHOLD` ↔ `soc-threshold`). When a trigger is in `$format`, its companion property SHOULD be published if the spec defines one; triggers with no tunable (e.g., `OFF_GRID`, which fires unconditionally when islanded) publish no companion. Vendors introducing new triggers should propose them upstream so the spec registry can track them and prevent name collisions.
 
 **Effective islanding-state.** The islanding-state the enclosure acts on is derived, not simply the sensed value. While communication with the MID/BESS is healthy the effective islanding-state is the sensed `<mid>/grid/islanding-state`, and any `asserted-islanding-state` is ignored. While communication is lost or degraded the effective islanding-state is the asserted value when one is in force (`ON_GRID` or `OFF_GRID`), or the last-known sensed value when the assertion is `NONE`. This lets the consumer correct a stale or wrong sensed state precisely in the window where the enclosure can no longer trust its own sensing.
 
@@ -255,62 +255,37 @@ Enclosure-wide shed-policy controls: the consumer-asserted islanding-state for e
 
 ### Circuit Device
 
-**Type:** `energy.ebus.device.circuit`
+**Type:** `energy.ebus.device.circuit` — the circuit device type and its full capability catalog (`info`, `connection`, `meter`, `switch`, `breaker`, `load-shed`, `pcs`) are defined in the [circuit data model](circuit.md). This section documents only what is specific to a circuit **hosted in a distribution enclosure**.
 
-Each circuit breaker in the enclosure is a child device. The number of circuits depends on the enclosure model.
+Each circuit breaker in the enclosure is an `energy.ebus.device.circuit` child device. The number of circuits depends on the enclosure model. **Device ID:** the circuit UUID (32-char hex), e.g., `12fc9179f236422183e1640fa3eaba59`.
 
-**Device ID:** The circuit UUID (32-char hex), e.g., `12fc9179f236422183e1640fa3eaba59`.
+A smart panel typically publishes each circuit with the full capability set (metered, a remotely-controllable `switch`, `breaker` protection, and `load-shed` / `pcs` policy participation); a simpler load center publishes fewer, per the conformance-latitude and capability-presence principles in [`circuit.md`](circuit.md).
 
-#### Circuit Capabilities
+#### Enclosure-specific: physical position
 
-**info:**
-
-| Property ID | Datatype | Unit | Req | Settable | Description |
-|---|---|---|---|---|---|
-| `name` | string | — | MUST | yes | User-assigned circuit name (e.g., "Kitchen", "Dryer"). Free-text. |
-| `tab-number` | integer | — | MUST | no | Physical tab position in the enclosure. |
-| `dipole` | boolean | — | MUST | no | Is this a 240V double-pole circuit? |
-| `breaker-rating` | integer | A | SHOULD | no | Breaker amperage rating. |
-| `dedicated` | boolean | — | MAY | no | True when commissioning has explicitly marked this circuit as serving a single load; false when explicitly marked as a mixed-load circuit; omitted when no determination has been recorded. Absence is *not* equivalent to false. |
-| `tags` | string | — | MAY | no | Controlled vocabulary of circuit-load type tags identifying the load(s) physically connected to the circuit (e.g., `WATER_HEATER`, `AC_CONDENSER`, `RANGE`, `EVSE`, `DRYER`, `PUMP`). Multi-valued: a comma-separated list of tags from the vocabulary. Single-tag for a dedicated-load circuit; multi-tag for a mixed-load circuit. See [`registries/circuit-tags.md`](../registries/circuit-tags.md) for the full vocabulary, naming conventions, and multi-tag semantics. |
-| `external-ids` | string | — | MAY | no | Multi-valued list of opaque identifiers from external systems that reference the load(s) on this circuit. Each item is of the form `<scheme>:<identifier>` where the scheme prefix names the foreign system that issued the identifier (e.g., `matter:0x123ABC`, `zigbee:00:11:22:33:44:55:66:77`, `vendor:tesla:wall-connector-42`). Multi-valued: a comma-separated list. See [`registries/external-id-schemes.md`](../registries/external-id-schemes.md) for currently-defined scheme prefixes and per-scheme identifier formats. |
-
-**meter:**
+A circuit hosted in an enclosure occupies one or more physical positions ("spaces") in the panel, published as a multi-valued `info/spaces` property:
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `active-power` | float | W | MUST | Circuit active power |
-| `imported-energy` | float | Wh | MUST | Cumulative energy imported |
-| `exported-energy` | float | Wh | MUST | Cumulative energy exported |
-| `current` | float | A | SHOULD | RMS current |
+| `spaces` | string | — | SHOULD | Multi-valued (comma-separated) list of the physical panel position(s) the circuit occupies. |
 
-**switch:**
+For an ordinary breaker the mapping is direct, read together with `breaker/poles` (the electrical pole count):
 
-Circuit relay control.
+- **Single-pole**: one space, e.g. `spaces = "5"`, `breaker/poles = 1`.
+- **Two-pole (240 V)**: the two occupied spaces, e.g. `spaces = "7,9"`, `breaker/poles = 2`.
 
-**Node type:** `energy.ebus.capability.switch`
+"Space" is the panel slot, numbered per the manufacturer's convention (typically odd positions on the left bus and even on the right, or sequential). It is distinct from the electrical pole count, which lives in `breaker/poles`.
 
-| Property ID | Datatype | Req | Description |
-|---|---|---|---|
-| `relay` | enum | MUST | Relay state: `OPEN`, `CLOSED`, `UNKNOWN`. Settable when the circuit's `priority/relay-controllable = true`; not settable when `relay-controllable = false`. |
-| `relay-requester` | enum | SHOULD | Source attribution — who or what last drove the relay state. Canonical values: `USER` (a user request via API, mobile app, etc.); `LOAD_SHED` (load-shedding logic, informed by the circuit's `shed-priority` and the enclosure's grid/SOC state); `PCS` (UL 3141 PCS power-control/management); `CONFIGURATION` (installer commissioning or user configuration — a deliberate setting, typically long-lived); `FAULT` (a fault condition such as overcurrent); `NONE` (no actor has driven the relay; it is in its natural/default state); `UNKNOWN` (the publisher cannot determine). Vendors MAY extend the enum via Homie `$format` with implementation-specific values for finer-grained attribution. |
+#### Enclosure-specific: shed-policy participation
 
-**priority:**
+The circuit's capabilities are defined in [`circuit.md`](circuit.md). What is specific to a circuit *inside a distribution enclosure* is how its `load-shed` and `pcs` capabilities couple to the enclosure's enclosure-wide shed and PCS policies:
 
-Load shedding policy and relay control authority for the circuit.
+- **`load-shed/priority`** is interpreted against this enclosure. The baseline values `UNKNOWN` / `NEVER` / `OFF_GRID` are supported by every enclosure; the `SOC_THRESHOLD` value (and any future triggers, advertised in the property's `$format`) defers shedding until the enclosure's aggregate BESS SOC falls below `<enclosure>/shed/soc-threshold`. See §"shed" and §"shed — Extensibility".
+- When the enclosure's auto-shed logic drives a circuit's relay, the circuit publishes **`switch/relay-requester = LOAD_SHED`**. The **effective shed gate** (the condition under which the enclosure sheds a circuit) is defined in §"shed".
+- **`pcs/managed`** and **`pcs/priority`** are consulted by the enclosure's PCS import-limit enforcement to decide which circuits are controlled when the active CSL is binding. See §"pcs".
+- A circuit's `switch/relay` is settable only when its `switch/relay-controllable = true`; the enclosure never opens a circuit commissioned as permanently `OFF_GRID` / locked.
 
-**Node type:** `energy.ebus.capability.priority`
-
-| Property ID | Datatype | Req | Description |
-|---|---|---|---|
-| `shed-priority` | enum | MUST | Shedding priority. Baseline values (required of every conforming enclosure): `UNKNOWN`, `OFF_GRID`, `NEVER`. Optional values (advertised in this property's `$format` when the enclosure implements them): `SOC_THRESHOLD` and any future spec- or vendor-defined extensions. The `SOC_THRESHOLD` value defers shedding until the BESS aggregate SOC falls below the enclosure-wide threshold published at `<enclosure>/shed/soc-threshold`. See §"shed — Extensibility" for the convention linking optional trigger values to their tunable parameters. Settable on user-configurable circuits; locked (Homie `$settable = false`) on circuits commissioned as permanently OFF_GRID. |
-| `relay-controllable` | boolean | MUST | True = the circuit's relay can be controlled (by the enclosure's auto-shed logic *or* by direct user-set). False = the relay is locked closed and cannot be opened by any path; the `switch/relay` property's `$settable` attribute is also `false` in that case. |
-| `pcs-managed` | boolean | MAY | Is this circuit managed by the enclosure's PCS? |
-| `pcs-priority` | integer | MAY | PCS priority ranking for this circuit. Used by the PCS import-limit-enforcement logic to decide which circuits get controlled when the active CSL is binding. |
-
-**connection:**
-
-What is wired downstream of (and, where the publisher knows, upstream of) this circuit. See §"Connection Capability" below for the full property catalog — the same capability is published by every enclosure-side device that *is* an electrical connection point (every circuit, both lugs devices, the enclosure-integrated MID).
+Every circuit also publishes `connection` (see §"Connection Capability" below), the shared topology surface used by circuits, lugs, and the MID.
 
 ### Lugs Device
 
@@ -402,7 +377,7 @@ An enclosure-side device that is itself an *electrical connection point* — eve
 
 **Both directions are MAY-level; populate when known.** The model defines both the `feeds-*` and `fed-by-*` triplets so any enclosure implementation can record connection metadata in either direction as it learns it. A publisher populates the side(s) it knows. Implementations that, today, know what feeds them via the upstream lugs device (the `fed-by-*` side, in the inter-enclosure chain or the upstream-BESS case) and what is fed by circuits and feedthrough lugs when a specific DER is commissioned (the `feeds-*` side) will populate those sides; the other side stays unpublished until commissioning data captures it. Consumers must not assume both directions are populated; the absence of a counterpart record is information, not error.
 
-**Mixed-load and unsurveyed circuits.** Most residential branch circuits feed multiple unmarked loads (a "Kitchen" circuit serves several outlets, none of which is individually commissioned). For these circuits the `connection/feeds-*` properties are simply not published — the circuit child device still exists with its `info/name`, `info/breaker-rating`, `meter/*`, etc., but no specific commissioned downstream-device record is available. A spare breaker with nothing wired to it looks the same. The absence of `feeds-*` does not distinguish "no load wired" from "we have no record" from "multiple loads, none commissioned" — and functionally there is no need to distinguish those cases, because the enclosure has nothing further to say about the connection.
+**Mixed-load and unsurveyed circuits.** Most residential branch circuits feed multiple unmarked loads (a "Kitchen" circuit serves several outlets, none of which is individually commissioned). For these circuits the `connection/feeds-*` properties are simply not published — the circuit child device still exists with its `info/name`, `breaker/rating`, `meter/*`, etc., but no specific commissioned downstream-device record is available. A spare breaker with nothing wired to it looks the same. The absence of `feeds-*` does not distinguish "no load wired" from "we have no record" from "multiple loads, none commissioned" — and functionally there is no need to distinguish those cases, because the enclosure has nothing further to say about the connection.
 
 **A single BESS may connect via multiple circuits.** A multi-unit BESS whose units land on separate circuits (rather than aggregating through one gateway feed) is fed by more than one circuit. Each such circuit publishes its own `connection/feeds-*`, and more than one circuit MAY reference the same BESS: either the `bess` parent (each `feeds-device-id = {bess}`) or the specific unit child it feeds (`feeds-device-id = {bess}-battery-{n}`, with `feeds-device-type = energy.ebus.device.battery`). A consumer sums the circuits that reference one BESS (directly, or via a child's Homie `parent` / `root`) to obtain that BESS's total flow. This is distinct from `count`, which stands in for multiple physical units aggregated behind a **single** connection point; here the units are on **distinct** circuits. See [`bess.md`](bess.md) for why a coordinated multi-unit system is one `bess`.
 
@@ -658,11 +633,12 @@ Standard capability types shared across enclosure, BESS, and future device specs
 | `energy.ebus.capability.status` | Fault and operational status | Enclosure, BESS, adapters |
 | `energy.ebus.capability.config` | Settable configuration | BESS, EVSE |
 | `energy.ebus.capability.switch` | Relay / switch control | Circuits |
-| `energy.ebus.capability.priority` | Load shedding policy and relay control authority | Circuits |
+| `energy.ebus.capability.breaker` | Overcurrent / fault protection | Circuits |
+| `energy.ebus.capability.load-shed` | Load-shed participation (shed class) | Circuits |
 | `energy.ebus.capability.connection` | Wiring relationship (downstream and upstream) and enclosure's view of link health | Circuits, lugs, enclosure-integrated MID |
 | `energy.ebus.capability.door` | Door state sensor | Enclosure (when applicable) |
 | `energy.ebus.capability.power-flows` | Site-level power aggregation | Enclosure |
-| `energy.ebus.capability.pcs` | Power Control Systems (UL 3141) | Enclosure |
+| `energy.ebus.capability.pcs` | Power Control System (UL 3141); enclosure CSLs, per-circuit participation | Enclosure, circuits |
 | `energy.ebus.capability.shed-forecast` | Off-grid backup time-remaining forecast (read-only) | Enclosure (when a BESS is commissioned) |
 | `energy.ebus.capability.shed` | Enclosure-wide shed-policy controls (consumer-asserted islanding-state, SOC threshold) | Enclosure (when a BESS is commissioned) |
 
@@ -817,40 +793,40 @@ ebus/5/ab-1234-c5d67-lugs-dn/           energy.ebus.device.lugs
 
 ebus/5/<circuit-7-id>/                          energy.ebus.device.circuit
   info/name                                     "Powerwall"
-  info/tab-number                               7
-  info/dipole                                   true
-  info/breaker-rating                           100
+  info/spaces                               "7,9"
+  breaker/poles                                 2
+  breaker/rating                                100
   meter/active-power                            0.0
   switch/relay                                  CLOSED
-  priority/shed-priority                        NEVER
-  priority/relay-controllable                   true
+  load-shed/priority                        NEVER
+  switch/relay-controllable                     true
   connection/feeds-device-id                    "ab-1234-c5d67-TG123456789"
   connection/feeds-device-type                  "energy.ebus.device.bess"
   connection/feeds-device-status                OK
 
 ebus/5/<circuit-5-id>/                          energy.ebus.device.circuit
   info/name                                     "EV Charger"
-  info/tab-number                               5
-  info/dipole                                   true
-  info/breaker-rating                           60
+  info/spaces                               "3,5"
+  breaker/poles                                 2
+  breaker/rating                                60
   info/tags                                     "EVSE"
   meter/active-power                            5350.0
   switch/relay                                  CLOSED
-  priority/shed-priority                        SOC_THRESHOLD
-  priority/relay-controllable                   true
+  load-shed/priority                        SOC_THRESHOLD
+  switch/relay-controllable                     true
   connection/feeds-device-id                    "ab-1234-c5d67-SD123456789"
   connection/feeds-device-type                  "energy.ebus.device.evse"
   connection/feeds-device-status                OK
 
 ebus/5/<circuit-1-id>/                          energy.ebus.device.circuit
   info/name                                     "Kitchen"
-  info/tab-number                               1
-  info/dipole                                   false
-  info/breaker-rating                           20
+  info/spaces                               "1"
+  breaker/poles                                 1
+  breaker/rating                                20
   meter/active-power                            245.3
   switch/relay                                  CLOSED
-  priority/shed-priority                        NEVER
-  priority/relay-controllable                   true
+  load-shed/priority                        NEVER
+  switch/relay-controllable                     true
   (no connection/feeds-* — mixed-load circuit, no specific commissioned downstream device)
 
   ... (more circuits, most without connection/feeds-* records)
