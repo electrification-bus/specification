@@ -274,7 +274,9 @@ For an ordinary breaker the mapping is direct, read together with `breaker/poles
 - **Single-pole**: one space, e.g. `spaces = "5"`, `breaker/poles = 1`.
 - **Two-pole (240 V)**: the two occupied spaces, e.g. `spaces = "7,9"`, `breaker/poles = 2`.
 
-"Space" is the panel slot, numbered per the manufacturer's convention (typically odd positions on the left bus and even on the right, or sequential). It is distinct from the electrical pole count, which lives in `breaker/poles`.
+A **multi-load breaker** (a *tandem* sharing one space, or a *quad* across a two-space footprint) is modelled as described in [`circuit.md` §"Multi-load breakers"](circuit.md#multi-load-breakers-tandem-and-quad): a **feed circuit** carries the shared `meter` and `switch` and occupies the space(s), and one **load circuit per load** carries its own `breaker`, is `fed-by` the feed circuit, and has no independent meter or switch. The feed circuit publishes `info/spaces` for the shared footprint (`"3"` for a tandem, `"7,9"` for a quad); each load circuit is located by its `fed-by` reference and MAY carry a manufacturer-specific sub-position label (top / bottom / inside / outside).
+
+"Space" is the panel slot, numbered per the manufacturer's convention (typically odd positions on the left bus and even on the right, or sequential). It is distinct from the electrical pole count (`breaker/poles`) and from the metering and switching granularity, which for a multi-load breaker is the feed circuit, not the individual load.
 
 #### Enclosure-specific: shed-policy participation
 

@@ -104,6 +104,8 @@ The circuit's topological position: what is wired downstream of it (`feeds-*`) a
 **Connection-point class is implicit in the publisher's `$description.type`** — a consumer reads whether it is a `circuit`, `lugs`, or MID and needs no extra discriminator field.
 
 > A single DER may connect via multiple circuits: more than one circuit MAY reference the same downstream device (each `feeds-device-id = {device}`, or a specific unit child). A consumer sums the circuits referencing one device to obtain its total flow. This is distinct from `count` (multiple units behind a *single* connection point).
+>
+> Conversely, one circuit MAY feed several sibling circuits: a *multi-load breaker* (tandem or quad) is a feed circuit whose shared meter and relay sit above per-load circuits that each carry only their own `breaker`. See §"Multi-load breakers (tandem and quad)".
 
 ### meter
 
@@ -190,6 +192,26 @@ A specialization is a circuit that always carries a specific additional property
 
 ---
 
+## Multi-load breakers (tandem and quad)
+
+Most circuits are a single conductor that is metered, switched, and protected as one unit, so all of a circuit's capabilities sit on one device (the ordinary case in the examples below). Some breaker packages instead put **several independently-protected loads behind one shared metering and switching point**: a *tandem* (two single-pole loads in one panel position, sharing that position's one relay and one meter) or a *quad* (two or three loads across a two-position footprint). The shared relay and shared meter mean those loads **cannot be metered or switched independently; they can only be protected independently.**
+
+This is modelled with the capabilities already defined, split across circuits linked by `connection`:
+
+- A **feed circuit** represents the shared metering and switching point. It publishes `meter` (the aggregate over every load it feeds) and, when controllable, `switch` (the shared relay). It publishes **no `breaker`**: it is the shared conductor, not a breaker. Any `load-shed` / `pcs` participation lives here too, because those policies act on its `switch`.
+- One **load circuit per load** publishes `info` (name, tags) and its own `breaker` (rating, poles, and an independent `trip-state` / `trip-cause`), with `connection/fed-by` referencing the feed circuit. It publishes **no `meter` and no `switch`**: it is not independently metered or controllable.
+
+The consequences follow directly from capability presence:
+
+- **No double counting.** Only the feed circuit publishes `meter`; the loads behind it do not. A consumer summing circuit power adds feed circuits and ordinary standalone circuits, never the loads behind a feed.
+- **Ganged control is explicit in the topology.** Each load is `fed-by` the feed circuit and the `switch` lives on the feed circuit, so opening it de-energizes every load it feeds. Independent control of same-feed loads cannot be expressed, which is correct: it does not exist.
+- **Independent protection is preserved.** Each load circuit carries its own `breaker`, so one tandem half can read `trip-state = TRIPPED` while its sibling reads `OK`.
+- **`connection` links circuit to circuit.** Here the `fed-by` (and optional `feeds`) references point at sibling circuits, not at a downstream DER or an enclosure. The linkage is normally published from the load side (`fed-by` on each load); a feed circuit MAY additionally enumerate its loads via a multi-valued `feeds-device-id`.
+
+A standard single-pole or two-pole breaker is **not** split this way: it is one load behind one metering and switching point, so the feed and the load collapse into a single circuit that carries `meter`, `switch`, and `breaker` together. The split appears only when one metering and switching point serves more than one protected load.
+
+---
+
 ## Examples
 
 Valid circuits look very different depending on which capabilities they publish.
@@ -251,6 +273,34 @@ ebus/5/<proxier>-<serial>/$description.type = energy.ebus.device.circuit
 ```
 ebus/5/<enc>-c22/$description.type   = energy.ebus.device.circuit
 .../info/name                         = "Spare"
+```
+
+### Tandem breaker (shared metering and control, independent protection)
+
+A tandem puts two 120 V loads in one position: one meter, one relay, two breakers. A feed circuit carries the shared meter and relay; each load is a downstream circuit with its own breaker. Load B is shown tripped while load A is not.
+
+```
+# Feed circuit: aggregate meter + shared relay, no breaker
+ebus/5/<enc>-c31/$description.type   = energy.ebus.device.circuit
+.../meter/active-power                = 1450.0
+.../switch/relay                      = CLOSED
+.../switch/relay-controllable         = true
+
+# Load circuit A: own breaker, no meter or switch
+ebus/5/<enc>-c31a/$description.type  = energy.ebus.device.circuit
+.../info/name                         = "Dishwasher"
+.../breaker/rating                    = 20
+.../breaker/poles                     = 1
+.../breaker/trip-state                = OK
+.../connection/fed-by-device-id       = <enc>-c31
+
+# Load circuit B: own breaker, tripped independently
+ebus/5/<enc>-c31b/$description.type  = energy.ebus.device.circuit
+.../info/name                         = "Disposal"
+.../breaker/rating                    = 15
+.../breaker/poles                     = 1
+.../breaker/trip-state                = TRIPPED
+.../connection/fed-by-device-id       = <enc>-c31
 ```
 
 ---
