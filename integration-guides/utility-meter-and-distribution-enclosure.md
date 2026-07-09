@@ -27,7 +27,7 @@ The guide covers:
 
 - The pub / sub flow.
 - The mapping from `doe` properties on the meter to `pcs` properties on the enclosure.
-- The PCS Configurable Service Limit (CSL) composition when a meter-driven input is one of several active limits.
+- The PCS import-limit composition when a meter-driven input is one of several active limits.
 - Source-attribution propagation.
 - Valid-until handling.
 - Commissioning, discovery, and authorization at install time.
@@ -76,7 +76,7 @@ Three roles:
 
 - **Envelope publisher** — the utility meter. Publishes `doe/import-limit` (and optionally `doe/export-limit`) onto the eBus broker; each property is a JSON array of time-windowed envelope objects.
 - **Envelope subscriber** — the distribution enclosure. Subscribes to the published envelope on the same broker and applies received values to its own internal state.
-- **Enforcement publisher** — the same distribution enclosure. Independently of its subscriber role, the enclosure publishes its own `pcs` properties (the CSL family including `grid-import-limit` and the effective `import-limit`) so that downstream consumers (mobile app, dashboard, energy-management apps) can see what the PCS is currently enforcing.
+- **Enforcement publisher** — the same distribution enclosure. Independently of its subscriber role, the enclosure publishes its own `pcs` properties (the import-limit family including `grid-import-limit` and the effective `import-limit`) so that downstream consumers (mobile app, dashboard, energy-management apps) can see what the PCS is currently enforcing.
 
 Two devices, one broker. Both devices connect to the same eBus broker — the meter as a publisher of its `doe` properties, the enclosure as a subscriber to those properties (and, independently, as a publisher of its own `pcs` properties for downstream consumers). **Which LAN element hosts the broker is an implementation choice** that this guide deliberately does not constrain: it may be the enclosure, the meter, a separate gateway or hub, or any other device on the LAN. The pub / sub flow described in this guide is independent of that choice.
 
@@ -116,29 +116,29 @@ DOE values change infrequently relative to instantaneous measurements — typica
 
 ## Property mapping: `doe` → `pcs`
 
-**About CSLs.** This section and the next refer to *Configurable Service Limits* (CSLs) repeatedly. A CSL is one of the panel's per-source upper bounds on power flow that the PCS enforces — `feed-import-limit` (the commissioned static feed capacity), `grid-import-limit` (the utility-signaled dynamic limit; the slot the panel mirrors the meter's DOE into), `off-grid-import-limit` (when islanded), and `requested-import-limit` (user / operator override). The PCS composes them via `min()` to produce the effective limit; the most restrictive wins. The full definition lives in [`data-models/distribution-enclosure.md` §pcs](../data-models/distribution-enclosure.md#pcs) under "What a CSL is." *Configurable Service Limit* is Electrification Bus vocabulary, not UL 3141 standard terminology.
+**About the import-limit family.** This section and the next refer to the panel's *import limits* repeatedly. Each is one of the PCS's per-source upper bounds on power flow — `feed-import-limit` (the firm, commissioned static feed capacity), `grid-import-limit` (the dynamic utility-signaled limit; the slot the panel mirrors the meter's DOE into), `off-grid-import-limit` (when islanded), and `requested-import-limit` (user / operator override). The PCS composes them via `min()` to produce the effective limit; the most restrictive wins. The full definition lives in [`data-models/distribution-enclosure.md` §pcs](../data-models/distribution-enclosure.md#pcs). Terminology is anchored on the standards (UL 3141 / NEC 2026 Power Import Limit / Power Export Limit; IEEE 2030.5 Dynamic Operating Envelope for the dynamic grid limit), not a coined umbrella.
 
 When the enclosure receives a publish on a DOE property, it updates one or more of its own `pcs` properties. The mapping:
 
 | Source (on meter)                              | Target (on enclosure)                              | Notes |
 |---|---|---|
 | `doe/import-limit` (effective envelope's `power-limit`) | `pcs/grid-import-limit`      | Direct mirror. The enclosure selects the effective import envelope (the array element whose `[start-time, end-time)` window contains now) and mirrors its `power-limit` into `grid-import-limit`, so downstream consumers see the value the enclosure is acting on. |
-| effective envelope's `apparent-power-limit`     | (no direct mapping in v0)                          | `pcs` does not currently expose apparent-power CSLs. If an envelope carries only apparent-power and not real-power, the enclosure SHOULD compute an approximate real-power equivalent (using a configured site power factor) and apply it as `grid-import-limit`. |
+| effective envelope's `apparent-power-limit`     | (no direct mapping in v0)                          | `pcs` does not currently expose apparent-power import limits. If an envelope carries only apparent-power and not real-power, the enclosure SHOULD compute an approximate real-power equivalent (using a configured site power factor) and apply it as `grid-import-limit`. |
 | effective envelope's `source`                   | (informational, not currently mapped)              | `pcs/grid-import-limit` has no source attribute in v0. See "Source-attribution propagation" below. |
-| envelope `start-time` / `end-time`              | (drive the revert / schedule)                      | The enclosure applies the effective envelope and reverts when its window elapses without a superseding envelope becoming effective, clearing `pcs/grid-import-limit` so the `min()` composition falls back to the other binding CSL. A future-dated element in the array is applied when its window becomes current. See "Envelope window and schedule handling" below. |
-| `doe/export-limit` (effective envelope)         | (no current CSL slot)                              | `pcs` does not currently define an export-side CSL family. Enclosures that consume the export envelope SHOULD treat it as informational until the dist-enclosure spec adds the corresponding slot. See "Export side" below. |
+| envelope `start-time` / `end-time`              | (drive the revert / schedule)                      | The enclosure applies the effective envelope and reverts when its window elapses without a superseding envelope becoming effective, clearing `pcs/grid-import-limit` so the `min()` composition falls back to the other binding import limit. A future-dated element in the array is applied when its window becomes current. See "Envelope window and schedule handling" below. |
+| `doe/export-limit` (effective envelope)         | (no current export-side slot)                      | `pcs` does not currently define an export-side import-limit family. Enclosures that consume the export envelope SHOULD treat it as informational until the dist-enclosure spec adds the corresponding slot. See "Export side" below. |
 
-The mapping is intentionally a **mirror, not a clamp**. The enclosure publishes the meter-signaled value on `grid-import-limit` as-is (subject only to value-type conversion — e.g., negative-value handling, NaN handling). Clamping to the static feed rating happens via the CSL composition (the min across all CSLs), not by mutating the stored `grid-import-limit`. See "CSL composition" below for why.
+The mapping is intentionally a **mirror, not a clamp**. The enclosure publishes the meter-signaled value on `grid-import-limit` as-is (subject only to value-type conversion — e.g., negative-value handling, NaN handling). Clamping to the static feed rating happens via the import-limit composition (the min across all import limits), not by mutating the stored `grid-import-limit`. See "Import-limit composition" below for why.
 
 ### The enclosure stays the authoritative publisher of `pcs`
 
-Even when the enclosure's `grid-import-limit` value is being driven by a meter subscription, the enclosure remains the authoritative publisher of `pcs/grid-import-limit`. Consumers reading the enclosure's PCS see what the enclosure is currently treating as the grid-source CSL — which happens to be what the meter most recently signaled. The chain of provenance is implicit and one-directional: meter publishes its `doe` (utility's intent), enclosure publishes its `pcs` (panel's enforcement state).
+Even when the enclosure's `grid-import-limit` value is being driven by a meter subscription, the enclosure remains the authoritative publisher of `pcs/grid-import-limit`. Consumers reading the enclosure's PCS see what the enclosure is currently treating as the grid-source import limit — which happens to be what the meter most recently signaled. The chain of provenance is implicit and one-directional: meter publishes its `doe` (utility's intent), enclosure publishes its `pcs` (panel's enforcement state).
 
 This is the same pattern as proxy-published representations (see [`data-models/proxy.md`](../data-models/proxy.md)): the consumer-facing surface is owned by one device per property, even when the underlying value is sourced from another. The DOE → PCS flow is not proxying per se (both devices are native publishers of their own data models), but the principle is the same.
 
-## CSL composition with a meter-driven input
+## Import-limit composition with a meter-driven input
 
-The enclosure's `pcs` already defines a family of import-limit CSLs that compose by `min()`:
+The enclosure's `pcs` already defines a family of import limits that compose by `min()`:
 
 - `feed-import-limit` — main breaker / equipment rating (static)
 - `grid-import-limit` — grid-source limit (now meter-driven when a meter is present)
@@ -156,7 +156,7 @@ effective_import_limit = min(
 )
 ```
 
-This composition is **why the meter-driven mapping does not clamp**. If the meter publishes 60 kW on a panel whose main breaker rating is 48 kW, the enclosure's `grid-import-limit` stores 60 kW (mirroring what the meter said), the `feed-import-limit` continues to publish 48 kW (the static main-breaker reality), and the effective limit composed by `min()` is 48 kW. Each CSL slot tells consumers what its source is independently of the others; the composition does the right thing without any individual slot needing to clamp.
+This composition is **why the meter-driven mapping does not clamp**. If the meter publishes 60 kW on a panel whose main breaker rating is 48 kW, the enclosure's `grid-import-limit` stores 60 kW (mirroring what the meter said), the `feed-import-limit` continues to publish 48 kW (the static main-breaker reality), and the effective limit composed by `min()` is 48 kW. Each import-limit slot tells consumers what its source is independently of the others; the composition does the right thing without any individual slot needing to clamp.
 
 The same composition handles the case where multiple inputs are present simultaneously — meter publishes a contract limit, fleet API has pushed a more-restrictive DR request — the `min()` picks the binding constraint.
 
@@ -191,7 +191,7 @@ Each `import-limit` envelope object carries an optional `start-time` and `end-ti
 
 The enclosure applies the effective envelope (the array element whose window contains now) and honours its window:
 
-- **When the effective envelope has an `end-time`**, the enclosure remembers it. When it elapses with no superseding envelope becoming effective, the enclosure reverts: it clears its `pcs/grid-import-limit` and the `min()` composition falls back to whichever other CSL is binding (typically `feed-import-limit`). Honouring the window is the enclosure's mechanism for ending a DR event at the time the meter said it would end, without a separate "end of event" publish.
+- **When the effective envelope has an `end-time`**, the enclosure remembers it. When it elapses with no superseding envelope becoming effective, the enclosure reverts: it clears its `pcs/grid-import-limit` and the `min()` composition falls back to whichever other import limit is binding (typically `feed-import-limit`). Honouring the window is the enclosure's mechanism for ending a DR event at the time the meter said it would end, without a separate "end of event" publish.
 - **When the effective envelope has no `end-time`**, the limit has no defined end. The enclosure keeps enforcing it until the meter publishes a new array. This is the steady-state case: contract limits, persistent envelopes, anything without a known expiry.
 - **When the array contains a future-dated element** (a `start-time` in the future), the enclosure applies it as its window becomes current. A subscriber that does not implement scheduling MUST behave conservatively: it MAY apply an upcoming stricter (lower) limit early, but MUST NOT apply an upcoming looser (higher) limit before its `start-time`.
 
@@ -203,12 +203,12 @@ The enclosure does not republish the envelope window on its `pcs`. Consumers tha
 
 ## Export side
 
-The utility-meter data model defines an export-side envelope (`doe/export-limit`), the same schema as the import side. The distribution-enclosure data model in its current form does not define an export-side CSL family; `pcs` covers import limits only.
+The utility-meter data model defines an export-side envelope (`doe/export-limit`), the same schema as the import side. The distribution-enclosure data model in its current form does not define an export-side import-limit family; `pcs` covers import limits only.
 
-This is a known gap. Until the distribution-enclosure spec adds an export-side CSL family:
+This is a known gap. Until the distribution-enclosure spec adds an export-side import-limit family:
 
 - The enclosure MAY consume the meter's published export-side properties as informational input for its own internal logic (e.g., curtailing PV inverters or BESS discharge to stay under the export limit).
-- The enclosure does NOT publish an export-side CSL on `pcs`. Consumers wanting visibility into the utility-signaled export limit read the meter's published `doe/export-limit` directly.
+- There is no *standard* export-side slot on `pcs` yet, so for visibility into the utility-signaled export limit a consumer reads the meter's published `doe/export-limit` directly. This is the absence of a standard slot, not a prohibition: an enclosure that already enforces an export limit MAY expose it as a vendor-specific property in the meantime (tolerated as unknown per the framework), pending the standard properties below.
 - When the distribution-enclosure spec adds an export-side family (likely properties named `grid-export-limit`, `feed-export-limit`, `requested-export-limit`, etc., mirroring the import side), this integration guide will be updated to extend the mapping table accordingly.
 
 ---
@@ -234,7 +234,7 @@ Both approaches are valid. Implementations SHOULD support discovery-driven subsc
 | Meter offline; broker stops receiving meter publishes | Keep enforcing the last received `grid-import-limit`. The retained MQTT message remains the most recent published value. |
 | Meter publishes an empty `import-limit` array, or omits it | Treat as "no meter-signaled limit": revert `grid-import-limit` to absent (per Homie convention) or to a fallback (typically the static feed rating). |
 | Effective `import-limit` envelope's `power-limit` exceeds `feed-import-limit` | Store the value on `grid-import-limit` as-is. The `min()` composition automatically caps the effective limit at the feed rating. No clamping at the slot level. |
-| The effective envelope's window (`end-time`) elapses with no superseding envelope | Revert: clear `pcs/grid-import-limit` so the `min()` composition falls back to the other binding CSL (typically `feed-import-limit`). Honouring the window is how the meter signals the end of a DR event without a separate "end of event" publish. See "Envelope window and schedule handling" above. |
+| The effective envelope's window (`end-time`) elapses with no superseding envelope | Revert: clear `pcs/grid-import-limit` so the `min()` composition falls back to the other binding import limit (typically `feed-import-limit`). Honouring the window is how the meter signals the end of a DR event without a separate "end of event" publish. See "Envelope window and schedule handling" above. |
 | Subscription disconnects (the enclosure's MQTT client loses its connection to the broker) | Re-subscribe. Because messages are retained, re-subscription delivers the most recent published value immediately. |
 | Enclosure restarts | On startup, the subscriber side re-subscribes and receives the retained DOE values. The PCS resumes enforcement based on the recovered envelope. |
 | Meter publishes a value type the subscriber cannot parse | Treat as if no value were published; log diagnostic; revert to fallback. |
@@ -314,8 +314,8 @@ An implementer who builds the eBus integration first carries the semantic unders
 ## Open questions
 
 1. **Source propagation onto `pcs`.** Should the distribution-enclosure spec add a `grid-import-limit-source` (and possibly `grid-import-limit-valid-until`) property so the meter-signaled source attribution is visible on the enclosure's published PCS surface? Deferred until a real consumer of that propagation exists.
-2. **Export-side CSL family on `pcs`.** When the distribution-enclosure spec adds export-side CSLs (likely as part of broader DER-aware revisions), update the mapping table here.
-3. **Apparent-power CSLs on `pcs`.** Currently the enclosure's CSL family is real-power-only. If the dist-enclosure spec later adds apparent-power-aware CSLs, the envelope's `apparent-power-limit` will have a direct mapping target.
+2. **Export-side import-limit family on `pcs`.** When the distribution-enclosure spec adds export-side import limits (likely as part of broader DER-aware revisions), update the mapping table here.
+3. **Apparent-power import limits on `pcs`.** Currently the enclosure's import-limit family is real-power-only. If the dist-enclosure spec later adds apparent-power-aware import limits, the envelope's `apparent-power-limit` will have a direct mapping target.
 4. **Multi-meter scenarios.** This guide assumes one utility meter per service. If the model needs to extend to multi-meter cases (sub-meters, dual-fed services), how does the enclosure compose multiple `doe` sources? Open.
 5. **Discovery-vs-commissioning policy.** This guide describes both, leaves the choice to implementations. A future revision may pick a recommended default.
 6. **Implementation patterns when one device both hosts the broker and publishes to or subscribes to it.** Specific broker implementations differ in how they expose the publish-and-subscribe-to-self loop (separate client connection vs. broker-internal subscription hook). Out of scope for this guide.
@@ -323,7 +323,7 @@ An implementer who builds the eBus integration first carries the semantic unders
 ## References
 
 - [Utility-meter data model](../data-models/utility-meter.md) — defines `doe` (the publisher side).
-- [Distribution-enclosure data model](../data-models/distribution-enclosure.md) — defines `pcs` and the existing CSL family (the subscriber side, target of the mapping).
+- [Distribution-enclosure data model](../data-models/distribution-enclosure.md) — defines `pcs` and the existing import-limit family (the subscriber side, target of the mapping).
 - [eBus capability-type registry](../registries/capability-types.md).
 - [Proxy model](../data-models/proxy.md) — for the general convention that a device is the authoritative publisher of its own published surface even when the underlying value is sourced from another device.
 - [Matter 1.5 Meter Identification cluster (0x0B06)](https://csa-iot.org/all-solutions/matter/) — the Matter-side mechanism this eBus flow mirrors.
