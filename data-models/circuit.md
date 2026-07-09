@@ -126,7 +126,7 @@ The circuit's participation in the host's Power Control System (PCS, per UL 3141
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
 | `managed` | boolean | — | MAY | Is this circuit managed by the host's PCS? |
-| `priority` | integer | — | MAY | PCS priority ranking, consulted when an active CSL (Configurable Service Limit) is binding. |
+| `priority` | integer | — | MAY | PCS priority ranking, consulted when an active import limit is binding. |
 
 Both `load-shed` and `pcs` are policies that act on the circuit's relay, so they are meaningful only on a circuit that also publishes a controllable `switch`. They correspond to the `LOAD_SHED` and `PCS` values of `switch/relay-requester`.
 

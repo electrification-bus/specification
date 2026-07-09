@@ -131,16 +131,16 @@ Site-level aggregate power flows across all energy sources. The enclosure comput
 
 #### pcs
 
-UL 3141 Power Control Systems (PCS) configuration, state, and the family of Configurable Service Limit (CSL) properties that the PCS manages. Published when the enclosure runs a PCS; a panel without a PCS omits this capability.
+UL 3141 Power Control Systems (PCS) configuration, state, and the family of import-limit properties that the PCS composes and enforces. Published when the enclosure runs a PCS; a panel without a PCS omits this capability.
 
-**What a CSL is.** A *Configurable Service Limit* is a per-source upper bound on power flow into the enclosure that the PCS enforces. (The enclosure's feed is the service entrance in single-panel installs; in multi-enclosure chains a downstream enclosure's feed is the feedthrough from an upstream enclosure — the CSL applies at the enclosure's own feed point either way, not specifically at the utility service entrance.) The enclosure publishes one CSL slot per logical source of constraint:
+**The import-limit family.** The PCS enforces an upper bound on power flow into the enclosure, and that bound is multi-sourced: several independent sources can each impose a limit, so the enclosure publishes one slot per source and composes them (see below). (The enclosure's feed is the service entrance in single-panel installs; in multi-enclosure chains a downstream enclosure's feed is the feedthrough from an upstream enclosure — the limit applies at the enclosure's own feed point either way, not specifically at the utility service entrance.) The sources:
 
-- `feed-import-limit` — the commissioned static feed capacity (set at install time; reflects the upstream feed conductor, which may be smaller than the panel's main breaker).
-- `grid-import-limit` — the dynamic grid-tied limit when on-grid (typically utility-signaled — the panel mirrors a Dynamic Operating Envelope received via AMI / IEEE 2030.5 / a utility-meter's `doe`).
+- `feed-import-limit` — the **firm** import limit: the commissioned static feed capacity, set at install time (reflects the upstream feed conductor, which may be smaller than the panel's main breaker). Always-present premises-equipment protection; the UL 3141 PCS archetype.
+- `grid-import-limit` — the **dynamic** import limit when grid-tied: the enclosure's enforcement of an IEEE 2030.5 Dynamic Operating Envelope (DOE), typically utility-signaled via AMI and mirrored from a utility-meter's `doe`. Time-bounded: present only while an envelope is in effect.
 - `off-grid-import-limit` — the import limit when islanded (from BESS / DER).
 - `requested-import-limit` — a user- or operator-requested temporary limit (homeowner via mobile app, fleet operator via REST API).
 
-At any instant the effective limit is `min()` across all enabled CSLs: each CSL acts as a ceiling and the most restrictive wins. This composition accommodates multiple independent constraint sources without any single source needing to know about the others. The term *Configurable Service Limit* is Electrification Bus vocabulary, not UL 3141 standard terminology — UL 3141 defines the PCS itself; the CSL family is the eBus convention for how a PCS exposes its multi-source constraint state.
+At any instant the effective limit is `min()` across all enabled import limits: each acts as a ceiling and the most restrictive wins. This composition accommodates multiple independent constraint sources without any single source needing to know about the others. Terminology is anchored on the relevant standards rather than a coined umbrella: UL 3141 (with NEC 2026 Article 130) defines the PCS and the Power Import Limit (PIL) / Power Export Limit (PEL) vocabulary, and the dynamic grid-signaled limit is an IEEE 2030.5 Dynamic Operating Envelope (DOE). The firm and dynamic limits differ in what they protect (premises equipment versus the shared grid) and in whether they are standing or time-bounded, but the enclosure composes them uniformly by `min()`.
 
 **Node type:** `energy.ebus.capability.pcs`
 
@@ -157,9 +157,9 @@ PCS state:
 |---|---|---|---|---|
 | `enabled` | boolean | — | SHOULD | Is the PCS enabled on this enclosure? |
 | `active` | boolean | — | SHOULD | Is the PCS actively controlling one or more loads right now? |
-| `import-limit` | float | A | SHOULD | The import limit currently being managed to (the active limit chosen from the CSL family below) |
+| `import-limit` | float | A | SHOULD | The import limit currently being managed to (the active limit chosen from the import-limit family below) |
 
-CSL family — each CSL publishes the same three-property pattern: the limit value, the enablement state (whether it's configured and can apply), and whether it's currently the active limit driving enclosure behavior.
+Import-limit family — each source publishes the same three-property pattern: the limit value, the enablement state (whether it's configured and can apply), and whether it's currently the active limit driving enclosure behavior.
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
@@ -276,7 +276,7 @@ The circuit's capabilities are defined in [`circuit.md`](circuit.md). What is sp
 
 - **`load-shed/priority`** is interpreted against this enclosure. The baseline values `UNKNOWN` / `NEVER` / `OFF_GRID` are supported by every enclosure; the `SOC_THRESHOLD` value (and any future triggers, advertised in the property's `$format`) defers shedding until the enclosure's aggregate BESS SOC falls below `<enclosure>/shed/soc-threshold`. See §"shed" and §"shed — Extensibility".
 - When the enclosure's auto-shed logic drives a circuit's relay, the circuit publishes **`switch/relay-requester = LOAD_SHED`**. The **effective shed gate** (the condition under which the enclosure sheds a circuit) is defined in §"shed".
-- **`pcs/managed`** and **`pcs/priority`** are consulted by the enclosure's PCS import-limit enforcement to decide which circuits are controlled when the active CSL is binding. See §"pcs".
+- **`pcs/managed`** and **`pcs/priority`** are consulted by the enclosure's PCS import-limit enforcement to decide which circuits are controlled when the active import limit is binding. See §"pcs".
 - A circuit's `switch/relay` is settable only when its `switch/relay-controllable = true`; the enclosure never opens a circuit commissioned as permanently `OFF_GRID` / locked.
 
 Every circuit also publishes `connection` (see §"Connection Capability" below), the shared topology surface used by circuits, lugs, and the MID.
@@ -599,7 +599,7 @@ Standard capability types shared across enclosure, BESS, and future device specs
 | `energy.ebus.capability.connection` | Wiring relationship (downstream and upstream) and enclosure's view of link health | Circuits, lugs, enclosure-integrated MID |
 | `energy.ebus.capability.door` | Door state sensor | Enclosure (when applicable) |
 | `energy.ebus.capability.power-flows` | Site-level power aggregation | Enclosure |
-| `energy.ebus.capability.pcs` | Power Control System (UL 3141); enclosure CSLs, per-circuit participation | Enclosure, circuits |
+| `energy.ebus.capability.pcs` | Power Control System (UL 3141); enclosure import limits, per-circuit participation | Enclosure, circuits |
 | `energy.ebus.capability.shed-forecast` | Off-grid backup time-remaining forecast (read-only) | Enclosure (when a BESS is commissioned) |
 | `energy.ebus.capability.shed` | Enclosure-wide shed-policy controls (consumer-asserted islanding-state, SOC threshold) | Enclosure (when a BESS is commissioned) |
 
