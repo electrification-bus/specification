@@ -22,3 +22,4 @@ This area is being populated incrementally. A data model may still define a capa
 | `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.price` | [`price.md`](price.md) | DRAFT v0.1 (2026-07-10) |
 | `energy.ebus.capability.switch` | [`switch.md`](switch.md) | DRAFT v0.1 (2026-07-05) |
+| `energy.ebus.capability.voltage-response` | [`voltage-response.md`](voltage-response.md) | DRAFT v0.1 (2026-07-10) |

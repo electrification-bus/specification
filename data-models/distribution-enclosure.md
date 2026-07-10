@@ -62,6 +62,7 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
   power-flows                   Site-level power flow aggregation (when computed)
   pcs                           UL 3141 Power Control Systems (PCS) configuration and state (when the enclosure runs a PCS)
   doe                           Operating envelope the enclosure is acting on (when it obtains and enforces one)
+  voltage-response              Import-current reduction when service voltage sags below a threshold (when it runs one)
   price                         Dynamic price stream the enclosure is coordinating to (when it exposes one)
   grid-event                    Grid events the enclosure is coordinating to: DR asks and grid alerts (when it receives them)
   status                        Enclosure system status (when reported)
@@ -78,7 +79,7 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
     <evse-id>                              energy.ebus.device.evse       (proxied or eBus-native)
 ```
 
-**Conformance latitude.** Only `info` (identity) and the child circuits the enclosure hosts are intrinsic to a distribution enclosure. `meter`, `power-flows`, `pcs`, `doe`, `price`, `grid-event`, `status`, `door`, `shed`, and `shed-forecast` are optional capabilities, published when the product provides them: a smart panel publishes all of them, while a dumb load center or a proxied third-party panel may publish only `info` and its child circuits. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a distribution enclosure.
+**Conformance latitude.** Only `info` (identity) and the child circuits the enclosure hosts are intrinsic to a distribution enclosure. `meter`, `power-flows`, `pcs`, `doe`, `price`, `grid-event`, `voltage-response`, `status`, `door`, `shed`, and `shed-forecast` are optional capabilities, published when the product provides them: a smart panel publishes all of them, while a dumb load center or a proxied third-party panel may publish only `info` and its child circuits. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a distribution enclosure.
 
 Each enclosure-side device that *is* an electrical connection point — every circuit, both lugs devices, and the enclosure-integrated MID — also exposes a `connection` node that records what is wired to it (downstream feed) and, where the publisher knows, what feeds it (upstream). The connection records are the enclosure-side topology surface: they identify which circuit feeds which DER, where an UPSTREAM DER (e.g., a BESS wired between utility and the enclosure main lugs) sits, and how enclosures chain together in multi-enclosure installs.
 
@@ -142,6 +143,7 @@ UL 3141 Power Control Systems (PCS) configuration, state, and the family of impo
 - `grid-import-limit` — the **dynamic** import limit when grid-tied: the enclosure's enforcement of an IEEE 2030.5 Dynamic Operating Envelope (DOE), typically utility-signaled via AMI and mirrored from a utility-meter's `doe`. Time-bounded: present only while an envelope is in effect.
 - `off-grid-import-limit` — the import limit when islanded (from BESS / DER).
 - `requested-import-limit` — a user- or operator-requested temporary limit (homeowner via mobile app, fleet operator via REST API).
+- `undervoltage-import-limit` — the import limit imposed by the enclosure's **voltage-response** (under-voltage current reduction): a standing local setpoint with no external dependency, an always-available baseline of transformer protection beneath the time-bounded `grid-import-limit`. See the [`voltage-response`](#voltage-response) capability.
 
 At any instant the effective limit is `min()` across all enabled import limits: each acts as a ceiling and the most restrictive wins. This composition accommodates multiple independent constraint sources without any single source needing to know about the others. Terminology is anchored on the relevant standards rather than a coined umbrella: UL 3141 (with NEC 2026 Article 130) defines the PCS and the Power Import Limit (PIL) / Power Export Limit (PEL) vocabulary, and the dynamic grid-signaled limit is an IEEE 2030.5 Dynamic Operating Envelope (DOE). The firm and dynamic limits differ in what they protect (premises equipment versus the shared grid) and in whether they are standing or time-bounded, but the enclosure composes them uniformly by `min()`.
 
@@ -178,6 +180,9 @@ Import-limit family — each source publishes the same three-property pattern: t
 | `requested-import-limit` | float | A | SHOULD | User- or operator-requested temporary limit. Examples: a homeowner reducing import via the vendor's mobile app; a fleet operator pushing a limit via REST API. Distinct from utility-signaled limits — those go to `grid-import-limit`. |
 | `requested-import-limit-enablement` | enum | — | SHOULD | Same enum domain |
 | `requested-import-limit-active` | boolean | — | SHOULD | Is requested-import-limit currently being enforced? |
+| `undervoltage-import-limit` | float | A | MAY | The import current limit the enclosure imposes while service voltage is below its voltage-response threshold. Composes with the other slots by `min()`; the configuration is on [`voltage-response`](#voltage-response). |
+| `undervoltage-import-limit-enablement` | enum | — | MAY | Same enum domain as above |
+| `undervoltage-import-limit-active` | boolean | — | MAY | Is undervoltage-import-limit currently the binding limit (the `min()` winner)? |
 
 Grid-forming-entity identity is **not** carried here — it is published as `grid-forming-entity` on the MID device's `grid`. The property identifies what is establishing the AC voltage/frequency reference the home is synchronized to; its placement on the MID device (rather than the enclosure) keeps it on the device that authoritatively knows. Its value space is open — a Homie device ID or `"GRID"` — so multi-DER installs can identify *which* DER is grid-forming, not just *which class*.
 
@@ -190,6 +195,14 @@ The operating envelope the enclosure has obtained and is acting on, published re
 Unlike a utility meter's `doe` (the utility's signal at the service point), the enclosure's `doe` is **its** authoritative representation of the envelope it is acting on. An enclosure may be able to obtain an envelope by more than one path — subscribing to a utility meter's `doe`, an OpenADR client, a fleet / DERMS API — and which source it uses is a local policy / configuration decision; the published `doe` reflects the result. A consumer that also sees a utility meter's `doe` reconciles the two itself: they are distinct authoritative views (the utility's signal versus the enclosure's acting-on state), expected to differ transiently, not competing publishers.
 
 **Relationship to `pcs`.** `doe` and `pcs` are distinct and complementary. `doe` carries the full envelope the enclosure is acting on (both directions, with the schedule); `pcs/grid-import-limit` carries the single effective import limit the enclosure is currently enforcing (composed by `min()` with the enclosure's other import limits, per §pcs). The import side of the effective envelope is the source of `grid-import-limit`. The **export side (`doe/export-limit`) is the enclosure's home for a utility-signaled export envelope** — enforcing an export limit is a DER-control concern (curtailing PV / BESS), not an import-limit slot, so it lives on `doe`, not as an export-side `pcs` family.
+
+#### voltage-response
+
+The enclosure's voltage-triggered import-current response: it reduces its import current when service voltage sags below a configured undervoltage threshold, relieving the shared distribution transformer and holding service voltage in band. Published when the enclosure runs a voltage response; omitted otherwise. The property catalog (the static-threshold configuration `nominal-voltage` / `undervoltage-threshold` / `restore-threshold` / `reduced-import-limit`, the optional proportional `response-curve`, and the semantics) is defined in [`capabilities/voltage-response.md`](../capabilities/voltage-response.md).
+
+**Node type:** `energy.ebus.capability.voltage-response`
+
+This capability carries the *configuration* (how the enclosure will respond); the current reduction it imposes is enforced through the `pcs` import-limit family as the `undervoltage-import-limit` slot, composing with the other limits by `min()` (see [§pcs](#pcs)). The threshold is a standing local setpoint with no upstream dependency, so it keeps protecting the transformer even when a signaled `doe` envelope is stale. It carries real-power curtailment (a current limit), distinct from reactive Volt-VAr. v0 covers the undervoltage (import-reduction) direction; an overvoltage (export-reduction) direction is a future additive sibling.
 
 #### price
 
