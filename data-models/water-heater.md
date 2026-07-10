@@ -37,7 +37,7 @@ The model covers:
 - Thermal state and control: setpoint, tank temperature(s), ambient temperature, operating mode, and which heat sources are active.
 - The water heater as dispatchable thermal storage: stored-energy state of charge and heating headroom.
 - Electrical metering: instantaneous power and cumulative energy.
-- A vendor-neutral demand-response control + feedback surface (shed / load-up, with the device's response and customer-override state).
+- A vendor-neutral demand-response control + feedback surface (shed / load-up, with the device's response and customer opt-out state).
 - The water heater's own operational status (faults, component runtimes).
 
 The model does **not** cover:
@@ -52,9 +52,9 @@ This data model follows the Electrification Bus design principles — the Homie 
 
 Two stances shape the property tables that follow:
 
-**Wide conformance latitude.** This data model defines a property **vocabulary**, not a conformance gauntlet. The **vast majority of properties are MAY-level**. A water heater that publishes only `setpoint` and `tank-temperature` is a valid `energy.ebus.device.water-heater`; so is a CTA-2045 unit that publishes no setpoint at all but exposes the full `dr` surface; so is a Rheem-class unit publishing the complete thermal + metering + diagnostics matrix. Publishers populate what they have and omit what they don't (framework principle #3); consumers tolerate sparse publication. The Homie device-type discriminator (`$description.type = energy.ebus.device.water-heater`) is what identifies a device as a water heater — not the population of any specific property. This stance matches the rationale recorded for [`utility-meter.md`](utility-meter.md): the model targets a long tail of appliance OEMs and proxy publishers where any conformance bar above MAY would exclude most candidates.
+**Wide conformance latitude.** This data model defines a property **vocabulary**, not a conformance gauntlet. The **vast majority of properties are MAY-level**. A water heater that publishes only `setpoint` and `tank-temperature` is a valid `energy.ebus.device.water-heater`; so is a CTA-2045 unit that publishes no setpoint at all but exposes the full `flex` surface; so is a Rheem-class unit publishing the complete thermal + metering + diagnostics matrix. Publishers populate what they have and omit what they don't (framework principle #3); consumers tolerate sparse publication. The Homie device-type discriminator (`$description.type = energy.ebus.device.water-heater`) is what identifies a device as a water heater — not the population of any specific property. This stance matches the rationale recorded for [`utility-meter.md`](utility-meter.md): the model targets a long tail of appliance OEMs and proxy publishers where any conformance bar above MAY would exclude most candidates.
 
-**The model is the appliance; control protocols are bindings.** The canonical vocabulary is deliberately clean and orthogonal. No control protocol's quirks are adopted into it — instead each protocol is *mapped* onto it, with the mapping shown in [§Examples](#examples). Most consequentially: CTA-2045's 15-value flattened "operational state" enum is **not** adopted; it is decomposed into the orthogonal properties this model already defines (a demand-response response value, a heating-active indication, and a customer-override boolean), and the 15 states map onto that decomposition losslessly.
+**The model is the appliance; control protocols are bindings.** The canonical vocabulary is deliberately clean and orthogonal. No control protocol's quirks are adopted into it — instead each protocol is *mapped* onto it, with the mapping shown in [§Examples](#examples). Most consequentially: CTA-2045's 15-value flattened "operational state" enum is **not** adopted; it is decomposed into the orthogonal properties this model already defines (a demand-response response value, a heating-active indication, and a customer opt-out state), and the 15 states map onto that decomposition losslessly.
 
 ---
 
@@ -70,11 +70,11 @@ ebus/5/<wh-id>/                  energy.ebus.device.water-heater
   water-heater          Thermal state and control (setpoint, tank temps, mode)
   soc                   Dispatchable thermal storage (state of charge, headroom)   (when published)
   meter                 Instantaneous power + cumulative energy                    (when published)
-  dr                    Demand-response control + feedback                         (when DR-capable)
+  flex                  Demand-response control + feedback (shed / load-up)       (when DR-capable)
   status                Operational state (faults, runtimes)                       (when published)
 ```
 
-`info` is always present on a conformant water-heater device. `water-heater` is present on any device that maintains a setpoint or reports a tank temperature (i.e., essentially all storage water heaters). The remaining capabilities are populated when the device exposes the corresponding signals: `soc` when it reports stored-energy or tank percentage, `meter` when it measures its own power/energy, `dr` when it is controllable for demand response, `status` when it reports operational health.
+`info` is always present on a conformant water-heater device. `water-heater` is present on any device that maintains a setpoint or reports a tank temperature (i.e., essentially all storage water heaters). The remaining capabilities are populated when the device exposes the corresponding signals: `soc` when it reports stored-energy or tank percentage, `meter` when it measures its own power/energy, `flex` when it is controllable for demand response, `status` when it reports operational health.
 
 ### Device ID
 
@@ -162,46 +162,20 @@ Instantaneous electrical power and cumulative energy. Reused from the eBus [`met
 
 A water heater MAY publish additional `meter` properties (voltage, current) defined by the `meter` capability; most do not, and the conformance latitude permits omission.
 
-#### dr
+#### flex
 
-The vendor-neutral **demand-response control and feedback** surface — the heart of a grid-flexible water heater. A controller issues a demand-response *event* (shed the load, or load it up), and the device reports how it is responding and whether the customer has overridden. Published when the device is controllable for demand response; omitted otherwise.
+The vendor-neutral **demand-response control-and-feedback** surface: the heart of a grid-flexible water heater. A controller issues a request to shed the load or load it up, and the device reports how it is responding and the customer's opt-out stance. Published when the device is controllable for demand response; omitted otherwise. The full property catalog (`request` / `active-request` / `response` / `opt-out`, the request-object schema, the self-describing `$format` control surface, and the opt-out / cause model) is defined in [`capabilities/flex.md`](../capabilities/flex.md).
 
-**Node type:** `energy.ebus.capability.dr`
+**Node type:** `energy.ebus.capability.flex`
 
-This capability is defined here in the water-heater context but is **cross-cutting and publisher-agnostic**: any controllable flexible load (a future HVAC SGD, an EV charger, a pool pump) MAY expose it. The property contracts below apply unchanged to any such publisher.
+On a storage water heater the two directions map to the thermal battery: **shed** lets it coast on stored heat (like discharging), **load-up** over-heats the tank to store energy (like charging). The water heater extends the generic `request` object with two optional **LOAD_UP thermal refinements**, advertised in its `$format` and drawn from Matter's `Boost` command:
 
-**The control direction is first-class.** Demand response on a storage appliance has two opposite intents relative to the appliance's self-managed baseline: **shed** (curtail below baseline — the grid is stressed; ≈ let the thermal battery discharge) and **load-up** (drive above baseline — surplus/cheap energy is available; ≈ charge the thermal battery). These are opposite directions, not points on one "throttle" axis. A magnitude (*how much*, for variable-power devices) and an intensity (*how aggressive / how mandatory*) modify the chosen direction.
+| `request` field | Datatype | Unit | Description |
+|---|---|---|---|
+| `target-percentage` | integer | % | Optional (LOAD_UP): heat until stored-energy `soc` reaches this percentage, rather than for a fixed `duration`. |
+| `temporary-setpoint` | float | °C | Optional (LOAD_UP): heat to this setpoint for the duration of the request. |
 
-| Property ID | Datatype | Unit | Req | Settable | Description |
-|---|---|---|---|---|---|
-| `event` | json | — | MAY | yes | The demand-response event to apply, as one atomic object (see schema below). Setting this property issues the event; the publisher translates it to the device's native control protocol. |
-| `active-event` | json | — | MAY | — | The event currently in force (same shape as `event`) plus an `ends-at` timestamp, or null/absent when no event is active. |
-| `dr-response` | enum | — | MAY | — | How the device is currently responding to demand-response control: `NONE` (no event in effect), `CURTAILED` (shedding — reduced consumption per a shed event), `BOOSTED` (loading up — heightened consumption per a load-up event), `NOT_FOLLOWING` (an event is in effect but the device is not currently able to honor it). This is the decomposed, vendor-neutral replacement for CTA-2045's 15-value operational-state enum (see [§CTA-2045 binding](#example-cta-2045-water-heater-via-a-ucm-bridge)). |
-| `opted-out` | boolean | — | MAY | — | True when the customer has overridden demand-response participation (e.g., the appliance's "Grid Enabled" control is off). While `true`, the device may ignore or only partially honor events. Many devices auto-clear this after a fixed period. |
-| `throttle-granularity` | enum | — | MAY | — | The magnitude resolution the device honors for `event.level`: `BINARY` (on/off only — `level` ignored, shed = off), `DISCRETE` (a fixed set of steps), `CONTINUOUS` (any 0–100%). Derived from the device's variable-power capability. A controller reads this to know whether a `level` of `45` is honored or rounded. |
-
-**`event` object schema.** A settable Homie 5 `json` property (with `$format` JSONSchema); one `/set` carries the whole event atomically.
-
-```json
-{
-  "mode":        "SHED" | "LOAD_UP" | "NORMAL",     // direction; required. NORMAL ends any event.
-  "level":       0-100,                              // optional %: magnitude within the direction
-                                                     //   (variable-power devices only; see throttle-granularity)
-  "intensity":   "PEAK" | "EMERGENCY" | "ADVANCED",  // optional: aggressiveness within the direction
-  "duration":    <seconds>,                          // optional: event length; absent = until changed
-  "target-percentage":   0-100,                      // optional (LOAD_UP): heat until soc reaches this
-  "temporary-setpoint":  <°C>                        // optional (LOAD_UP): heat to this setpoint for the event
-}
-```
-
-- `mode` is the direction. `SHED` reduces consumption; `LOAD_UP` increases it; `NORMAL` ends any active event and returns the device to self-management.
-- `level` is the per-direction magnitude as a percentage, honored only to the resolution given by `throttle-granularity`.
-- `intensity` raises the aggressiveness of the chosen direction. On the shed side: `PEAK` (a critical-peak event — deeper curtailment) and `EMERGENCY` (a grid-emergency event — maximum curtailment, customer override discouraged). On the load-up side: `ADVANCED` (over-heat the tank beyond its normal maximum to store extra energy; corresponds to CTA-2045 Advanced Load Up and Matter `EmergencyBoost`, and is gated on the customer having enabled it).
-- `target-percentage` and `temporary-setpoint` are optional LOAD_UP refinements drawn from Matter's `Boost` command, letting a controller load up to a specific tank state or temperature rather than for a fixed duration. Devices that do not support them ignore them.
-
-**Why `dr` uses `json` when every other eBus property is a scalar.** The `dr` event (`event` and its read-only mirror `active-event`) uses the Homie 5 `json` datatype rather than a scalar such as `enum` or `float`, per [framework principle #10](../framework.md#design-principles) (scalars by default; `json` only for atomic compounds). A demand-response event is a compound command whose fields are interdependent (a required `mode` plus optional `level`, `intensity`, `duration`, and the load-up refinements), and a grid demand-response command must take effect as one indivisible unit. Decomposing it into separate settable properties (`dr/mode`, `dr/duration`, and so on) would expose a partial-event window as the individual `/set` messages arrived, with the device acting on a half-specified event. Carrying the whole event as one `json` object lets a single `/set` apply it atomically, which also matches how CTA-2045 and Matter each model a demand-response command as a single message. The cost is that a consumer parses the object rather than reading a scalar; that is acceptable because `dr` is an opt-in control surface a controller must already understand in order to use it. `json` is a first-class Homie 5 datatype (its `$datatype` enumeration is `integer`, `float`, `boolean`, `string`, `enum`, `color`, `datetime`, `duration`, `json`), and the `$format` JSONSchema above validates the payload. The utility-meter `doe` per-direction envelope is the other current use of `json`, for the same atomicity reason.
-
-**Authorization.** The `event` property is the only settable on a conformant water-heater device's demand-response surface (alongside `water-heater`/`setpoint` and `operating-mode`). A consumer issuing demand response needs write access only to `dr/event`.
+A device that does not support them omits them from its schema. The `intensity = ADVANCED` value corresponds to CTA-2045 Advanced Load Up (over-heat beyond the normal maximum), gated on the customer having enabled it. `flex/request` is the only settable property on the water heater's demand-response surface (alongside `water-heater/setpoint` and `water-heater/operating-mode`); a consumer issuing demand response needs write access only to it.
 
 #### status
 
@@ -259,28 +233,27 @@ ebus/5/ucm-20f85e-wh01/meter/imported-energy    = 2709860
 ebus/5/ucm-20f85e-wh01/soc/soe                  = 2400
 ebus/5/ucm-20f85e-wh01/soc/total-energy-storage = 9200
 ebus/5/ucm-20f85e-wh01/soc/loadup-headroom      = 6800
-ebus/5/ucm-20f85e-wh01/dr/throttle-granularity  = "DISCRETE"
-ebus/5/ucm-20f85e-wh01/dr/dr-response           = "NONE"
-ebus/5/ucm-20f85e-wh01/dr/opted-out             = false
+ebus/5/ucm-20f85e-wh01/flex/response            = "NONE"
+ebus/5/ucm-20f85e-wh01/flex/opt-out             = "NONE"
 ```
 
 A controller sheds this water heater for one hour by setting:
 
 ```
-ebus/5/ucm-20f85e-wh01/dr/event/set = {"mode":"SHED","duration":3600}
+ebus/5/ucm-20f85e-wh01/flex/request/set = {"mode":"SHED","duration":3600}
 ```
 
-The publisher encodes a CTA-2045 Shed (`0x01`) with the duration field; `dr/dr-response` transitions to `CURTAILED`. A critical-peak event is `{"mode":"SHED","intensity":"PEAK",...}` (CTA-2045 `0x0A`); a grid emergency is `intensity:"EMERGENCY"` (`0x0B`); a load-up is `{"mode":"LOAD_UP","duration":2700}` (`0x17`).
+The publisher encodes a CTA-2045 Shed (`0x01`) with the duration field; `flex/response` transitions to `CURTAILED`. A critical-peak event is `{"mode":"SHED","intensity":"PEAK",...}` (CTA-2045 `0x0A`); a grid emergency is `intensity:"EMERGENCY"` (`0x0B`); a load-up is `{"mode":"LOAD_UP","duration":2700}` (`0x17`).
 
 **CTA-2045 operational-state → model mapping.** CTA-2045's 15 operational states are a flattened cross-product of three orthogonal facts; they decompose losslessly onto this model's properties:
 
-| CTA-2045 state | `meter/active-power` | `dr/dr-response` | `dr/opted-out` | `status/fault-state` |
+| CTA-2045 state | `meter/active-power` | `flex/response` | `flex/opt-out` | `status/fault-state` |
 |---|---|---|---|---|
-| Idle Normal / Running Normal | ~0 / >0 | `NONE` | false | OK |
-| Idle Curtailed / Running Curtailed | ~0 / >0 | `CURTAILED` | false | OK |
-| Idle Heightened / Running Heightened | ~0 / >0 | `BOOSTED` | false | OK |
-| Idle Opted Out / Running Opted Out | ~0 / >0 | `NONE` | **true** | OK |
-| Variable Following / Not Following | — | `BOOSTED`-or-`CURTAILED` / `NOT_FOLLOWING` | false | OK |
+| Idle Normal / Running Normal | ~0 / >0 | `NONE` | `NONE` | OK |
+| Idle Curtailed / Running Curtailed | ~0 / >0 | `CURTAILED` | `NONE` | OK |
+| Idle Heightened / Running Heightened | ~0 / >0 | `BOOSTED` | `NONE` | OK |
+| Idle Opted Out / Running Opted Out | ~0 / >0 | `NONE` | `ALL` | OK |
+| Variable Following / Not Following | — | `BOOSTED`-or-`CURTAILED` / `NOT_FOLLOWING` | `NONE` | OK |
 | SGD Error | — | — | — | **FAULT** |
 
 ### Example: Rheem EcoNet heat-pump water heater (rich)
@@ -330,12 +303,12 @@ A Matter water heater (device type `0x050F`) bridged to eBus. The mapping from M
 | Water Heater Management `TankVolume` | `info/tank-volume` |
 | Water Heater Management `TankPercentage` | `soc/soc` |
 | Water Heater Management `EstimatedHeatRequired` | `soc/heat-required` |
-| Water Heater Management `Boost(BoostInfo)` / `CancelBoost` | `dr/event = {mode:LOAD_UP, duration, target-percentage, temporary-setpoint}` / `{mode:NORMAL}` |
-| Water Heater Management `BoostState` | `dr/dr-response` (`BOOSTED` when Active) |
-| Device Energy Management (power-adjust / pause) | `dr/event = {mode:SHED, ...}` |
+| Water Heater Management `Boost(BoostInfo)` / `CancelBoost` | `flex/request = {mode:LOAD_UP, duration, target-percentage, temporary-setpoint}` / `{mode:NORMAL}` |
+| Water Heater Management `BoostState` | `flex/response` (`BOOSTED` when Active) |
+| Device Energy Management (power-adjust / pause) | `flex/request = {mode:SHED, ...}` |
 | Electrical Power / Energy Measurement | `meter/active-power` / `meter/imported-energy` |
 
-Matter splits the two demand-response directions across two clusters — load-up is the Water Heater Management `Boost` command, shed is delegated to Device Energy Management — whereas this model unifies them under `dr/event`'s `mode`. Matter's `Boost` is a rich load-up (target tank percentage, temporary setpoint, reheat hysteresis); the `dr/event` object carries the same optional refinements, so the eBus surface is a superset.
+Matter splits the two demand-response directions across two clusters — load-up is the Water Heater Management `Boost` command, shed is delegated to Device Energy Management — whereas this model unifies them under `flex/request`'s `mode`. Matter's `Boost` is a rich load-up (target tank percentage, temporary setpoint, reheat hysteresis); the `flex/request` object carries the same optional refinements, so the eBus surface is a superset.
 
 ### Example: Cala Systems water heater
 
@@ -352,10 +325,10 @@ A [Cala Systems](https://www.calasystems.com) heat-pump water heater. Its contro
 | `liters_used` | `water-heater/water-flow` |
 | `compressor_hz`, `fan_on`, `fan_speed_high` | `status` diagnostics (MAY) |
 | `wifi_rssi_dbm`, `fw_version`, connection state | bridge `info` / availability |
-| `create_boost {hours}` / `cancel_boost` | `dr/event = {mode:LOAD_UP, duration}` / `{mode:NORMAL}` |
-| `boost_mode_on` | `dr/dr-response` (`BOOSTED` when on) |
+| `create_boost {hours}` / `cancel_boost` | `flex/request = {mode:LOAD_UP, duration}` / `{mode:NORMAL}` |
+| `boost_mode_on` | `flex/response` (`BOOSTED` when on) |
 
-A Cala-style water heater exposes `dr/event` supporting only `LOAD_UP` and `NORMAL` — no shed, no `level`, `throttle-granularity` absent. This is conformant: the latitude lets a publisher expose only the demand-response directions it implements. Its liveness follows the surviving-observer rule — when the device stops reporting, the bridge (not the device) marks it stale.
+A Cala-style water heater exposes `flex/request` supporting only `LOAD_UP` and `NORMAL` — no shed, and no `level` in its `$format`. This is conformant: the latitude lets a publisher expose only the demand-response directions it implements. Its liveness follows the surviving-observer rule — when the device stops reporting, the bridge (not the device) marks it stale.
 
 **Advisory context, the eBus way.** Cala feeds the device advisory solar production and battery state-of-charge so it can self-optimize (heat when local generation is surplus), accepting no direct control over it. In eBus this needs **no new water-heater property**: a self-optimizing water heater is simply a *consumer* of other devices' published capabilities — the PV inverter's `meter`, the BESS's `soc`, the utility meter's `doe` — and decides locally. Which devices it watches is a commissioning concern (framework territory), not a property on the water heater.
 
@@ -367,7 +340,7 @@ This data model introduces entries in the eBus registries:
 
 - `energy.ebus.device.water-heater` — **new** device type. A storage water heater (heat-pump, electric, gas, or hybrid) as a controllable grid-flexible load. Registered in [`registries/device-types.md`](../registries/device-types.md).
 - `energy.ebus.capability.water-heater` — **new** capability type. Water-heater thermal state and control (setpoint, tank temperatures, operating mode, heat demand).
-- `energy.ebus.capability.dr` — **new** capability type. Vendor-neutral demand-response control + feedback (direction-first shed / load-up event, response, customer-override). Cross-cutting — applicable to any controllable flexible load.
+- `energy.ebus.capability.flex` — **new** canonical capability (catalog: [`capabilities/flex.md`](../capabilities/flex.md)). Vendor-neutral demand-response control + feedback (direction-first shed / load-up request, response, customer opt-out). Cross-cutting — applicable to any controllable flexible load.
 - `energy.ebus.capability.soc` — reused (its `soc` / `soe` vocabulary) for the water heater's dispatchable thermal storage: state of charge (`soc`), stored *thermal* energy (`soe`), an `available-volume` companion, total capacity, and load-up headroom. The BESS and water-heater publishers populate overlapping but distinct property subsets; both are conformant. The energy quantities differ in physical kind (the water heater's are thermal, the BESS's electrical) and unit, but the `soc` ratio and the `soc`/`soe` property names are shared.
 - `energy.ebus.capability.meter`, `energy.ebus.capability.info`, `energy.ebus.capability.status` — reused unchanged.
 
@@ -393,5 +366,5 @@ The new identifiers are registered in [`registries/capability-types.md`](../regi
   - Water Heater Management cluster (`0x0094`) — heat sources, tank volume / percentage, estimated heat required, `Boost` / `CancelBoost`.
   - Water Heater Mode cluster (`0x009E`) — operating modes (Off / Manual / Timed plus preference tags).
   - Thermostat cluster (`0x0201`) — setpoint, setpoint limits, current temperature, schedule.
-  - Device Energy Management cluster (`0x0098`) — demand-response / flexibility (the shed side of `dr`).
+  - Device Energy Management cluster (`0x0098`) — demand-response / flexibility (the shed side of `flex`).
   - Electrical Power Measurement (`0x0090`) and Electrical Energy Measurement (`0x0091`) — power and cumulative energy.

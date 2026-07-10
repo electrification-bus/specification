@@ -218,7 +218,7 @@ The schedule of grid events the enclosure (acting as the site EMS) has received 
 
 **Node type:** `energy.ebus.capability.grid-event`
 
-The enclosure republishes the events it receives so its DER children and site consumers can see the ask; it then decomposes each event and drives its flexible loads through their device-level `dr` control surface. This is the *explicit event* input, distinct from the economic incentive of `price` and the hard limit of `doe`; site-aggregate compliance is reported via `settlement-proof`.
+The enclosure republishes the events it receives so its DER children and site consumers can see the ask; it then decomposes each event and drives its flexible loads through their device-level `flex` control surface. This is the *explicit event* input, distinct from the economic incentive of `price` and the hard limit of `doe`; site-aggregate compliance is reported via `settlement-proof`.
 
 #### status
 
