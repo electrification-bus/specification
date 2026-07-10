@@ -126,7 +126,7 @@ When the enclosure receives a publish on a DOE property, it updates one or more 
 | effective envelope's `apparent-power-limit`     | (no direct mapping in v0)                          | `pcs` does not currently expose apparent-power import limits. If an envelope carries only apparent-power and not real-power, the enclosure SHOULD compute an approximate real-power equivalent (using a configured site power factor) and apply it as `grid-import-limit`. |
 | effective envelope's `source`                   | (informational, not currently mapped)              | `pcs/grid-import-limit` has no source attribute in v0. See "Source-attribution propagation" below. |
 | envelope `start-time` / `end-time`              | (drive the revert / schedule)                      | The enclosure applies the effective envelope and reverts when its window elapses without a superseding envelope becoming effective, clearing `pcs/grid-import-limit` so the `min()` composition falls back to the other binding import limit. A future-dated element in the array is applied when its window becomes current. See "Envelope window and schedule handling" below. |
-| `doe/export-limit` (effective envelope)         | (no current export-side slot)                      | `pcs` does not currently define an export-side import-limit family. Enclosures that consume the export envelope SHOULD treat it as informational until the dist-enclosure spec adds the corresponding slot. See "Export side" below. |
+| `doe/export-limit` (effective envelope)         | enclosure's `doe/export-limit`                     | The enclosure republishes the export envelope it is acting on on its own `doe/export-limit` (not a `pcs` slot: export enforcement is a DER-control concern). See "Export side" below. |
 
 The mapping is intentionally a **mirror, not a clamp**. The enclosure publishes the meter-signaled value on `grid-import-limit` as-is (subject only to value-type conversion — e.g., negative-value handling, NaN handling). Clamping to the static feed rating happens via the import-limit composition (the min across all import limits), not by mutating the stored `grid-import-limit`. See "Import-limit composition" below for why.
 
@@ -203,13 +203,10 @@ The enclosure does not republish the envelope window on its `pcs`. Consumers tha
 
 ## Export side
 
-The utility-meter data model defines an export-side envelope (`doe/export-limit`), the same schema as the import side. The distribution-enclosure data model in its current form does not define an export-side import-limit family; `pcs` covers import limits only.
+The utility-meter data model defines an export-side envelope (`doe/export-limit`), the same schema as the import side. The enclosure's `pcs` covers import limits only: the import-limit `min()` composition does not enforce an export limit. The export envelope instead has a home on the enclosure's own `doe`: an enclosure that obtains and acts on an export envelope republishes it on **its `doe/export-limit`** (see [`distribution-enclosure.md` §doe](../data-models/distribution-enclosure.md#doe)). It lives on `doe` rather than `pcs` because enforcing an export limit is a DER-control concern (curtailing PV / BESS), not an import-limit slot.
 
-This is a known gap. Until the distribution-enclosure spec adds an export-side import-limit family:
-
-- The enclosure MAY consume the meter's published export-side properties as informational input for its own internal logic (e.g., curtailing PV inverters or BESS discharge to stay under the export limit).
-- There is no *standard* export-side slot on `pcs` yet, so for visibility into the utility-signaled export limit a consumer reads the meter's published `doe/export-limit` directly. This is the absence of a standard slot, not a prohibition: an enclosure that already enforces an export limit MAY expose it as a vendor-specific property in the meantime (tolerated as unknown per the framework), pending the standard properties below.
-- When the distribution-enclosure spec adds an export-side family (likely properties named `grid-export-limit`, `feed-export-limit`, `requested-export-limit`, etc., mirroring the import side), this integration guide will be updated to extend the mapping table accordingly.
+- A consumer reads the export envelope from the meter's `doe/export-limit` (the utility's signal) or the enclosure's `doe/export-limit` (what the enclosure is acting on), the same source-versus-acting-on distinction as the import side.
+- Export *enforcement* (how the enclosure curtails DERs to stay under the export limit) is out of scope for this guide and belongs to a `der-control` capability.
 
 ---
 
@@ -314,7 +311,7 @@ An implementer who builds the eBus integration first carries the semantic unders
 ## Open questions
 
 1. **Source propagation onto `pcs`.** Should the distribution-enclosure spec add a `grid-import-limit-source` (and possibly `grid-import-limit-valid-until`) property so the meter-signaled source attribution is visible on the enclosure's published PCS surface? Deferred until a real consumer of that propagation exists.
-2. **Export-side import-limit family on `pcs`.** When the distribution-enclosure spec adds export-side import limits (likely as part of broader DER-aware revisions), update the mapping table here.
+2. **Export enforcement.** The export *envelope* now has a home (the enclosure's `doe/export-limit`); how an enclosure *enforces* an export limit (DER-control curtailment of PV / BESS) is a `der-control` concern, out of scope here and to be specified with that capability.
 3. **Apparent-power import limits on `pcs`.** Currently the enclosure's import-limit family is real-power-only. If the dist-enclosure spec later adds apparent-power-aware import limits, the envelope's `apparent-power-limit` will have a direct mapping target.
 4. **Multi-meter scenarios.** This guide assumes one utility meter per service. If the model needs to extend to multi-meter cases (sub-meters, dual-fed services), how does the enclosure compose multiple `doe` sources? Open.
 5. **Discovery-vs-commissioning policy.** This guide describes both, leaves the choice to implementations. A future revision may pick a recommended default.
