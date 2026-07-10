@@ -32,16 +32,16 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`framework.md`](framework.md) | DRAFT v0.4 (2026-07-01) |
 | **Data Models** | |
 | [`data-models/proxy.md`](data-models/proxy.md) | DRAFT v0.1 (2026-05-22) |
-| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.2 (2026-07-01) |
-| [`data-models/utility-meter.md`](data-models/utility-meter.md) | DRAFT v0.2 (2026-07-01) |
+| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.3 (2026-07-10) |
+| [`data-models/utility-meter.md`](data-models/utility-meter.md) | DRAFT v0.3 (2026-07-10) |
 | [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.8 (2026-07-01) |
 | [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-06-26) |
 | [`data-models/outlet.md`](data-models/outlet.md) | DRAFT v0.1 (2026-06-26) |
-| [`data-models/water-heater.md`](data-models/water-heater.md) | DRAFT v0.1 (2026-06-20) |
+| [`data-models/water-heater.md`](data-models/water-heater.md) | DRAFT v0.2 (2026-07-10) |
 | `data-models/mid.md` | Planned — see standalone-MID note in [`data-models/bess.md`](data-models/bess.md) §Device Hierarchy |
 | **Registries** | |
 | [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.4 (2026-06-27) |
-| [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.5 (2026-07-01) |
+| [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.11 (2026-07-10) |
 | [`registries/circuit-tags.md`](registries/circuit-tags.md) | DRAFT v0.1 (2026-05-23) |
 | [`registries/external-id-schemes.md`](registries/external-id-schemes.md) | DRAFT v0.1 (2026-05-16) |
 | **Capabilities** | |
