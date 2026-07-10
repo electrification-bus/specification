@@ -61,6 +61,7 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
   meter                         Enclosure-level aggregate metering (when the enclosure meters its feed)
   power-flows                   Site-level power flow aggregation (when computed)
   pcs                           UL 3141 Power Control Systems (PCS) configuration and state (when the enclosure runs a PCS)
+  doe                           Operating envelope the enclosure is acting on (when it obtains and enforces one)
   status                        Enclosure system status (when reported)
   shed-forecast                 Off-grid time-remaining forecast (when a BESS is commissioned)
   shed                          Enclosure-wide shed-policy controls (when a BESS is commissioned)
@@ -75,7 +76,7 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
     <evse-id>                              energy.ebus.device.evse       (proxied or eBus-native)
 ```
 
-**Conformance latitude.** Only `info` (identity) and the child circuits the enclosure hosts are intrinsic to a distribution enclosure. `meter`, `power-flows`, `pcs`, `status`, `door`, `shed`, and `shed-forecast` are optional capabilities, published when the product provides them: a smart panel publishes all of them, while a dumb load center or a proxied third-party panel may publish only `info` and its child circuits. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a distribution enclosure.
+**Conformance latitude.** Only `info` (identity) and the child circuits the enclosure hosts are intrinsic to a distribution enclosure. `meter`, `power-flows`, `pcs`, `doe`, `status`, `door`, `shed`, and `shed-forecast` are optional capabilities, published when the product provides them: a smart panel publishes all of them, while a dumb load center or a proxied third-party panel may publish only `info` and its child circuits. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a distribution enclosure.
 
 Each enclosure-side device that *is* an electrical connection point — every circuit, both lugs devices, and the enclosure-integrated MID — also exposes a `connection` node that records what is wired to it (downstream feed) and, where the publisher knows, what feeds it (upstream). The connection records are the enclosure-side topology surface: they identify which circuit feeds which DER, where an UPSTREAM DER (e.g., a BESS wired between utility and the enclosure main lugs) sits, and how enclosures chain together in multi-enclosure installs.
 
@@ -177,6 +178,16 @@ Import-limit family — each source publishes the same three-property pattern: t
 | `requested-import-limit-active` | boolean | — | SHOULD | Is requested-import-limit currently being enforced? |
 
 Grid-forming-entity identity is **not** carried here — it is published as `grid-forming-entity` on the MID device's `grid`. The property identifies what is establishing the AC voltage/frequency reference the home is synchronized to; its placement on the MID device (rather than the enclosure) keeps it on the device that authoritatively knows. Its value space is open — a Homie device ID or `"GRID"` — so multi-DER installs can identify *which* DER is grid-forming, not just *which class*.
+
+#### doe
+
+The operating envelope the enclosure has obtained and is acting on, published read-only. Published when the enclosure obtains and enforces an operating envelope; omitted otherwise. The property catalog (the `import-limit` / `export-limit` envelope arrays, the envelope-object schema, and the effective-envelope / scheduling / absence semantics) is defined in [`capabilities/doe.md`](../capabilities/doe.md).
+
+**Node type:** `energy.ebus.capability.doe`
+
+Unlike a utility meter's `doe` (the utility's signal at the service point), the enclosure's `doe` is **its** authoritative representation of the envelope it is acting on. An enclosure may be able to obtain an envelope by more than one path — subscribing to a utility meter's `doe`, an OpenADR client, a fleet / DERMS API — and which source it uses is a local policy / configuration decision; the published `doe` reflects the result. A consumer that also sees a utility meter's `doe` reconciles the two itself: they are distinct authoritative views (the utility's signal versus the enclosure's acting-on state), expected to differ transiently, not competing publishers.
+
+**Relationship to `pcs`.** `doe` and `pcs` are distinct and complementary. `doe` carries the full envelope the enclosure is acting on (both directions, with the schedule); `pcs/grid-import-limit` carries the single effective import limit the enclosure is currently enforcing (composed by `min()` with the enclosure's other import limits, per §pcs). The import side of the effective envelope is the source of `grid-import-limit`. The **export side (`doe/export-limit`) is the enclosure's home for a utility-signaled export envelope** — enforcing an export limit is a DER-control concern (curtailing PV / BESS), not an import-limit slot, so it lives on `doe`, not as an export-side `pcs` family.
 
 #### status
 

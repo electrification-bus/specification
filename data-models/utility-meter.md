@@ -166,49 +166,13 @@ This is the same capability node type used on MID devices in [`distribution-encl
 
 #### doe
 
-The utility's **dynamic operating envelope (DOE)** for this service point: the import and export operating envelopes the utility is signaling. Each envelope is a power limit with its source and (where defined) its validity window, optionally delivered as a schedule of upcoming envelopes. Published when the meter is configured to expose this signaling channel; omitted otherwise.
+The utility's **dynamic operating envelope (DOE)** for this service point: the import and export operating envelopes the utility is signaling to the meter. Published when the meter is configured to expose this signaling channel; omitted otherwise. The full property catalog — the two `json` envelope arrays, the envelope-object schema, effective-envelope selection, the scheduling safety asymmetry, and the publish-only / absence semantics — is defined in [`capabilities/doe.md`](../capabilities/doe.md).
 
 **Node type:** `energy.ebus.capability.doe`
 
-The term *dynamic operating envelope* is from [IEEE 2030.5 / CSIP](https://standards.ieee.org/ieee/2030.5/5897/), where it names the utility-issued operating constraints a customer site agrees to remain within. In Matter 1.5 terminology, the import side of this capability corresponds to the Meter Identification cluster's `PowerThreshold` attribute (Section 9.10 of the Matter 1.5 Application Cluster Specification); the export side has no Matter 1.5 equivalent and is proposed for a future Matter release. In [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) / NEC 2026 Article 130 terms, the import and export limits are PIL (Power Import Limit) and PEL (Power Export Limit) respectively.
+On a utility meter, `doe` is the **source** representation on eBus: the meter receives the envelope out of band (AMI head-end / IEEE 2030.5 / proprietary backhaul) and publishes it; subscribers (panels, EMSes, DERMS adapters) read it and act locally, and the meter grants no write access. A `source` of `GRID` (a dynamic utility grid-management action) is the case that most exercises the schedule and validity windows; static `CONTRACT` / `REGULATOR` / `EQUIPMENT` limits are typically a single open-ended envelope.
 
-The envelope is carried as two `json` properties, one per direction (`import-limit` and `export-limit`), rather than as a family of parallel scalar properties. This follows [framework principle #10](../framework.md#design-principles) (`json` only for atomic compounds): a limit, its source, and its validity window are one envelope that must be read as a unit. Spread across separately-retained scalar topics, a subscriber cannot tell whether the validity window it reads belongs to the limit it reads, or when each was published; one retained object per direction makes each envelope update a single atomic transaction.
-
-| Property ID | Datatype | Unit | Req | Settable | Description |
-|---|---|---|---|---|---|
-| `import-limit` | json | — | MAY | no | The import-side operating envelope: a JSON array of one or more envelope objects (schema below), ordered by `start-time`. Absent when the utility signals no import limit. |
-| `export-limit` | json | — | MAY | no | The export-side operating envelope, same schema. Absent when the utility signals no export limit. |
-
-**Envelope object schema.** Each property's value is a JSON **array** of envelope objects (the property carries a `$format` JSONSchema constraining it). A single current envelope is an array of one; a schedule of upcoming envelopes is a longer array. Each object:
-
-```json
-{
-  "power-limit":          3400,                    // integer W, real-power limit; non-negative
-  "apparent-power-limit": 3600,                    // integer VA, optional (Matter apparentPowerThreshold)
-  "source":               "GRID",                  // optional enum; absent = UNKNOWN
-  "start-time":           "2026-07-01T16:00:00Z",  // optional ISO-8601 UTC; absent = effective now
-  "end-time":             "2026-07-01T20:00:00Z"   // optional ISO-8601 UTC; absent = until superseded
-}
-```
-
-- **At least one** of `power-limit` / `apparent-power-limit` MUST be present; an envelope with neither is meaningless. Both are non-negative integers (a utility-signaled envelope is a setpoint, not a measurement, and is practically delivered at watt-or-VA-or-greater granularity). `power-limit` is UL 3141 PIL / PEL and Matter `PowerThresholdStruct.powerThreshold`; `apparent-power-limit` is Matter `apparentPowerThreshold`.
-- **Reactive power is not carried here.** In IEEE 2030.5 / CSIP, reactive-power limits and controls (volt-var, fixed power factor, fixed / max VAr) are per-DER grid-support functions applied at the inverter, not connection-point envelope limits; they belong to a forthcoming `der-control` capability, not `doe`. A `power-limit` (W) together with an `apparent-power-limit` (VA) already bound reactive power at the connection point (`|VAr| <= sqrt(VA^2 - W^2)`).
-- `source`: the limit's origin. `CONTRACT` (service contract / customer agreement), `REGULATOR` (permanent regulatory mandate), `EQUIPMENT` (equipment / conductor rating), `GRID` (dynamic utility grid-management action: distribution-transformer protection, DR event, congestion management), `UNKNOWN`. Absent means `UNKNOWN`. `GRID` distinguishes a temporary utility action from a permanent `REGULATOR` mandate, closing a gap in [Matter 1.5's `PowerThresholdSourceEnum`](https://csa-iot.org/all-solutions/matter/).
-- `start-time` / `end-time`: ISO-8601 UTC. `start-time` absent means effective immediately; `end-time` absent means in force until superseded by a later publish (typical for static / contract limits).
-
-**Selecting the effective envelope.** The retained array is the utility's complete current schedule for that direction, and each publish replaces it atomically. A subscriber determines the **effective** envelope as the array element whose `[start-time, end-time)` window contains the current time. If two windows overlap, the element with the latest `start-time` wins. If no element's window contains the current time (a gap in the schedule), there is no meter-signaled limit for that direction, and the subscriber falls back to its local equipment / static rating. Time-based selection needs a synced clock; the meter reports its own on `status`/`time-sync-state`.
-
-**Scheduling and the safety asymmetry.** Elements with a future `start-time` are pre-announced upcoming envelopes; a scheduling subscriber applies each as its window becomes current. Because mis-timing a limit is not symmetric, a subscriber that does not implement scheduling MUST behave conservatively: it MAY apply an upcoming **stricter** (lower) limit early, but MUST NOT apply an upcoming **looser** (higher) limit before its `start-time`. Publishers SHOULD prune elements whose `end-time` is already in the past.
-
-**Publish-only.** This capability is publish-only; no `/set` topic is defined. The utility configures the meter's envelope through whatever out-of-band channel the meter and utility have (typically AMI head-end / IEEE 2030.5 / proprietary backhaul). The meter publishes the resulting values to the eBus broker. Subscribers (panels, EMSes, DERMS adapters) cannot tell the meter what envelope to publish; they read the published values and act locally. This separation — utility owns the source of the envelope, meter owns publication, subscribers own enforcement — keeps authorization simple: no subscriber needs write permission to any property on the meter.
-
-**Absence semantics.** Absence of `import-limit` (respectively `export-limit`) means the utility signals no limit in that direction; a subscriber falls back to its local equipment / static rating. An empty array is equivalent to absence. Absence of the `doe` capability node entirely means the meter does not signal an operating envelope at all.
-
-**Why a new capability rather than extending `meter` or `grid`.** A utility-signaled envelope is neither a measurement (meter is for what the meter measures) nor a verdict on grid health (grid). It is a third class of signal — a control input the utility is communicating downstream — and it has a distinct audience (PCS subscribers, EMS panels, DERMS coordinators) and lifecycle (utility-driven, possibly time-bounded). Giving it its own capability keeps the three streams separable on the subscriber side.
-
-**Interaction with the distribution-enclosure's `pcs`.** The `power-limit` of the meter's effective `import-limit` envelope and the panel's `grid-import-limit` are distinct properties on distinct devices: the meter publishes "what the utility is signaling"; the panel publishes "what the panel is currently enforcing from its grid-source import-limit slot." For the end-to-end composition (subscription topology, import-limit composition math, commissioning, failure handling), see [Integration Guide: Utility Meter ↔ Distribution Enclosure](../integration-guides/utility-meter-and-distribution-enclosure.md).
-
-**Publishers other than utility meters.** Although this data model defines `doe` in the context of utility meters, the capability itself is publisher-agnostic. Any device that authoritatively knows a utility-signaled operating envelope — a future IEEE 2030.5 / CSIP gateway, a DERMS adapter, an aggregator's site controller — MAY publish this capability per framework principle #7. The property contracts above apply unchanged to any conformant publisher.
+A distribution enclosure that obtains and enforces an envelope publishes its own acting-on representation on *its* `doe` (see [`distribution-enclosure.md`](distribution-enclosure.md)); the meter's `doe` (the utility's signal) and the enclosure's `doe` (what the enclosure is acting on) are distinct authoritative views of the same underlying signal, not competing publishers. For the end-to-end meter → enclosure flow (subscription topology, `pcs` enforcement composition, commissioning, failure handling), see [Integration Guide: Utility Meter ↔ Distribution Enclosure](../integration-guides/utility-meter-and-distribution-enclosure.md).
 
 #### demand
 
