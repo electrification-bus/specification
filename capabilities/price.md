@@ -30,7 +30,7 @@ Like [`doe`](doe.md), it is **publish-only** and **publisher-agnostic**: per [fr
 
 More than one may be present for a single site, and that is expected, not a conflict: they are **not competing authorities**, and a consumer reads whichever it needs and reconciles. How a device *obtains* its price — an AMI / IEEE 2030.5 pricing channel to a meter, a market feed or price server into an enclosure, or a subscription to another eBus `price` publisher — is a deployment and policy concern, not defined here.
 
-Price is a *signal*, not a constraint: a subscriber responds economically (shift flexible load to cheaper windows, discharge storage into expensive ones) but is not bound by it. This is the "implicit demand response via dynamic price" mechanism, distinct from the hard limits of `doe` and the explicit events of `dr-event`; see [§Relationship to other signals](#relationship-to-other-signals).
+Price is a *signal*, not a constraint: a subscriber responds economically (shift flexible load to cheaper windows, discharge storage into expensive ones) but is not bound by it. This is the "implicit demand response via dynamic price" mechanism, distinct from the hard limits of `doe` and the explicit events of `grid-event`; see [§Relationship to other signals](#relationship-to-other-signals).
 
 ## Standards
 
@@ -93,7 +93,7 @@ Three utility-facing signals compose the site's coordination inputs, and a subsc
 
 - **`price`** — an *incentive*. The site responds economically (implicit demand response) but is free not to.
 - **[`doe`](doe.md)** — a *limit*. The site MUST remain within the operating envelope.
-- **`dr-event`** — an *explicit event*. A discrete request to shed or shift, with its own lifecycle (richer than the primitive `shed`).
+- **[`grid-event`](grid-event.md)** — an *explicit event*. A discrete, time-bounded grid ask or directive (shed / load-up / conserve), with a severity and its own lifecycle.
 
 An enclosure acting as the site EMS reads all three and coordinates its DER children accordingly.
 

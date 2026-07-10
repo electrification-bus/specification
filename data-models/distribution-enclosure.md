@@ -63,6 +63,7 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
   pcs                           UL 3141 Power Control Systems (PCS) configuration and state (when the enclosure runs a PCS)
   doe                           Operating envelope the enclosure is acting on (when it obtains and enforces one)
   price                         Dynamic price stream the enclosure is coordinating to (when it exposes one)
+  grid-event                    Grid events the enclosure is coordinating to: DR asks and grid alerts (when it receives them)
   status                        Enclosure system status (when reported)
   shed-forecast                 Off-grid time-remaining forecast (when a BESS is commissioned)
   shed                          Enclosure-wide shed-policy controls (when a BESS is commissioned)
@@ -77,7 +78,7 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
     <evse-id>                              energy.ebus.device.evse       (proxied or eBus-native)
 ```
 
-**Conformance latitude.** Only `info` (identity) and the child circuits the enclosure hosts are intrinsic to a distribution enclosure. `meter`, `power-flows`, `pcs`, `doe`, `price`, `status`, `door`, `shed`, and `shed-forecast` are optional capabilities, published when the product provides them: a smart panel publishes all of them, while a dumb load center or a proxied third-party panel may publish only `info` and its child circuits. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a distribution enclosure.
+**Conformance latitude.** Only `info` (identity) and the child circuits the enclosure hosts are intrinsic to a distribution enclosure. `meter`, `power-flows`, `pcs`, `doe`, `price`, `grid-event`, `status`, `door`, `shed`, and `shed-forecast` are optional capabilities, published when the product provides them: a smart panel publishes all of them, while a dumb load center or a proxied third-party panel may publish only `info` and its child circuits. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a distribution enclosure.
 
 Each enclosure-side device that *is* an electrical connection point — every circuit, both lugs devices, and the enclosure-integrated MID — also exposes a `connection` node that records what is wired to it (downstream feed) and, where the publisher knows, what feeds it (upstream). The connection records are the enclosure-side topology surface: they identify which circuit feeds which DER, where an UPSTREAM DER (e.g., a BESS wired between utility and the enclosure main lugs) sits, and how enclosures chain together in multi-enclosure installs.
 
@@ -196,7 +197,15 @@ The dynamic price stream the enclosure (acting as the site EMS) is coordinating 
 
 **Node type:** `energy.ebus.capability.price`
 
-As with `doe`, the enclosure's `price` is its authoritative representation of the price it is coordinating to — whichever it has obtained, from a source of its choosing (a utility meter's `price`, a market feed, a price server); which source it uses is a local policy / configuration decision. A consumer that also sees a utility meter's `price` reconciles the two itself; they are distinct authoritative views, not competing publishers. The enclosure uses the price to coordinate its DER children economically (charge / discharge and flexible-load timing) — this is *implicit* demand response, distinct from the hard limits it enforces via `doe` / `pcs` and from an explicit `dr-event`.
+As with `doe`, the enclosure's `price` is its authoritative representation of the price it is coordinating to — whichever it has obtained, from a source of its choosing (a utility meter's `price`, a market feed, a price server); which source it uses is a local policy / configuration decision. A consumer that also sees a utility meter's `price` reconciles the two itself; they are distinct authoritative views, not competing publishers. The enclosure uses the price to coordinate its DER children economically (charge / discharge and flexible-load timing) — this is *implicit* demand response, distinct from the hard limits it enforces via `doe` / `pcs` and from an explicit `grid-event`.
+
+#### grid-event
+
+The schedule of grid events the enclosure (acting as the site EMS) has received and is coordinating to: demand-response asks (shed / load-up) and grid-condition alerts (conservation calls, critical-peak, grid emergencies), published read-only. Published when the enclosure receives a grid-event feed (an OpenADR 3 VEN, an IEEE 2030.5 DRLC client, or a price-server subscription); omitted otherwise. The property catalog (the `events` schedule, the event-object schema, the severity / voluntary / lifecycle fields, and effective-event selection) is defined in [`capabilities/grid-event.md`](../capabilities/grid-event.md).
+
+**Node type:** `energy.ebus.capability.grid-event`
+
+The enclosure republishes the events it receives so its DER children and site consumers can see the ask; it then decomposes each event and drives its flexible loads through their device-level `dr` control surface. This is the *explicit event* input, distinct from the economic incentive of `price` and the hard limit of `doe`; site-aggregate compliance is reported via `settlement-proof`.
 
 #### status
 
