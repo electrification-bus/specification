@@ -1,8 +1,8 @@
 # Electrification Bus Specification
 
 **Status:** DRAFT
-**Version:** 0.4
-**Date:** 2026-07-01
+**Version:** 0.5
+**Date:** 2026-07-10
 
 ---
 
@@ -148,6 +148,34 @@ The following principles guide the structure of every eBus data model and the fr
 10. **Scalars by default; `json` only for atomic compounds.** Property values use scalar datatypes (`float`, `integer`, `enum`, `datetime`, and so on) by default: they are directly readable, chartable, and validatable by generic Homie tooling. The `json` datatype is used sparingly, and only where a value is a compound whose parts must be read or applied as a single atomic unit. Splitting such a value across separately-retained scalar topics would let a consumer observe a torn state: parts from different updates, with no way to tell which belong together, or when each was published. Current uses include the `flex` request, the `doe` / `price` per-direction schedules, the `grid-event` array, and the `voltage-response` curve.
 
 ---
+
+## Framework Features
+
+The framework defines a set of named **features**: the reusable mechanisms that data models and downstream implementations build on. Each has a stable identifier below. These identifiers are canonical: a downstream library or SDK declares the features it implements in its [`.ebus-spec.json`](conventions/spec-provenance.md) provenance lockfile `supports` list, so its coverage (and its lag) can be tracked against this list the way an application's `implements` map is tracked against data-model and capability versions.
+
+`Since` is the framework version at which the feature was introduced or last materially changed.
+
+| Feature | Identifier | Since | Description |
+|---|---|---|---|
+| Parent-child device model | `parent-child-model` | 0.3 | A parent device with child devices forming a device tree (see [Device Topology](#device-topology)). |
+| Capability node structure | `node-capability-structure` | 0.3 | Capabilities expressed as Homie nodes that group a device's typed properties. |
+| Device-type discriminator | `device-type-discriminator` | 0.3 | `$description.type` (`energy.ebus.device.*`) as the device identity discriminator. |
+| Capability-type identifiers | `capability-type-identifiers` | 0.3 | `energy.ebus.capability.*` node types. |
+| Scalar datatypes and units | `scalar-datatypes` | 0.3 | Homie 5 scalar datatypes with units; scalars by default. |
+| JSON datatype | `json-datatype` | 0.3 | The Homie 5 `json` datatype for atomic compound values (design principle #10). |
+| JSON Schema `$format` | `jsonschema-format` | 0.3 | `$format` as a JSON Schema constraining and self-describing a `json` property. |
+| Settable properties | `settable-properties` | 0.3 | Settable properties and their `/set` control topics. |
+| Empty-string encoding | `empty-string-encoding` | 0.3 | The Homie 5 empty-string wire convention. |
+| MQTT / Homie transport | `mqtt-homie-transport` | 0.3 | MQTT with the Homie 5 Convention as the messaging substrate. |
+| mDNS discovery | `mdns-discovery` | 0.3 | `_ebus._tcp` service discovery, including the `auth_methods` TXT record. |
+| Broker hosting | `broker-hosting` | 0.3 | The broker-host role, broker advertisement, and broker discovery. |
+| REST configuration API | `rest-configuration` | 0.3 | The HTTP / REST configuration surface and its OpenAPI advertisement. |
+| Server TLS | `tls` | 0.3 | Server-side TLS and CA distribution for non-publicly-verifiable certificates. |
+| mTLS client authentication | `mtls-client-auth` | 0.3 | Mutual-TLS client authentication. |
+| Proxy publishers | `proxy-publishers` | 0.3 | Proxy publishers and the `energy.ebus.device.bridge` device type. |
+| Device topology | `device-topology` | 0.3 | The device-topology / connection model across devices. |
+
+A downstream that implements only a subset populates its `supports` list with the identifiers it covers; the remainder is its backlog relative to this list.
 
 ## Detail: Networking
 

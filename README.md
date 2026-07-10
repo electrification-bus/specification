@@ -12,6 +12,9 @@
 - **`capabilities/`** — canonical property-catalog documents for cross-cutting `energy.ebus.capability.*` capabilities (metering, overcurrent protection, remote relay control, and similar). Each capability is defined once and referenced by the data models that use it, rather than restated in each; the capability-type registry indexes them.
 - **`integration-guides/`** — informative guides describing how two or more data-model surfaces compose at runtime. Integration guides reference the relevant data-model documents but do not redefine their normative contracts; they describe the end-to-end flow (subscription topology, value transformations, commissioning, failure handling) when both sides of an integration are present together.
 - **`examples/`** — reference snippets, reference implementations, and integration examples. *Currently empty; content will be added as the framework and data-model specifications stabilize.*
+- **[`CHANGELOG.md`](CHANGELOG.md)** — a dated, artifact-tagged log of notable specification changes. The project is in rapid development and does not yet cut formal releases, so changes are grouped by date rather than by release tag.
+- **`conventions/`** — conventions for *consuming* the specification, including the [`.ebus-spec.json`](conventions/spec-provenance.md) provenance lockfile a downstream implementation carries to pin and track which specification version it built against.
+- **`spec-manifest.json`** — a machine-readable manifest of every versioned artifact and its current version, generated from the document headers (the same data the status table below renders for humans); downstream drift checks read it.
 
 ## Where to start
 
@@ -26,23 +29,25 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 
 ## Status
 
+<!-- BEGIN generated status table (run: python3 tools/gen-spec-manifest.py) -->
 | Document | Status |
 |---|---|
 | **Framework** | |
-| [`framework.md`](framework.md) | DRAFT v0.4 (2026-07-01) |
+| [`framework.md`](framework.md) | DRAFT v0.5 (2026-07-10) |
 | **Data Models** | |
-| [`data-models/proxy.md`](data-models/proxy.md) | DRAFT v0.1 (2026-05-22) |
-| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.3 (2026-07-10) |
-| [`data-models/utility-meter.md`](data-models/utility-meter.md) | DRAFT v0.3 (2026-07-10) |
 | [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.8 (2026-07-01) |
-| [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-06-26) |
+| [`data-models/circuit.md`](data-models/circuit.md) | DRAFT v0.1 (2026-07-04) |
+| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.3 (2026-07-10) |
 | [`data-models/outlet.md`](data-models/outlet.md) | DRAFT v0.1 (2026-06-26) |
+| [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-06-26) |
+| [`data-models/proxy.md`](data-models/proxy.md) | DRAFT v0.1 (2026-05-22) |
+| [`data-models/utility-meter.md`](data-models/utility-meter.md) | DRAFT v0.3 (2026-07-10) |
 | [`data-models/water-heater.md`](data-models/water-heater.md) | DRAFT v0.2 (2026-07-10) |
-| `data-models/mid.md` | Planned — see standalone-MID note in [`data-models/bess.md`](data-models/bess.md) §Device Hierarchy |
+| `data-models/mid.md` | Planned (see the standalone-MID note in [`data-models/bess.md`](data-models/bess.md) §Device Hierarchy) |
 | **Registries** | |
-| [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.4 (2026-06-27) |
 | [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.11 (2026-07-10) |
 | [`registries/circuit-tags.md`](registries/circuit-tags.md) | DRAFT v0.1 (2026-05-23) |
+| [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.4 (2026-06-27) |
 | [`registries/external-id-schemes.md`](registries/external-id-schemes.md) | DRAFT v0.1 (2026-05-16) |
 | **Capabilities** | |
 | [`capabilities/breaker.md`](capabilities/breaker.md) | DRAFT v0.1 (2026-07-05) |
@@ -58,9 +63,10 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | **Integration Guides** | |
 | [`integration-guides/utility-meter-and-distribution-enclosure.md`](integration-guides/utility-meter-and-distribution-enclosure.md) | DRAFT v0.2 (2026-07-01) |
 | **Extensions** | |
-| [`extensions/README.md`](extensions/README.md) | DRAFT v0.1 (2026-07-04) |
 | [`extensions/imported.md`](extensions/imported.md) | STABLE v1.0.0 (2026-07-04) |
-
+| **Conventions** | |
+| [`conventions/spec-provenance.md`](conventions/spec-provenance.md) | DRAFT v0.1 (2026-07-10) |
+<!-- END generated status table -->
 ## Governance
 
 Electrification Bus aims to be a vendor-neutral framework for Home Energy Infrastructure integration and interoperability. The schema vocabulary excludes vendor trademarks and product-specific terminology; participation in the spec's development and consumption of the spec are intended to be open and free.

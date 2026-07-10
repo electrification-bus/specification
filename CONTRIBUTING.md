@@ -37,6 +37,23 @@ Pull requests are welcome.
 - New capability types and device types should follow the format rules and addition process documented in the relevant registry (`registries/device-types.md`, `registries/capability-types.md`).
 - One commit per logical change is fine; we don't require squash or any particular branch naming.
 
+## Versioning, the changelog, and generated files
+
+Each versioned document (data model, capability catalog, registry, framework, integration guide, convention) carries a `**Status:**` / `**Version:**` / `**Date:**` header. **Those headers are the single source of truth for artifact versions.**
+
+When you change a document's content:
+
+1. Bump its `**Version:**` and `**Date:**` (during the current rapid-development phase, any notable change warrants at least a minor bump).
+2. Add an entry to [`CHANGELOG.md`](CHANGELOG.md), tagged with the affected artifact and a category (Added / Changed / Renamed / Deprecated / Removed / Fixed).
+3. Regenerate the derived files, which are **generated, not hand-edited**: [`spec-manifest.json`](spec-manifest.json) (the machine-readable version manifest) and the [README status table](README.md#status) (between its generated-content markers):
+
+   ```bash
+   python3 tools/gen-spec-manifest.py          # regenerate both from the headers
+   python3 tools/gen-spec-manifest.py --check  # verify they are current (non-zero if stale)
+   ```
+
+Do not edit `spec-manifest.json` or the README status table by hand; run `--check` before pushing (and in CI once configured) so neither drifts from the document headers. Downstream implementations record which versions they build against via the [`.ebus-spec.json`](conventions/spec-provenance.md) provenance lockfile.
+
 ## Code of conduct
 
 Be respectful and constructive. Electrification Bus is an open-standards project that depends on contributions from vendors, integrators, and consumers across the home-energy-infrastructure ecosystem. We appreciate everyone who takes the time to file an issue, start a discussion, or send a pull request.

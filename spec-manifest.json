@@ -1,0 +1,176 @@
+{
+  "spec_repo": "https://github.com/electrification-bus/specification",
+  "note": "Generated from document Version:/Date:/Status: headers by tools/gen-spec-manifest.py. Do not edit by hand.",
+  "artifacts": {
+    "framework": {
+      "framework": {
+        "version": "0.5",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "framework.md"
+      }
+    },
+    "data-models": {
+      "bess": {
+        "version": "0.8",
+        "date": "2026-07-01",
+        "status": "DRAFT",
+        "path": "data-models/bess.md"
+      },
+      "circuit": {
+        "version": "0.1",
+        "date": "2026-07-04",
+        "status": "DRAFT",
+        "path": "data-models/circuit.md"
+      },
+      "distribution-enclosure": {
+        "version": "0.3",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "data-models/distribution-enclosure.md"
+      },
+      "outlet": {
+        "version": "0.1",
+        "date": "2026-06-26",
+        "status": "DRAFT",
+        "path": "data-models/outlet.md"
+      },
+      "pdu": {
+        "version": "0.1",
+        "date": "2026-06-26",
+        "status": "DRAFT",
+        "path": "data-models/pdu.md"
+      },
+      "proxy": {
+        "version": "0.1",
+        "date": "2026-05-22",
+        "status": "DRAFT",
+        "path": "data-models/proxy.md"
+      },
+      "utility-meter": {
+        "version": "0.3",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "data-models/utility-meter.md"
+      },
+      "water-heater": {
+        "version": "0.2",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "data-models/water-heater.md"
+      }
+    },
+    "capabilities": {
+      "breaker": {
+        "version": "0.1",
+        "date": "2026-07-05",
+        "status": "DRAFT",
+        "path": "capabilities/breaker.md"
+      },
+      "connection": {
+        "version": "0.1",
+        "date": "2026-07-05",
+        "status": "DRAFT",
+        "path": "capabilities/connection.md"
+      },
+      "doe": {
+        "version": "0.1",
+        "date": "2026-07-09",
+        "status": "DRAFT",
+        "path": "capabilities/doe.md"
+      },
+      "flex": {
+        "version": "0.1",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "capabilities/flex.md"
+      },
+      "grid-event": {
+        "version": "0.1",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "capabilities/grid-event.md"
+      },
+      "info": {
+        "version": "0.1",
+        "date": "2026-07-05",
+        "status": "DRAFT",
+        "path": "capabilities/info.md"
+      },
+      "meter": {
+        "version": "0.1",
+        "date": "2026-07-05",
+        "status": "DRAFT",
+        "path": "capabilities/meter.md"
+      },
+      "price": {
+        "version": "0.1",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "capabilities/price.md"
+      },
+      "switch": {
+        "version": "0.1",
+        "date": "2026-07-05",
+        "status": "DRAFT",
+        "path": "capabilities/switch.md"
+      },
+      "voltage-response": {
+        "version": "0.1",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "capabilities/voltage-response.md"
+      }
+    },
+    "registries": {
+      "capability-types": {
+        "version": "0.11",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "registries/capability-types.md"
+      },
+      "circuit-tags": {
+        "version": "0.1",
+        "date": "2026-05-23",
+        "status": "DRAFT",
+        "path": "registries/circuit-tags.md"
+      },
+      "device-types": {
+        "version": "0.4",
+        "date": "2026-06-27",
+        "status": "DRAFT",
+        "path": "registries/device-types.md"
+      },
+      "external-id-schemes": {
+        "version": "0.1",
+        "date": "2026-05-16",
+        "status": "DRAFT",
+        "path": "registries/external-id-schemes.md"
+      }
+    },
+    "integration-guides": {
+      "utility-meter-and-distribution-enclosure": {
+        "version": "0.2",
+        "date": "2026-07-01",
+        "status": "DRAFT",
+        "path": "integration-guides/utility-meter-and-distribution-enclosure.md"
+      }
+    },
+    "extensions": {
+      "imported": {
+        "version": "1.0.0",
+        "date": "2026-07-04",
+        "status": "STABLE",
+        "path": "extensions/imported.md"
+      }
+    },
+    "conventions": {
+      "spec-provenance": {
+        "version": "0.1",
+        "date": "2026-07-10",
+        "status": "DRAFT",
+        "path": "conventions/spec-provenance.md"
+      }
+    }
+  }
+}
