@@ -19,4 +19,5 @@ This area is being populated incrementally. A data model may still define a capa
 | `energy.ebus.capability.doe` | [`doe.md`](doe.md) | DRAFT v0.1 (2026-07-09) |
 | `energy.ebus.capability.info` | [`info.md`](info.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.1 (2026-07-05) |
+| `energy.ebus.capability.price` | [`price.md`](price.md) | DRAFT v0.1 (2026-07-10) |
 | `energy.ebus.capability.switch` | [`switch.md`](switch.md) | DRAFT v0.1 (2026-07-05) |

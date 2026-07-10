@@ -50,6 +50,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`capabilities/doe.md`](capabilities/doe.md) | DRAFT v0.1 (2026-07-09) |
 | [`capabilities/info.md`](capabilities/info.md) | DRAFT v0.1 (2026-07-05) |
 | [`capabilities/meter.md`](capabilities/meter.md) | DRAFT v0.1 (2026-07-05) |
+| [`capabilities/price.md`](capabilities/price.md) | DRAFT v0.1 (2026-07-10) |
 | [`capabilities/switch.md`](capabilities/switch.md) | DRAFT v0.1 (2026-07-05) |
 | **Integration Guides** | |
 | [`integration-guides/utility-meter-and-distribution-enclosure.md`](integration-guides/utility-meter-and-distribution-enclosure.md) | DRAFT v0.2 (2026-07-01) |

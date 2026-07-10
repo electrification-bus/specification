@@ -77,7 +77,7 @@ ebus/5/<meter-id>/                         energy.ebus.device.utility-meter
   power-quality                 Quantitative power-quality measurements                 (when published)
 ```
 
-The first three capabilities (`info`, `meter`, `status`) are always present on a conformant utility-meter device — they define what the device is. The latter four (`grid`, `doe`, `demand`, `power-quality`) are populated when the meter exposes the corresponding signal or computes the corresponding quantities; a meter that does not signal a dynamic operating envelope simply omits `doe` from its `$description`.
+The first three capabilities (`info`, `meter`, `status`) are always present on a conformant utility-meter device — they define what the device is. The latter five (`grid`, `doe`, `price`, `demand`, `power-quality`) are populated when the meter exposes the corresponding signal or computes the corresponding quantities; a meter that does not signal a dynamic operating envelope simply omits `doe` from its `$description`.
 
 ### Device ID
 
@@ -173,6 +173,14 @@ The utility's **dynamic operating envelope (DOE)** for this service point: the i
 On a utility meter, `doe` is the **source** representation on eBus: the meter receives the envelope out of band (AMI head-end / IEEE 2030.5 / proprietary backhaul) and publishes it; subscribers (panels, EMSes, DERMS adapters) read it and act locally, and the meter grants no write access. A `source` of `GRID` (a dynamic utility grid-management action) is the case that most exercises the schedule and validity windows; static `CONTRACT` / `REGULATOR` / `EQUIPMENT` limits are typically a single open-ended envelope.
 
 A distribution enclosure that obtains and enforces an envelope publishes its own acting-on representation on *its* `doe` (see [`distribution-enclosure.md`](distribution-enclosure.md)); the meter's `doe` (the utility's signal) and the enclosure's `doe` (what the enclosure is acting on) are distinct authoritative views of the same underlying signal, not competing publishers. For the end-to-end meter → enclosure flow (subscription topology, `pcs` enforcement composition, commissioning, failure handling), see [Integration Guide: Utility Meter ↔ Distribution Enclosure](../integration-guides/utility-meter-and-distribution-enclosure.md).
+
+#### price
+
+The utility's **dynamic price stream** for this service point: the time-varying import and export energy prices the utility is signaling. Published when the meter exposes a pricing channel; omitted otherwise. The full property catalog (the `import-price` / `export-price` schedules and the price-window schema) is defined in [`capabilities/price.md`](../capabilities/price.md).
+
+**Node type:** `energy.ebus.capability.price`
+
+On a utility meter, `price` is the **source** representation on eBus: the meter receives the price out of band (AMI head-end / IEEE 2030.5 pricing channel) and publishes it; subscribers (a panel EMS, price-aware controllers) read it and respond locally. It is the price sibling of `doe`: `doe` is a hard operating limit, `price` an economic incentive. This reports the price, not the rate structure (that is a tariff, a separate concern). Demand charges (currency per kW of peak) are a separate billing dimension and are not carried here; see [`demand`](#demand).
 
 #### demand
 
