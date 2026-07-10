@@ -148,7 +148,7 @@ A publisher implements specific device types and capabilities, so it leans on `i
 3. **Pin what you implement:** for each capability, data model, and registry your code depends on, add an entry under `implements` with the version from that artifact's `Version:` header (or the README status table) at `synced_commit`.
 4. **Commit it** alongside the code, in the same change that reconciles to that spec state.
 5. **On every sync:** after reconciling to a newer spec commit, bump `synced_commit` / `synced_date`, update any `implements` versions that changed, and record the reconciliation in your repository's own changelog or issue tracker. The specification [`CHANGELOG.md`](../CHANGELOG.md) tells you what moved between your old and new `synced_commit`.
-6. **Check drift (once tooling exists):** a drift check compares your `implements` map against the spec's `spec-manifest.json` at the spec's current commit, and reports which artifacts you are behind on. Until that tooling lands, the `CHANGELOG.md` between commits is the manual equivalent.
+6. **Check drift:** run the spec repo's [`tools/drift-report.py`](../tools/drift-report.py) against your lockfile(s), for example `python3 tools/drift-report.py --scan <your-repo-roots>`. It compares your `implements` versions, `framework` version, and `supports` features against the current `spec-manifest.json` and reports what you are behind on. The tool hardcodes no repository list: your fleet is a runtime argument (scan roots or a private config file), so it stays out of the public spec repo.
 
 ## Relationship to spec versioning
 

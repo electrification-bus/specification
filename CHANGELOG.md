@@ -13,7 +13,7 @@ Entries are tagged with the affected artifact and a category (Added / Changed / 
 - **capability/grid-event** 0.1 — new catalog: the grid's demand-response asks and grid-condition alerts (conservation, critical-peak, grid emergency) as one site-level, publish-only signal, parallel to `price` and `doe`. Anchored on OpenADR 3, IEEE 2030.5 DRLC, CTA-2045-B, and the CAISO Flex Alert / EEA hierarchy. (`4e752e7`)
 - **capability/voltage-response** 0.1 — new catalog: the load-side undervoltage current-reduction (a Volt-Watt analog). Static undervoltage setpoint as the primary form, optional proportional curve; enforced through a new `pcs` `undervoltage-import-limit` slot. (`58415de`)
 - **capability/flex** 0.1 — new canonical catalog for the flexible-load control-and-feedback surface (broken out of `water-heater.md`). (`a03fba6`)
-- **process** — added `CHANGELOG.md`, the `conventions/` area with the `.ebus-spec.json` provenance-lockfile convention (`conventions/spec-provenance.md`), a generated `spec-manifest.json`, and `tools/gen-spec-manifest.py` (which generates the manifest and the README status table from document headers).
+- **process** — added `CHANGELOG.md`, the `conventions/` area with the `.ebus-spec.json` provenance-lockfile convention (`conventions/spec-provenance.md`), a generated `spec-manifest.json`, and `tools/gen-spec-manifest.py` (which generates the manifest and the README status table from document headers). Added `tools/drift-report.py`, which checks downstream `.ebus-spec.json` lockfiles against the manifest on the artifact, framework, and feature axes; the manifest now also carries the framework feature list.
 
 ### Renamed
 

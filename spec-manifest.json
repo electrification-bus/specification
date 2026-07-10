@@ -1,6 +1,25 @@
 {
   "spec_repo": "https://github.com/electrification-bus/specification",
-  "note": "Generated from document Version:/Date:/Status: headers by tools/gen-spec-manifest.py. Do not edit by hand.",
+  "note": "Generated from document headers + framework.md Framework Features by tools/gen-spec-manifest.py. Do not edit by hand.",
+  "framework_features": {
+    "broker-hosting": "0.3",
+    "capability-type-identifiers": "0.3",
+    "device-topology": "0.3",
+    "device-type-discriminator": "0.3",
+    "empty-string-encoding": "0.3",
+    "json-datatype": "0.3",
+    "jsonschema-format": "0.3",
+    "mdns-discovery": "0.3",
+    "mqtt-homie-transport": "0.3",
+    "mtls-client-auth": "0.3",
+    "node-capability-structure": "0.3",
+    "parent-child-model": "0.3",
+    "proxy-publishers": "0.3",
+    "rest-configuration": "0.3",
+    "scalar-datatypes": "0.3",
+    "settable-properties": "0.3",
+    "tls": "0.3"
+  },
   "artifacts": {
     "framework": {
       "framework": {
