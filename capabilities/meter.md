@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.1
-**Date:** 2026-07-05
+**Date:** 2026-07-11
 **Authors:** Don Jackson
 
 ## Identifier
@@ -32,14 +32,14 @@ In US residential split-phase wiring the two hot legs are commonly labelled **L1
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
 | `active-power` | float | W | MAY | Total active power. Sign per the reference-direction rule below. |
-| `reactive-power` | float | VAR | MAY | Total reactive power. |
+| `reactive-power` | float | var | MAY | Total reactive power. |
 | `apparent-power` | float | VA | MAY | Total apparent power. |
 | `power-factor` | float | — | MAY | System power factor, signed: positive = lagging (inductive), negative = leading (capacitive); range `[-1.0, 1.0]`. |
 | `frequency` | float | Hz | MAY | Line frequency. |
 | `imported-energy` | float | Wh | MAY | Cumulative active energy imported (into the metered device / consumed). Monotonically non-decreasing. |
 | `exported-energy` | float | Wh | MAY | Cumulative active energy exported (out of the metered device / produced or backfed). Monotonically non-decreasing. |
-| `imported-reactive-energy` | float | VARh | MAY | Cumulative reactive energy imported. |
-| `exported-reactive-energy` | float | VARh | MAY | Cumulative reactive energy exported. |
+| `imported-reactive-energy` | float | varh | MAY | Cumulative reactive energy imported. |
+| `exported-reactive-energy` | float | varh | MAY | Cumulative reactive energy exported. |
 | `apparent-energy-imported` | float | VAh | MAY | Cumulative apparent energy imported. |
 | `apparent-energy-exported` | float | VAh | MAY | Cumulative apparent energy exported. |
 
@@ -50,7 +50,7 @@ In US residential split-phase wiring the two hot legs are commonly labelled **L1
 | `voltage-{a,b,c}` | float | V | MAY | RMS voltage on the named phase, line-to-neutral (or line-to-virtual-neutral on a delta service). |
 | `current-{a,b,c,n}` | float | A | MAY | RMS current on the named conductor. Neutral current (`current-n`) may be measured or imputed. |
 | `active-power-{a,b,c}` | float | W | MAY | Per-phase active power. Sign matches the system `active-power`. |
-| `reactive-power-{a,b,c}` | float | VAR | MAY | Per-phase reactive power. |
+| `reactive-power-{a,b,c}` | float | var | MAY | Per-phase reactive power. |
 | `apparent-power-{a,b,c}` | float | VA | MAY | Per-phase apparent power. |
 | `power-factor-{a,b,c}` | float | — | MAY | Per-phase power factor, signed as for the system value. |
 | `voltage-angle-{a,b,c}` | float | ° | MAY | Voltage angle relative to phase-A voltage (`voltage-angle-a` = `0`). |
@@ -66,7 +66,7 @@ Device models whose natural reference is power flowing *out* invert the default 
 
 ## Encoding notes
 
-Properties use the engineering-unit values listed (no scaling factor or `µ-` prefix). Cumulative energy quantities are floats in Wh / VARh / VAh, sufficient for billing-grade energy from a Homie float property; a publisher whose internal representation is integer micro-Wh converts at publish time.
+Properties use the engineering-unit values listed (no scaling factor or `µ-` prefix). Unit strings follow the IEC 80000-6 symbols: apparent power/energy are `VA` / `VAh`, and reactive power/energy are the lowercase `var` / `varh` (the standardized symbol; not `VAR`), matching the Homie convention's SI-symbol casing. Cumulative energy quantities are floats in Wh / varh / VAh, sufficient for billing-grade energy from a Homie float property; a publisher whose internal representation is integer micro-Wh converts at publish time.
 
 ## Forward compatibility
 

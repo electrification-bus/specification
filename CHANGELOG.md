@@ -6,6 +6,12 @@ All notable changes to the Electrification Bus specification: the data models, c
 
 Entries are tagged with the affected artifact and a category (Added / Changed / Renamed / Deprecated / Removed / Fixed). The commit hash in parentheses links each entry to git history. Formal releases and version tags will begin once the specification stabilizes.
 
+## 2026-07-11
+
+### Fixed
+
+- **capability/meter** — corrected the reactive-power and reactive-energy unit strings from `VAR` / `VARh` to the lowercase `var` / `varh`: the IEC 80000-6 standardized symbol, and the casing the [Homie convention](https://github.com/electrification-bus/convention)'s recommended-unit list uses for SI symbols (`W`, `Hz`, `Pa`, ...). This also removes an internal inconsistency: `data-models/bess.md` already used the lowercase `var` (its Enphase mapping notes the source is "already var"). Apparent power/energy (`VA` / `VAh`) were already correct and are unchanged. In-place DRAFT fix: `$unit` is an advisory display attribute (consumers dispatch on property ID and datatype, not the unit string), so the artifact version stays 0.1 and no downstream lockfile re-pin is required; only the document Date header moved (manifest + README status table regenerated).
+
 ## 2026-07-10
 
 ### Added

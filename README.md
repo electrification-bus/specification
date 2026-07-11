@@ -56,7 +56,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`capabilities/flex.md`](capabilities/flex.md) | DRAFT v0.1 (2026-07-10) |
 | [`capabilities/grid-event.md`](capabilities/grid-event.md) | DRAFT v0.1 (2026-07-10) |
 | [`capabilities/info.md`](capabilities/info.md) | DRAFT v0.1 (2026-07-05) |
-| [`capabilities/meter.md`](capabilities/meter.md) | DRAFT v0.1 (2026-07-05) |
+| [`capabilities/meter.md`](capabilities/meter.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/price.md`](capabilities/price.md) | DRAFT v0.1 (2026-07-10) |
 | [`capabilities/switch.md`](capabilities/switch.md) | DRAFT v0.1 (2026-07-05) |
 | [`capabilities/voltage-response.md`](capabilities/voltage-response.md) | DRAFT v0.1 (2026-07-10) |
