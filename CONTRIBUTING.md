@@ -52,6 +52,8 @@ When you change a document's content:
    python3 tools/gen-spec-manifest.py --check  # verify they are current (non-zero if stale)
    ```
 
+4. If you maintain downstream implementations, check them for drift before wrapping up: `python3 tools/drift-report.py --scan <your repo roots>` (see [`tools/README.md`](tools/README.md)). It reports which downstreams are now behind on the artifacts, framework version, or features you changed, so you can file or update their sync issues. Your fleet is a runtime argument (scan roots or a private `--config` file), never committed here.
+
 Do not edit `spec-manifest.json` or the README status table by hand; run `--check` before pushing (and in CI once configured) so neither drifts from the document headers. Downstream implementations record which versions they build against via the [`.ebus-spec.json`](conventions/spec-provenance.md) provenance lockfile.
 
 ## Code of conduct
