@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.1
-**Date:** 2026-07-09
+**Date:** 2026-07-11
 **Authors:** Don Jackson
 
 ## Identifier
@@ -78,7 +78,7 @@ An operating envelope is neither a measurement (`meter` is for what a device mea
 
 ## Relationship to enforcement
 
-Knowing an envelope and enforcing it are separate. A device that enforces one publishes its enforcement apart from the envelope it knows: on a distribution enclosure, `doe` carries the envelope (the full schedule, both directions), while `pcs/grid-import-limit` carries the single effective import limit the enclosure is currently enforcing (composed by `min()` with its other import limits). Export limiting is a DER-control concern (curtailing PV / BESS), separate from the import-limit composition; `doe/export-limit` carries the export *signal*. See [`distribution-enclosure.md`](../data-models/distribution-enclosure.md).
+Knowing an envelope and enforcing it are separate. A device that enforces one publishes its enforcement apart from the envelope it knows: on a distribution enclosure, `doe` carries the envelope (the full schedule, both directions) in **watts**, while enforcement is the `pcs`'s job: the enclosure reconciles the envelope to amps and enforces it as part of the `pcs` `min()`, which reports `binding-constraint = DOE` when the envelope is the binding limit. Export limiting is a DER-control concern (curtailing PV / BESS), separate from the import-limit composition; `doe/export-limit` carries the export *signal*. See [`distribution-enclosure.md`](../data-models/distribution-enclosure.md).
 
 ## Publishers
 

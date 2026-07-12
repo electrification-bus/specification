@@ -37,13 +37,13 @@
         "path": "data-models/bess.md"
       },
       "circuit": {
-        "version": "0.2",
+        "version": "0.3",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/circuit.md"
       },
       "distribution-enclosure": {
-        "version": "0.8",
+        "version": "0.9",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/distribution-enclosure.md"
@@ -82,7 +82,7 @@
     "capabilities": {
       "breaker": {
         "version": "0.1",
-        "date": "2026-07-05",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "capabilities/breaker.md"
       },
@@ -112,7 +112,7 @@
       },
       "doe": {
         "version": "0.1",
-        "date": "2026-07-09",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "capabilities/doe.md"
       },
@@ -170,6 +170,12 @@
         "status": "DRAFT",
         "path": "capabilities/output-island.md"
       },
+      "pcs": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/pcs.md"
+      },
       "power-flows": {
         "version": "0.1",
         "date": "2026-07-11",
@@ -214,14 +220,14 @@
       },
       "voltage-response": {
         "version": "0.1",
-        "date": "2026-07-10",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "capabilities/voltage-response.md"
       }
     },
     "registries": {
       "capability-types": {
-        "version": "0.17",
+        "version": "0.18",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "registries/capability-types.md"

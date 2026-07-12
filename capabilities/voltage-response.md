@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.1
-**Date:** 2026-07-10
+**Date:** 2026-07-11
 **Authors:** Don Jackson
 
 ## Identifier
@@ -62,9 +62,9 @@ Points are ordered by descending `voltage`; the publisher interpolates between b
 
 ## Relationship to `pcs` enforcement
 
-`voltage-response` carries the **configuration** (how the publisher will respond); it does not itself carry the live limit. On a distribution enclosure, the current reduction it imposes is published on the enclosure's [`pcs`](../data-models/distribution-enclosure.md#pcs) capability as the **`undervoltage-import-limit`** slot of the import-limit family, which composes with the other import limits by `min()` (most-restrictive-wins) with no new arbitration logic. Reading `voltage-response` tells a subscriber *what the publisher will do*; reading `pcs/undervoltage-import-limit` (and `-active`) tells it *what is being enforced right now*.
+`voltage-response` carries the **configuration** (how the publisher will respond); it does not itself carry the live limit. On a distribution enclosure, the current reduction it imposes is enforced through the enclosure's [`pcs`](../data-models/distribution-enclosure.md#pcs) arbitration: the enclosure reconciles the voltage-support threshold to a current reduction that feeds the `pcs` `min()`, and `pcs` reports `binding-constraint = VOLTAGE` when the voltage reduction is the binding limit. Reading `voltage-response` tells a subscriber *what the publisher will do*; reading `pcs/import-limit` and `pcs/binding-constraint` tells it *what is being enforced right now*.
 
-The interaction with the dynamic grid limit is complementary: a utility power envelope (`doe`, watts) converts to a *higher* current allowance as voltage falls (`I = P / (V·pf)`), while the `undervoltage-import-limit` slot pulls the effective `min()` back down when voltage is below the threshold. The two are independent constraints on the same actuator.
+The interaction with the dynamic grid limit is complementary: a utility power envelope (`doe`, watts) converts to a *higher* current allowance as voltage falls (`I = P / (V·pf)`), while the voltage-support reduction pulls the effective `min()` back down when voltage is below the threshold. The two are independent constraints on the same actuator, reconciled by the `pcs`.
 
 ## Units
 
@@ -94,6 +94,6 @@ Any device that measures its connection-point voltage and can curtail in respons
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `doe` capability](doe.md) — the watts operating envelope the enclosure reconciles alongside this volts threshold.
-- [distribution-enclosure](../data-models/distribution-enclosure.md) data model (`pcs` import-limit family) — the publisher and the enforcement surface.
+- [distribution-enclosure](../data-models/distribution-enclosure.md) data model, and [`pcs`](pcs.md) — the publisher and the arbitration / enforcement surface.
 - IEEE 2030.5 / CSIP Volt-Watt (`opModVoltWatt`); ANSI C84.1 service-voltage ranges.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

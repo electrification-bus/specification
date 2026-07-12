@@ -1,7 +1,7 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.8
+**Version:** 0.9
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -60,7 +60,8 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
   door                          Door state sensor (when present)
   meter                         Enclosure-level aggregate metering (when the enclosure meters its feed)
   power-flows                   Site-level power flow aggregation (when computed)
-  pcs                           UL 3141 Power Control Systems (PCS) configuration and state (when the enclosure runs a PCS)
+  pcs                           UL 3141 Power Control System (PCS): import-limit arbitration + state (when the enclosure runs a PCS)
+  breaker                       Main breaker (rating; the panel's main overcurrent device)
   doe                           Operating envelope the enclosure is acting on (when it obtains and enforces one)
   voltage-response              Import-current reduction when service voltage sags below a threshold (when it runs one)
   price                         Dynamic price stream the enclosure is coordinating to (when it exposes one)
@@ -79,7 +80,7 @@ ebus/5/<enclosure-id>/                     energy.ebus.device.distribution-enclo
     <evse-id>                              energy.ebus.device.evse       (proxied or eBus-native)
 ```
 
-**Conformance latitude.** Only `info` (identity) and the child circuits the enclosure hosts are intrinsic to a distribution enclosure. `meter`, `power-flows`, `pcs`, `doe`, `price`, `grid-event`, `voltage-response`, `status`, `door`, `shed`, and `shed-forecast` are optional capabilities, published when the product provides them: a smart panel publishes all of them, while a dumb load center or a proxied third-party panel may publish only `info` and its child circuits. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a distribution enclosure.
+**Conformance latitude.** Only `info` (identity) and the child circuits the enclosure hosts are intrinsic to a distribution enclosure. `meter`, `power-flows`, `pcs`, `breaker`, `doe`, `price`, `grid-event`, `voltage-response`, `status`, `door`, `shed`, and `shed-forecast` are optional capabilities, published when the product provides them: a smart panel publishes all of them, while a dumb load center or a proxied third-party panel may publish only `info` and its child circuits. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a distribution enclosure.
 
 Each enclosure-side device that *is* an electrical connection point — every circuit, both lugs devices, and the enclosure-integrated MID — also exposes a `connection` node that records what is wired to it (downstream feed) and, where the publisher knows, what feeds it (upstream). The connection records are the enclosure-side topology surface: they identify which circuit feeds which DER, where an UPSTREAM DER (e.g., a BESS wired between utility and the enclosure main lugs) sits, and how enclosures chain together in multi-enclosure installs.
 
@@ -124,56 +125,13 @@ Site-level aggregate power flows across all energy sources, computed by the encl
 
 #### pcs
 
-UL 3141 Power Control Systems (PCS) configuration, state, and the family of import-limit properties that the PCS composes and enforces. Published when the enclosure runs a PCS; a panel without a PCS omits this capability.
-
-**The import-limit family.** The PCS enforces an upper bound on power flow into the enclosure, and that bound is multi-sourced: several independent sources can each impose a limit, so the enclosure publishes one slot per source and composes them (see below). (The enclosure's feed is the service entrance in single-panel installs; in multi-enclosure chains a downstream enclosure's feed is the feedthrough from an upstream enclosure — the limit applies at the enclosure's own feed point either way, not specifically at the utility service entrance.) The sources:
-
-- `feed-import-limit` — the **firm** import limit: the commissioned static feed capacity, set at install time (reflects the upstream feed conductor, which may be smaller than the panel's main breaker). Always-present premises-equipment protection; the UL 3141 PCS archetype.
-- `grid-import-limit` — the **dynamic** import limit when grid-tied: the enclosure's enforcement of an IEEE 2030.5 Dynamic Operating Envelope (DOE), typically utility-signaled via AMI and mirrored from a utility-meter's `doe`. Time-bounded: present only while an envelope is in effect.
-- `off-grid-import-limit` — the import limit when islanded (from BESS / DER).
-- `requested-import-limit` — a user- or operator-requested temporary limit (homeowner via mobile app, fleet operator via REST API).
-- `undervoltage-import-limit` — the import limit imposed by the enclosure's **voltage-response** (under-voltage current reduction): a standing local setpoint with no external dependency, an always-available baseline of transformer protection beneath the time-bounded `grid-import-limit`. See the [`voltage-response`](#voltage-response) capability.
-
-At any instant the effective limit is `min()` across all enabled import limits: each acts as a ceiling and the most restrictive wins. This composition accommodates multiple independent constraint sources without any single source needing to know about the others. Terminology is anchored on the relevant standards rather than a coined umbrella: UL 3141 (with NEC 2026 Article 130) defines the PCS and the Power Import Limit (PIL) / Power Export Limit (PEL) vocabulary, and the dynamic grid-signaled limit is an IEEE 2030.5 Dynamic Operating Envelope (DOE). The firm and dynamic limits differ in what they protect (premises equipment versus the shared grid) and in whether they are standing or time-bounded, but the enclosure composes them uniformly by `min()`.
+UL 3141 Power Control System: the enclosure enforces an upper bound on import current, reconciling every active import constraint to a single effective limit by `min()` (most-restrictive-wins) and reporting which is binding. Published when the enclosure runs a PCS; omitted otherwise. The full property catalog (the amps-native limits `feed-import-limit` / `off-grid-import-limit` / `requested-import-limit`, the effective `import-limit`, the `binding-constraint` attribution, the failsafe structure, and the UL 3141 / IEEE 2030.5 anchoring) is defined in [`capabilities/pcs.md`](../capabilities/pcs.md).
 
 **Node type:** `energy.ebus.capability.pcs`
 
-Service rating and capability properties:
+The enclosure's **amps-native** constraints (the firm `feed-import-limit`, `off-grid-import-limit`, `requested-import-limit`) live here. The **grid envelope** ([`doe`](../capabilities/doe.md), watts) and the **voltage-support** reduction ([`voltage-response`](../capabilities/voltage-response.md), volts) live in their own capabilities in their native units; the enclosure reconciles all of them to a current limit and publishes the effective `import-limit` and `binding-constraint` (`FSR` / `DOE` / `VOLTAGE` / `OFF_GRID` / `REQUESTED`). The always-on `feed-import-limit` (FSR) and `voltage-response` baseline protect premises and transformer whenever the time-bounded `doe` is inactive; the enclosure never reverts to unlimited.
 
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `breaker-rating` | integer | A | SHOULD | Main breaker rating |
-| `grid-islandable` | boolean | — | SHOULD | Enclosure can operate off-grid |
-
-PCS state:
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `enabled` | boolean | — | SHOULD | Is the PCS enabled on this enclosure? |
-| `active` | boolean | — | SHOULD | Is the PCS actively controlling one or more loads right now? |
-| `import-limit` | float | A | SHOULD | The import limit currently being managed to (the active limit chosen from the import-limit family below) |
-
-Import-limit family — each source publishes the same three-property pattern: the limit value, the enablement state (whether it's configured and can apply), and whether it's currently the active limit driving enclosure behavior.
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `feed-import-limit` | float | A | SHOULD | Commissioned static limit reflecting the actual incoming feed capacity. Set at install time. May be less than `breaker-rating` when the upstream feed conductor is smaller than the panel's main breaker (e.g., a 200 A panel wired to a 100 A service feed publishes `feed-import-limit = 100`). |
-| `feed-import-limit-enablement` | enum | — | SHOULD | `UNSPECIFIED`, `UNCONFIGURED`, `DISABLED`, `ENABLED` |
-| `feed-import-limit-active` | boolean | — | SHOULD | Is feed-import-limit currently being enforced? |
-| `grid-import-limit` | float | A | SHOULD | Dynamic limit on grid-side import when grid-tied — typically utility-signaled (a Dynamic Operating Envelope received via AMI / IEEE 2030.5 / a utility-meter's `doe/power-import-limit`, mirrored here by the panel). The slot for "the utility's signal of what we may import right now." |
-| `grid-import-limit-enablement` | enum | — | SHOULD | Same enum domain as above |
-| `grid-import-limit-active` | boolean | — | SHOULD | Is grid-import-limit currently being enforced? |
-| `off-grid-import-limit` | float | A | SHOULD | Maximum power imported when off-grid (from BESS / DER) |
-| `off-grid-import-limit-enablement` | enum | — | SHOULD | Same enum domain |
-| `off-grid-import-limit-active` | boolean | — | SHOULD | Is off-grid-import-limit currently being enforced? |
-| `requested-import-limit` | float | A | SHOULD | User- or operator-requested temporary limit. Examples: a homeowner reducing import via the vendor's mobile app; a fleet operator pushing a limit via REST API. Distinct from utility-signaled limits — those go to `grid-import-limit`. |
-| `requested-import-limit-enablement` | enum | — | SHOULD | Same enum domain |
-| `requested-import-limit-active` | boolean | — | SHOULD | Is requested-import-limit currently being enforced? |
-| `undervoltage-import-limit` | float | A | MAY | The import current limit the enclosure imposes while service voltage is below its voltage-response threshold. Composes with the other slots by `min()`; the configuration is on [`voltage-response`](#voltage-response). |
-| `undervoltage-import-limit-enablement` | enum | — | MAY | Same enum domain as above |
-| `undervoltage-import-limit-active` | boolean | — | MAY | Is undervoltage-import-limit currently the binding limit (the `min()` winner)? |
-
-Grid-forming-entity identity is **not** carried here — it is published as `grid-forming-entity` on the MID device's `grid`. The property identifies what is establishing the AC voltage/frequency reference the home is synchronized to; its placement on the MID device (rather than the enclosure) keeps it on the device that authoritatively knows. Its value space is open — a Homie device ID or `"GRID"` — so multi-DER installs can identify *which* DER is grid-forming, not just *which class*.
+The enclosure's **main breaker** rating is published on its [`breaker`](../capabilities/breaker.md) capability (`breaker/rating`) — a further hard ceiling the `min()` respects — not here. Grid-forming-entity identity is on the MID device's `grid`, not here.
 
 #### doe
 
@@ -183,7 +141,7 @@ The operating envelope the enclosure has obtained and is acting on, published re
 
 Unlike a utility meter's `doe` (the utility's signal at the service point), the enclosure's `doe` is **its** authoritative representation of the envelope it is acting on. An enclosure may be able to obtain an envelope by more than one path — subscribing to a utility meter's `doe`, an OpenADR client, a fleet / DERMS API — and which source it uses is a local policy / configuration decision; the published `doe` reflects the result. A consumer that also sees a utility meter's `doe` reconciles the two itself: they are distinct authoritative views (the utility's signal versus the enclosure's acting-on state), expected to differ transiently, not competing publishers.
 
-**Relationship to `pcs`.** `doe` and `pcs` are distinct and complementary. `doe` carries the full envelope the enclosure is acting on (both directions, with the schedule); `pcs/grid-import-limit` carries the single effective import limit the enclosure is currently enforcing (composed by `min()` with the enclosure's other import limits, per §pcs). The import side of the effective envelope is the source of `grid-import-limit`. The **export side (`doe/export-limit`) is the enclosure's home for a utility-signaled export envelope** — enforcing an export limit is a DER-control concern (curtailing PV / BESS), not an import-limit slot, so it lives on `doe`, not as an export-side `pcs` family.
+**Relationship to `pcs`.** `doe` and `pcs` are distinct and complementary. `doe` carries the full import envelope the enclosure is acting on, in **watts**, with its schedule; `pcs` reconciles that envelope (converted to amps) together with its own amps-native limits into the effective enforced `import-limit`, reporting `binding-constraint = DOE` when the envelope is the binding one (per §pcs). The **export side (`doe/export-limit`) is the enclosure's home for a utility-signaled export envelope** — enforcing an export limit is a DER-control concern (curtailing PV / BESS), not an import-limit slot, so it lives on `doe`, not as an export-side `pcs` family.
 
 #### voltage-response
 
@@ -191,7 +149,7 @@ The enclosure's voltage-triggered import-current response: it reduces its import
 
 **Node type:** `energy.ebus.capability.voltage-response`
 
-This capability carries the *configuration* (how the enclosure will respond); the current reduction it imposes is enforced through the `pcs` import-limit family as the `undervoltage-import-limit` slot, composing with the other limits by `min()` (see [§pcs](#pcs)). The threshold is a standing local setpoint with no upstream dependency, so it keeps protecting the transformer even when a signaled `doe` envelope is stale. It carries real-power curtailment (a current limit), distinct from reactive Volt-VAr. v0 covers the undervoltage (import-reduction) direction; an overvoltage (export-reduction) direction is a future additive sibling.
+This capability carries the *configuration* (how the enclosure will respond); the current reduction it imposes is enforced through the enclosure's `pcs` arbitration (reported via `binding-constraint = VOLTAGE`), composing with the other constraints by `min()` (see [§pcs](#pcs)). The threshold is a standing local setpoint with no upstream dependency, so it keeps protecting the transformer even when a signaled `doe` envelope is stale. It carries real-power curtailment (a current limit), distinct from reactive Volt-VAr. v0 covers the undervoltage (import-reduction) direction; an overvoltage (export-reduction) direction is a future additive sibling.
 
 #### price
 
@@ -750,8 +708,7 @@ ebus/5/ab-1234-c5d67/                          energy.ebus.device.distribution-e
   power-flows/battery                           0.0
   power-flows/pv                                5530.0
   power-flows/site                              2740.0
-  pcs/breaker-rating                            200
-  pcs/grid-islandable                           true
+  breaker/rating                                200
   status/relay                                  CLOSED
   status/cloud-connection                       CONNECTED
   shed-forecast/total-time-remaining            720

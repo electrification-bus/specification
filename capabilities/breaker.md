@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.1
-**Date:** 2026-07-05
+**Date:** 2026-07-11
 **Authors:** Don Jackson
 
 ## Identifier
@@ -50,7 +50,7 @@ A comparison to smart-breaker data models in other standards will be added here 
 
 ## Publishers
 
-Published by any device that is breaker-protected. Today that is the circuit device type ([`circuit.md`](../data-models/circuit.md)), including circuits published natively by a smart panel and circuits republished by a proxy fronting a smart breaker.
+Published by any device that is breaker-protected: the circuit device type ([`circuit.md`](../data-models/circuit.md)), including circuits published natively by a smart panel and circuits republished by a proxy fronting a smart breaker; and a distribution enclosure for its **main breaker** (`rating`, and its trip state where exposed).
 
 ## References
 

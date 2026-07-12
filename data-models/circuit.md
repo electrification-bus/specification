@@ -1,7 +1,7 @@
 # Electrification Bus Circuit Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.2
+**Version:** 0.3
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -113,7 +113,7 @@ The circuit's participation in load-shedding: its shed class, published when the
 
 ### pcs
 
-The circuit's participation in the host's Power Control System (PCS, per UL 3141). Published when the host runs a PCS and this circuit is part of it; omitted otherwise. This is a **separate** concern from `load-shed`: a PCS controls circuits to keep site import/export within a binding limit, not to preserve backup runtime; a circuit may participate in one, both, or neither.
+The circuit's participation in the host's Power Control System (PCS, per UL 3141), published when the host runs a PCS and this circuit is part of it; omitted otherwise. A separate concern from `load-shed`: a PCS keeps site import/export within a binding limit, not backup runtime; a circuit may participate in one, both, or neither. The property catalog (the circuit `managed` / `priority` participation plus the enclosure-side system surface) is defined in [`capabilities/pcs.md`](../capabilities/pcs.md).
 
 **Node type:** `energy.ebus.capability.pcs`
 
