@@ -8,7 +8,13 @@ Relationship to the other areas:
 - **`capabilities/`** (this area) holds the *catalogs*: the full property tables, value domains, crosswalks, and grounding for each capability.
 - **`data-models/`** documents *device types*: which capabilities a device publishes and its device-specific conformance (which properties are SHOULD versus MAY on that device, and examples), referencing the catalogs here for property detail.
 
-This area is being populated incrementally. A data model may still define a capability inline until that capability is migrated here.
+## Every capability has a catalog
+
+A capability is a coherent functional aspect that can appear on devices of different types, so **every capability is potentially cross-cutting** and has its own standalone versioned catalog here: its single authoritative versioned home. That is what lets a capability be pinned in a downstream [`.ebus-spec.json`](../conventions/spec-provenance.md) lockfile and tracked for drift. A capability defined only inline in a data model carries no version of its own, so when its shared semantics change no single data-model version reliably reflects it and the drift can be silently missed.
+
+The one exception is a **device-defining** capability, intrinsically bound to a single device type (it defines what that device fundamentally is, for example the `water-heater` capability's setpoint / tank-temperature / operating-mode surface). It has a permanent, reliable home in its device model and may remain inline; such capabilities are allowlisted in [`tools/check-capability-catalogs.py`](../tools/check-capability-catalogs.py), which fails if any other registered capability lacks a catalog.
+
+This area is still being populated: [`tools/check-capability-catalogs.py`](../tools/check-capability-catalogs.py) lists the capabilities not yet migrated to a catalog.
 
 ## Catalogs
 
@@ -22,5 +28,7 @@ This area is being populated incrementally. A data model may still define a capa
 | `energy.ebus.capability.info` | [`info.md`](info.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.price` | [`price.md`](price.md) | DRAFT v0.1 (2026-07-10) |
+| `energy.ebus.capability.soc` | [`soc.md`](soc.md) | DRAFT v0.1 (2026-07-11) |
+| `energy.ebus.capability.status` | [`status.md`](status.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.switch` | [`switch.md`](switch.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.voltage-response` | [`voltage-response.md`](voltage-response.md) | DRAFT v0.1 (2026-07-10) |

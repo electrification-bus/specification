@@ -1,8 +1,8 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.3
-**Date:** 2026-07-10
+**Version:** 0.4
+**Date:** 2026-07-11
 **Authors:** Don Jackson
 
 ## Overview
@@ -222,7 +222,7 @@ The enclosure republishes the events it receives so its DER children and site co
 
 #### status
 
-Enclosure system status. Published when the enclosure reports system status; omitted otherwise.
+Enclosure system status. Reused from the eBus [`status`](../capabilities/status.md) capability, with distribution-enclosure network, relay, and configuration diagnostics. Published when the enclosure reports system status; omitted otherwise.
 
 **Node type:** `energy.ebus.capability.status`
 
@@ -421,7 +421,7 @@ Per the proxy model's general rule that [proxy-side knowledge stays on the proxy
 - **The wiring relationship between the DER and the enclosure** — which circuit, lugs device, or MID is physically connected to the DER. Recorded on `connection` of the enclosure-side connection-owner (see §"Connection Capability").
 - **The enclosure's view of communication-link health to the DER** — whether the enclosure's internal integration is currently reaching the DER. Recorded as `feeds-device-status` / `fed-by-device-status` on the same connection record.
 
-The DER child carries no `feed` property, no `relative-position` property, and no enclosure-↔-DER link-health property. A BESS device publishes its own `status/communication` property (the publisher's self-report of adapter-to-BESS communication) — that is a different signal from the enclosure-side link-health, published independently of the enclosure's view.
+The DER child carries no `feed` property, no `relative-position` property, and no enclosure-↔-DER link-health property. A BESS device publishes its own `status/communication-state` property (the publisher's self-report of adapter-to-BESS communication) — that is a different signal from the enclosure-side link-health, published independently of the enclosure's view.
 
 > **Interim placement.** The *Proxied PV Child* and *Proxied EVSE Child* subsections below are partial PV / EVSE data models, framed as "what the enclosure publishes when proxying." Rules they state are properly per-device-data-model statements, not enclosure-spec statements, and will move to `data-models/pv.md` and `data-models/evse.md` when those per-device data models land. (The BESS equivalent has already moved to [`data-models/bess.md`](bess.md); the general proxy-publication conventions live in [`data-models/proxy.md`](proxy.md).)
 
@@ -495,6 +495,8 @@ The shared identity properties (`vendor-name`, `serial-number`, `firmware-versio
 | `lock-state` | enum | MAY | EVSE connector lock state: `LOCKED`, `UNLOCKED`, `UNKNOWN`. |
 
 #### status
+
+EVSE operational state. Reused from the eBus [`status`](../capabilities/status.md) capability, with an EVSE-specific operational-state.
 
 **Node type:** `energy.ebus.capability.status`
 
@@ -697,7 +699,7 @@ ebus/5/xy-0001-aaaaa-TG000000000001/                      energy.ebus.device.bes
   info/data-model-version                                 "1.0"
   soc/soc                                                 100.0
   soc/soe                                                 81.0
-  status/communication                                    OK
+  status/communication-state                                    OK
 
 ebus/5/xy-0001-aaaaa-TG000000000001-mid/                  energy.ebus.device.mid  (proxied; synthetic — Tesla does not expose its MID separately)
   info/serial-number                                      "TG000000000001-mid"
@@ -717,7 +719,7 @@ ebus/5/xy-0002-bbbbb-lugs-dn/                     energy.ebus.device.lugs
 ebus/5/xy-0002-bbbbb-TG000000000001/                      energy.ebus.device.bess  (proxied — panel 2's view from its own integration)
   info/serial-number                                      "TG000000000001"
   soc/soc                                                 100.0
-  status/communication                                    OK
+  status/communication-state                                    OK
   ⟶ no panel-2 connection-owner references this BESS — BESS is not directly wired to panel 2
 
 ebus/5/xy-0002-bbbbb-pv-1/                                energy.ebus.device.pv  (proxied — panel 2's view; same physical PV as panel 1's)
@@ -840,7 +842,7 @@ ebus/5/ab-1234-c5d67-TG123456789/               energy.ebus.device.bess  (proxie
   info/data-model-version                       "1.0"
   soc/soc                                       98.5
   soc/soe                                       80.1
-  status/communication                          OK
+  status/communication-state                          OK
 
 ebus/5/ab-1234-c5d67-TG123456789-mid/           energy.ebus.device.mid  (proxied; synthetic)
   info/serial-number                            "TG123456789-mid"

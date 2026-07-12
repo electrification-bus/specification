@@ -1,8 +1,8 @@
 # Electrification Bus Water Heater Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.2
-**Date:** 2026-07-10
+**Version:** 0.3
+**Date:** 2026-07-11
 **Authors:** Don Jackson
 
 ## Overview
@@ -130,24 +130,20 @@ The mapping between this model's `operating-mode` and any specific product's mod
 
 #### soc
 
-The water heater as a **dispatchable thermal-storage resource**. A tank of hot water is a thermal battery: it stores energy (heated water), can be "charged" (load-up / boost — heat now to store more) and "discharged" (shed — coast, letting stored heat be drawn down). This capability exposes that storage view. Published when the device reports stored-energy or tank-percentage; omitted otherwise.
+The water heater as a **dispatchable thermal-storage resource**: a hot-water tank is a thermal battery. Reused from the eBus [`soc`](../capabilities/soc.md) capability (the reservoir vocabulary `soc` / `soe` / `total-energy-storage` / `loadup-headroom`), with the water heater reporting the **thermal** reservoir in Wh and adding two thermal refinements. All properties are read-only. Published when the device reports stored-energy or tank-percentage; omitted otherwise.
 
 **Node type:** `energy.ebus.capability.soc`
 
-This is the same capability type used for batteries on BESS devices, reused here because a water heater and a battery are publishing the same conceptual signal — the charge state of an energy reservoir — and an energy coordinator benefits from treating a fleet of water heaters as aggregated flexible storage using one vocabulary. All properties are **read-only** (device-reported), as on a BESS.
-
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `soc` | float | % | MAY | State of charge — approximate fraction of the tank that is hot water (Matter `TankPercentage`). Conceptually the same quantity as the BESS `soc`, and — being a dimensionless ratio — directly comparable across both. For a stratified tank, the height of the hot layer; for a single-probe unit, derivable from temperature. `0` = fully drawn down, `100` = fully heated to setpoint. |
-| `soe` | float | Wh | MAY | State of energy — *thermal* energy currently stored and available to draw. The conceptual analogue of the BESS `soe`, but a different physical quantity (see note below): a water heater stores heat, not electricity. |
-| `available-volume` | float | L | MAY | The stored-hot-water quantity expressed as usable *volume* — often the more natural measure for a water heater, and the one Cala reports (`liters_available`). The volumetric companion to `soe`. |
-| `total-energy-storage` | float | Wh | MAY | Total thermal storage capacity — the thermal energy to move the tank from its minimum to its maximum operating temperature (CTA-2045 "Total Energy Storage"). |
-| `loadup-headroom` | float | Wh | MAY | Thermal energy the tank can absorb *now* — the present load-up (charging) headroom, ≈ `total-energy-storage − soe` (CTA-2045 "Present Energy Storage", i.e. its energy-*take* capacity). When over-heating is permitted it includes the extra beyond the normal maximum (CTA-2045 Advanced Load Up; the gap to Matter `Boost` `TargetPercentage`). The dispatchable charge a load-up event can absorb. |
-| `heat-required` | float | Wh | MAY | Estimated thermal energy needed to bring the tank to its target setpoint (Matter `EstimatedHeatRequired`). The *electrical* energy is lower by the heat source's COP. |
+| `soc` | float | % | MAY | Fraction of the tank that is hot water (Matter `TankPercentage`); the dimensionless ratio, comparable across reservoirs. |
+| `soe` | float | Wh | MAY | Thermal energy currently stored and available to draw. |
+| `total-energy-storage` | float | Wh | MAY | Total thermal storage capacity (CTA-2045 "Total Energy Storage"). |
+| `loadup-headroom` | float | Wh | MAY | Thermal energy the tank can absorb now (CTA-2045 "Present Energy Storage"); includes over-heat headroom when Advanced Load Up is permitted. |
+| `available-volume` | float | L | MAY | Stored hot water as usable *volume* (Cala `liters_available`); the volumetric companion to `soe`. Water-heater refinement. |
+| `heat-required` | float | Wh | MAY | Thermal energy to bring the tank to setpoint (Matter `EstimatedHeatRequired`). Water-heater refinement. |
 
-**Two opposite quantities.** `soc` / `soe` / `available-volume` describe how much hot water is **stored and available to draw** (the discharge side); `loadup-headroom` describes how much energy the tank can still **absorb** (the charge side). They are complementary — roughly `soe + loadup-headroom ≈ total-energy-storage`.
-
-**Thermal, not electrical — the BESS analogy is conceptual, not dimensional.** A water heater's stored energy is *thermal* (Wh of heat, or equivalently a hot-water volume); a battery's `soe` is *electrical* (the kWh it can discharge to the grid). These are **not** the same unit and **not** directly summable: a water heater can shift *when* it draws electrical power (load-shifting), but it cannot discharge electricity. The `soc` ratio is comparable across both; the stored-energy magnitudes are not. This model expresses the water heater's thermal quantities in Wh (matching CTA-2045 and the device's own `meter`), where the BESS expresses electrical energy in kWh — deliberately different units for different physical quantities. The heat source's COP (≈1 for resistance, ≈2–4 for a heat pump) relates these thermal quantities to the electrical energy a controller actually dispatches; the COP is out of scope for this capability.
+**Thermal, not electrical.** A water heater's stored energy is *thermal* (Wh of heat), not electrical: it can shift *when* it draws power but cannot discharge electricity. The `soc` ratio is comparable with a BESS; the energy magnitudes are not (Wh thermal versus kWh electrical), and the heat source's COP (about 1 for resistance, 2-4 for a heat pump) relates the thermal quantity to the electrical energy a controller dispatches (out of scope here).
 
 #### meter
 
@@ -179,18 +175,18 @@ A device that does not support them omits them from its schema. The `intensity =
 
 #### status
 
-Operational health — faults and, where the device exposes them, component runtimes and diagnostic temperatures. Reused from the eBus `status` capability.
+Operational health. Reused from the eBus [`status`](../capabilities/status.md) capability (the `fault-state` / `active-alerts` core), with water-heater component-runtime diagnostics.
 
 **Node type:** `energy.ebus.capability.status`
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `fault-state` | enum | — | MAY | Overall fault state: `OK`, `FAULT`, `UNKNOWN`. Publishers MAY extend via `$format` for device-specific fault categories. |
+| `fault-state` | enum | — | MAY | Overall fault state: `OK`, `FAULT`, `UNKNOWN`. |
 | `active-alerts` | string | — | MAY | Human-readable current alert(s), when the device exposes them. |
-| `compressor-runtime` | float | h | MAY | Cumulative heat-pump compressor running hours (maintenance/diagnostics). |
+| `compressor-runtime` | float | h | MAY | Cumulative heat-pump compressor running hours. |
 | `resistance-runtime-{upper,lower}` | float | h | MAY | Cumulative resistance-element running hours. |
 
-Publishers MAY add vendor-specific diagnostic properties (refrigerant-cycle temperatures such as evaporator / discharge / suction, fan speed, expansion-valve position, etc.) as additional `status` properties; the spec defines only the properties listed above. Such deep diagnostics are entirely MAY and outside the model's core.
+Publishers MAY add vendor refrigerant-cycle diagnostics (evaporator / discharge / suction temperatures, fan speed, expansion-valve position) as additional `status` properties; all MAY and outside the core.
 
 ---
 

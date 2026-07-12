@@ -1,8 +1,8 @@
 # Electrification Bus Utility Meter Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.3
-**Date:** 2026-07-10
+**Version:** 0.4
+**Date:** 2026-07-11
 **Authors:** Don Jackson
 
 ## Overview
@@ -138,7 +138,7 @@ A utility meter MAY publish any subset, from `imported-energy` alone up to the f
 
 #### status
 
-Meter-as-device operational state — distinct from the meter's view of the *grid* (which lives on `grid`).
+Meter-as-device operational state — distinct from the meter's view of the *grid* (which lives on `grid`). Reused from the eBus [`status`](../capabilities/status.md) capability (the `communication-state` core), with meter-specific diagnostics.
 
 **Node type:** `energy.ebus.capability.status`
 

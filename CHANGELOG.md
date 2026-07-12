@@ -12,6 +12,20 @@ Entries are tagged with the affected artifact and a category (Added / Changed / 
 
 - **capability/meter** — corrected the reactive-power and reactive-energy unit strings from `VAR` / `VARh` to the lowercase `var` / `varh`: the IEC 80000-6 standardized symbol, and the casing the [Homie convention](https://github.com/electrification-bus/convention)'s recommended-unit list uses for SI symbols (`W`, `Hz`, `Pa`, ...). This also removes an internal inconsistency: `data-models/bess.md` already used the lowercase `var` (its Enphase mapping notes the source is "already var"). Apparent power/energy (`VA` / `VAh`) were already correct and are unchanged. In-place DRAFT fix: `$unit` is an advisory display attribute (consumers dispatch on property ID and datatype, not the unit string), so the artifact version stays 0.1 and no downstream lockfile re-pin is required; only the document Date header moved (manifest + README status table regenerated).
 
+### Added
+
+- **capability/soc** 0.1 and **capability/status** 0.1 — canonicalized these cross-cutting capabilities into standalone versioned catalogs. They were defined only inline in the data models, so they could not be pinned in a downstream lockfile or tracked for drift. `soc` reconciles the BESS electrical reservoir and the water-heater thermal reservoir; `status` defines the `fault-state` / `communication-state` / `active-alerts` core plus device-specific diagnostics.
+- **capability-catalog completeness policy** — every capability is potentially cross-cutting, so every capability now has (or requires) a standalone versioned catalog; a *device-defining* capability (e.g. `water-heater`) is the allowlisted exception. Added `tools/check-capability-catalogs.py` to enforce this and surface the remaining canonicalization backlog, and documented the policy in `capabilities/README.md`.
+
+### Renamed
+
+- **data-model/bess** 0.8 → 0.9 — normalized the `status` property names to the canonical catalog core: `communication` → `communication-state`, `device-fault` → `fault-state` (value sets aligned to `OK`/`DEGRADED`/`LOST`/`UNKNOWN` and `OK`/`FAULT`/`UNKNOWN`). **Breaking for BESS publishers and consumers.**
+
+### Changed
+
+- **data-model/water-heater** 0.2 → 0.3, **data-model/distribution-enclosure** 0.3 → 0.4, **data-model/utility-meter** 0.3 → 0.4 — the `soc` / `status` sections now reference the new catalogs, keeping only device-specific properties.
+- **registry/capability-types** → 0.12 — `soc` / `status` re-pointed to their catalogs.
+
 ## 2026-07-10
 
 ### Added

@@ -1,8 +1,8 @@
 # Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.8
-**Date:** 2026-07-01
+**Version:** 0.9
+**Date:** 2026-07-11
 **Authors:** Don Jackson
 
 ## Overview
@@ -241,14 +241,14 @@ The shared identity properties (`vendor-name`, `serial-number`, `model`, `firmwa
 
 ### soc
 
-Battery state of charge and energy.
+Battery state of charge and energy. The property catalog (`soc`, `soe`, `total-energy-storage`, `loadup-headroom`, and the reservoir framing) is defined in [`capabilities/soc.md`](../capabilities/soc.md); a BESS reports the electrical reservoir in kWh.
 
 **Node type:** `energy.ebus.capability.soc`
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `soc` | float | % | MUST | State of charge (0–100%) |
-| `soe` | float | kWh | SHOULD | State of energy — available energy remaining |
+| `soc` | float | % | MUST | State of charge (0-100%) |
+| `soe` | float | kWh | SHOULD | State of energy: available energy remaining |
 
 On the parent BESS device, these values are aggregated across all battery children.
 
@@ -370,16 +370,16 @@ A BESS publisher MUST declare each settable property's persistence class through
 
 ### status
 
-Operational status and fault reporting. Each property represents a standard fault category.
+Operational status and fault reporting. The core (`fault-state` / `communication-state` / `active-alerts`) is defined in [`capabilities/status.md`](../capabilities/status.md); a BESS, typically proxied through an adapter, publishes the core plus adapter integration sub-states.
 
 **Node type:** `energy.ebus.capability.status`
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `communication` | enum | MUST | Adapter-to-BESS communication: `OK`, `LOST`, `DEGRADED` |
-| `authentication` | enum | SHOULD | Credential/auth status: `OK`, `FAILED`, `EXPIRED`, `MISSING` |
+| `communication-state` | enum | MUST | Adapter-to-BESS communication: `OK`, `DEGRADED`, `LOST`, `UNKNOWN` |
+| `fault-state` | enum | SHOULD | BESS-reported fault: `OK`, `FAULT`, `UNKNOWN` |
+| `authentication` | enum | SHOULD | Credential / auth status: `OK`, `FAILED`, `EXPIRED`, `MISSING` |
 | `discovery` | enum | SHOULD | Device discovery status: `OK`, `NOT_FOUND`, `SERIAL_MISMATCH` |
-| `device-fault` | enum | SHOULD | BESS-reported fault: `OK`, `FAULTED` |
 
 ---
 
@@ -444,7 +444,7 @@ ebus/5/TG123456789/                          energy.ebus.device.bess (parent)
   soc/soc                                     98.5
   soc/soe                                     80.1
   meter/active-power                          10.0
-  status/communication                        OK
+  status/communication-state                        OK
 
 ebus/5/TG123456789-battery-1/                 energy.ebus.device.battery
   info/serial-number                          "PW2-001"
@@ -539,7 +539,7 @@ ebus/5/202211182691/                              energy.ebus.device.bess (paren
   info/data-model-version                         "1.0"
   soc/soc                                         72.5
   meter/active-power                              -450.0
-  status/communication                            OK
+  status/communication-state                            OK
   status/authentication                           OK
 
 ebus/5/202211182691-battery-1/                    energy.ebus.device.battery
@@ -604,7 +604,7 @@ ebus/5/PILA-7K2/                          energy.ebus.device.bess (parent, plug-
   output-island/mode                      FOLLOW_INPUT
   output-island/transfer-time             15
   shed-forecast/total-time-remaining      258
-  status/communication                    OK
+  status/communication-state                    OK
 
 ebus/5/PILA-7K2-outlet-1/                 energy.ebus.device.outlet
   info/name                               "Fridge"

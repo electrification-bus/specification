@@ -31,8 +31,8 @@
     },
     "data-models": {
       "bess": {
-        "version": "0.8",
-        "date": "2026-07-01",
+        "version": "0.9",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/bess.md"
       },
@@ -43,8 +43,8 @@
         "path": "data-models/circuit.md"
       },
       "distribution-enclosure": {
-        "version": "0.3",
-        "date": "2026-07-10",
+        "version": "0.4",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/distribution-enclosure.md"
       },
@@ -67,14 +67,14 @@
         "path": "data-models/proxy.md"
       },
       "utility-meter": {
-        "version": "0.3",
-        "date": "2026-07-10",
+        "version": "0.4",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/utility-meter.md"
       },
       "water-heater": {
-        "version": "0.2",
-        "date": "2026-07-10",
+        "version": "0.3",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/water-heater.md"
       }
@@ -128,6 +128,18 @@
         "status": "DRAFT",
         "path": "capabilities/price.md"
       },
+      "soc": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/soc.md"
+      },
+      "status": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/status.md"
+      },
       "switch": {
         "version": "0.1",
         "date": "2026-07-05",
@@ -143,8 +155,8 @@
     },
     "registries": {
       "capability-types": {
-        "version": "0.11",
-        "date": "2026-07-10",
+        "version": "0.12",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "registries/capability-types.md"
       },
@@ -189,6 +201,12 @@
         "date": "2026-07-10",
         "status": "DRAFT",
         "path": "conventions/spec-provenance.md"
+      },
+      "version-single-source": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "conventions/version-single-source.md"
       }
     }
   }
