@@ -26,9 +26,12 @@ This area is still being populated: [`tools/check-capability-catalogs.py`](../to
 | `energy.ebus.capability.flex` | [`flex.md`](flex.md) | DRAFT v0.1 (2026-07-10) |
 | `energy.ebus.capability.grid` | [`grid.md`](grid.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.grid-event` | [`grid-event.md`](grid-event.md) | DRAFT v0.1 (2026-07-10) |
+| `energy.ebus.capability.grid-forming` | [`grid-forming.md`](grid-forming.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.info` | [`info.md`](info.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.1 (2026-07-05) |
+| `energy.ebus.capability.power-flows` | [`power-flows.md`](power-flows.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.price` | [`price.md`](price.md) | DRAFT v0.1 (2026-07-10) |
+| `energy.ebus.capability.shed-forecast` | [`shed-forecast.md`](shed-forecast.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.soc` | [`soc.md`](soc.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.status` | [`status.md`](status.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.switch` | [`switch.md`](switch.md) | DRAFT v0.1 (2026-07-05) |

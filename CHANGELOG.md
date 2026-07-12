@@ -15,6 +15,7 @@ Entries are tagged with the affected artifact and a category (Added / Changed / 
 ### Added
 
 - **capability/soc** 0.1 and **capability/status** 0.1 — canonicalized these cross-cutting capabilities into standalone versioned catalogs. They were defined only inline in the data models, so they could not be pinned in a downstream lockfile or tracked for drift. `soc` reconciles the BESS electrical reservoir and the water-heater thermal reservoir; `status` defines the `fault-state` / `communication-state` / `active-alerts` core plus device-specific diagnostics.
+- **capability/grid-forming** 0.1, **capability/power-flows** 0.1, **capability/shed-forecast** 0.1 — canonicalized into versioned catalogs (completeness backlog).
 - **capability/grid** 0.1 — canonicalized the grid-boundary capability (grid-tied versus islanded, sensed utility-supply health, and the grid-forming-entity) into a versioned catalog; a MID publishes the islanding subset, a utility meter the supply-health subset (framework principle #7).
 - **capability-catalog completeness policy** — every capability is potentially cross-cutting, so every capability now has (or requires) a standalone versioned catalog; a *device-defining* capability (e.g. `water-heater`) is the allowlisted exception. Added `tools/check-capability-catalogs.py` to enforce this and surface the remaining canonicalization backlog, and documented the policy in `capabilities/README.md`.
 
@@ -27,6 +28,7 @@ Entries are tagged with the affected artifact and a category (Added / Changed / 
 - **data-model/water-heater** 0.2 → 0.3, **data-model/distribution-enclosure** 0.3 → 0.4, **data-model/utility-meter** 0.3 → 0.4 — the `soc` / `status` sections now reference the new catalogs, keeping only device-specific properties.
 - **registry/capability-types** → 0.12 — `soc` / `status` re-pointed to their catalogs.
 - **data-model/bess** 0.9 → 0.10, **data-model/distribution-enclosure** 0.4 → 0.5, **data-model/utility-meter** 0.4 → 0.5, **registry/capability-types** → 0.13 — the `grid` sections / row now reference `capabilities/grid.md`.
+- **data-model/bess** 0.10 → 0.11, **data-model/distribution-enclosure** 0.5 → 0.6, **registry/capability-types** → 0.14 — `grid-forming` / `power-flows` / `shed-forecast` re-pointed to their catalogs.
 
 ## 2026-07-10
 

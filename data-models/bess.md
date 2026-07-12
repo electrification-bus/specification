@@ -1,7 +1,7 @@
 # Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.10
+**Version:** 0.11
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -288,16 +288,9 @@ When a vendor exposes per-inverter grid-forming state, that detail lives on the 
 
 ### grid-forming
 
-Per-inverter grid-forming capability and current state. **Optional** — published only when an inverter is exposed as a distinct child device AND the vendor surfaces per-inverter grid-forming state. Most BESS adapters today will not publish this capability; the BESS-parent-level `grid-forming-entity` value on the MID is the externally-observable signal for "which DER is grid-forming."
+Per-inverter grid-forming capability and state, on an inverter child when the vendor exposes it. Defined in [`capabilities/grid-forming.md`](../capabilities/grid-forming.md) (`capable`, `active`, and the relationship to the MID-level `grid/grid-forming-entity`).
 
 **Node type:** `energy.ebus.capability.grid-forming`
-
-| Property ID | Datatype | Req | Description |
-|---|---|---|---|
-| `capable` | boolean | MUST (when capability is published) | Static hardware capability — does this inverter support grid-forming operation at all? |
-| `active` | boolean | SHOULD (when `capable = true`) | Current state — is this inverter actively grid-forming right now? When `false` and the inverter is energized, it is grid-following. |
-
-The two layers of representation are coherent: `<mid>/grid/grid-forming-entity == <bess-parent-id>` says "this BESS is the grid-forming entity" (externally observable, all systems); `<inverter-child-id>/grid-forming/active == true` says "this specific inverter is the one actively grid-forming" (vendor-specific, when published). The MID-level value is authoritative for which DER is grid-forming; the inverter-level flags are descriptive detail when available.
 
 ### output-island
 

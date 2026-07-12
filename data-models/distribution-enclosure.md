@@ -1,7 +1,7 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.5
+**Version:** 0.6
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -122,16 +122,9 @@ Published when the enclosure meters its feed; a panel without integrated meterin
 
 #### power-flows
 
-Site-level aggregate power flows across all energy sources. The enclosure computes these from its children and connected DER devices. Published when the enclosure computes them; a panel that does not aggregate site power omits this capability.
+Site-level aggregate power flows across all energy sources, computed by the enclosure from its children and connected DER. Published when the enclosure computes them; omitted otherwise. Defined in [`capabilities/power-flows.md`](../capabilities/power-flows.md) (`grid` / `battery` / `pv` / `site`, in W).
 
 **Node type:** `energy.ebus.capability.power-flows`
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `grid` | float | W | SHOULD | Grid power flow (positive = importing from grid) |
-| `battery` | float | W | SHOULD | Battery power flow (positive = discharging) |
-| `pv` | float | W | SHOULD | Solar PV power flow (positive = producing) |
-| `site` | float | W | SHOULD | Total site power consumption |
 
 #### pcs
 
@@ -238,23 +231,9 @@ Enclosure system status. Reused from the eBus [`status`](../capabilities/status.
 
 #### shed-forecast
 
-Computed forecast of how long backup loads will continue to be served when the home is or becomes off-grid. Published only when at least one BESS is commissioned to the enclosure; omitted entirely otherwise.
+Computed forecast of how long backup loads stay served when the home is or becomes off-grid. Published only when at least one BESS is commissioned; omitted otherwise. The property catalog (`total-time-remaining`, `time-to-priority-shed`, the full-charge variants, `confidence`, and the enclosure-computes-from-aggregate-BESS-state semantics) is defined in [`capabilities/shed-forecast.md`](../capabilities/shed-forecast.md).
 
 **Node type:** `energy.ebus.capability.shed-forecast`
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `total-time-remaining` | integer | min | SHOULD | At current SOE (aggregate across all commissioned BESSs), total time before the enclosure goes dark — all backed-up circuits unpowered. |
-| `time-to-priority-shed` | integer | min | SHOULD | At current SOE, time until circuits with `load-shed/priority = SOC_THRESHOLD` are auto-shed. |
-| `full-charge-total-time-remaining` | integer | min | SHOULD | At 100% SOE, total backup duration capability. |
-| `full-charge-time-to-priority-shed` | integer | min | SHOULD | At 100% SOE, capability time until the SOC_THRESHOLD shed event. |
-| `confidence` | enum | — | SHOULD | Algorithm's self-assessed confidence in the forecast: `LOW`, `MEDIUM`, `HIGH`. Reflects accumulated usage history. |
-
-The forecast is **enclosure-knowledge** — it is computed by the enclosure from the aggregate BESS SOE across all commissioned BESS children, the per-circuit `load-shed/priority` configuration, and the per-circuit consumption history. It cannot be computed by a BESS in isolation; this is why the forecast lives on the enclosure rather than on the BESS child.
-
-**Multi-BESS:** when the enclosure has more than one commissioned BESS, the forecast values are computed against the aggregate SOE across all of them. The published surface is a single set of values; per-BESS forecast detail is not currently exposed (and is not needed for the consumer-visible "how long do my loads stay up?" question).
-
-**No-BESS case:** when no BESS is commissioned, the enclosure omits `shed-forecast` from its `$description` entirely. Presence of the capability ⇔ at least one BESS is commissioned.
 
 #### shed
 

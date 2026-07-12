@@ -31,7 +31,7 @@
     },
     "data-models": {
       "bess": {
-        "version": "0.10",
+        "version": "0.11",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/bess.md"
@@ -43,7 +43,7 @@
         "path": "data-models/circuit.md"
       },
       "distribution-enclosure": {
-        "version": "0.5",
+        "version": "0.6",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/distribution-enclosure.md"
@@ -110,6 +110,12 @@
         "status": "DRAFT",
         "path": "capabilities/grid-event.md"
       },
+      "grid-forming": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/grid-forming.md"
+      },
       "grid": {
         "version": "0.1",
         "date": "2026-07-11",
@@ -128,11 +134,23 @@
         "status": "DRAFT",
         "path": "capabilities/meter.md"
       },
+      "power-flows": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/power-flows.md"
+      },
       "price": {
         "version": "0.1",
         "date": "2026-07-10",
         "status": "DRAFT",
         "path": "capabilities/price.md"
+      },
+      "shed-forecast": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/shed-forecast.md"
       },
       "soc": {
         "version": "0.1",
@@ -161,7 +179,7 @@
     },
     "registries": {
       "capability-types": {
-        "version": "0.13",
+        "version": "0.14",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "registries/capability-types.md"
