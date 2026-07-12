@@ -123,12 +123,14 @@ A publisher implements specific device types and capabilities, so it leans on `i
   "role": "publisher",
   "framework": "0.5",
   "implements": {
-    "capabilities": { "info": "0.1", "meter": "0.1", "status": "0.1", "flex": "0.1" },
+    "capabilities": { "info": "0.1", "meter": "0.1", "connection": "0.1", "flex": "0.1" },
     "data-models": { "water-heater": "0.2" }
   },
-  "notes": "CTA-2045 UCM -> eBus water-heater bridge."
+  "notes": "CTA-2045 UCM -> eBus water-heater bridge. Only capabilities with a standalone versioned catalog are pinned here; the soc and status roles this device also publishes are covered transitively by water-heater 0.2 (no separate catalog version to pin)."
 }
 ```
+
+Pin under `capabilities` only those with a standalone versioned catalog (a `capabilities/<name>.md` with a `Version:` header, hence a `spec-manifest.json` entry). A capability that exists only as a role inside a data model (for example `soc` and `status`, defined within `water-heater.md`) has no independent version, so it is covered transitively by that data model's version rather than pinned on its own.
 
 ### Minimal
 
