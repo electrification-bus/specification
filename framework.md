@@ -1,8 +1,8 @@
 # Electrification Bus Specification
 
 **Status:** DRAFT
-**Version:** 0.5
-**Date:** 2026-07-10
+**Version:** 0.6
+**Date:** 2026-07-11
 
 ---
 
@@ -366,7 +366,7 @@ energy.ebus.capability.soc
 energy.ebus.capability.switch
 energy.ebus.capability.power-flows
 energy.ebus.capability.pcs
-energy.ebus.capability.priority
+energy.ebus.capability.load-shed
 energy.ebus.capability.door
 energy.ebus.capability.shed
 energy.ebus.capability.shed-forecast

@@ -1,8 +1,8 @@
 # Electrification Bus Circuit Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-04
+**Version:** 0.2
+**Date:** 2026-07-11
 **Authors:** Don Jackson
 
 ## Overview
@@ -107,15 +107,9 @@ Overcurrent / fault **protection**. Published when the circuit is protected by a
 
 ### load-shed
 
-The circuit's participation in load-shedding. Published when the hosting device coordinates shedding (typically a distribution enclosure); omitted otherwise.
+The circuit's participation in load-shedding: its shed class, published when the hosting device coordinates shedding (typically a distribution enclosure); omitted otherwise. The property catalog (`priority`, its baseline / extensible shed-trigger values, the extensibility mechanism, and the relationship to `switch` / `pcs`) is defined in [`capabilities/load-shed.md`](../capabilities/load-shed.md). The **interaction** of `load-shed/priority` with a host's enclosure-wide shed policy (the SOC threshold, the shed forecast, the effective shed gate) is host-specific and is defined in the host's model, e.g. [`distribution-enclosure.md`](distribution-enclosure.md).
 
 **Node type:** `energy.ebus.capability.load-shed`
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `priority` | enum | — | SHOULD | Shedding class. Baseline: `UNKNOWN`, `NEVER`, `OFF_GRID`. Optional (advertised in `$format`): `SOC_THRESHOLD` and future values. |
-
-The **interaction** of `load-shed/priority` with a host's enclosure-wide shed policy (the SOC threshold, the shed forecast, the effective shed gate) is host-specific and is defined in the host's model, e.g. [`distribution-enclosure.md`](distribution-enclosure.md).
 
 ### pcs
 

@@ -33,10 +33,10 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | Document | Status |
 |---|---|
 | **Framework** | |
-| [`framework.md`](framework.md) | DRAFT v0.5 (2026-07-10) |
+| [`framework.md`](framework.md) | DRAFT v0.6 (2026-07-11) |
 | **Data Models** | |
 | [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.12 (2026-07-11) |
-| [`data-models/circuit.md`](data-models/circuit.md) | DRAFT v0.1 (2026-07-04) |
+| [`data-models/circuit.md`](data-models/circuit.md) | DRAFT v0.2 (2026-07-11) |
 | [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.7 (2026-07-11) |
 | [`data-models/outlet.md`](data-models/outlet.md) | DRAFT v0.1 (2026-06-26) |
 | [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-06-26) |
@@ -45,7 +45,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`data-models/water-heater.md`](data-models/water-heater.md) | DRAFT v0.3 (2026-07-11) |
 | `data-models/mid.md` | Planned (see the standalone-MID note in [`data-models/bess.md`](data-models/bess.md) §Device Hierarchy) |
 | **Registries** | |
-| [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.15 (2026-07-11) |
+| [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.16 (2026-07-11) |
 | [`registries/circuit-tags.md`](registries/circuit-tags.md) | DRAFT v0.1 (2026-05-23) |
 | [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.4 (2026-06-27) |
 | [`registries/external-id-schemes.md`](registries/external-id-schemes.md) | DRAFT v0.1 (2026-05-16) |
@@ -60,6 +60,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`capabilities/grid-event.md`](capabilities/grid-event.md) | DRAFT v0.1 (2026-07-10) |
 | [`capabilities/grid-forming.md`](capabilities/grid-forming.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/info.md`](capabilities/info.md) | DRAFT v0.1 (2026-07-05) |
+| [`capabilities/load-shed.md`](capabilities/load-shed.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/meter.md`](capabilities/meter.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/output-island.md`](capabilities/output-island.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/power-flows.md`](capabilities/power-flows.md) | DRAFT v0.1 (2026-07-11) |

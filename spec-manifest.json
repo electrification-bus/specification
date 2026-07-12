@@ -23,8 +23,8 @@
   "artifacts": {
     "framework": {
       "framework": {
-        "version": "0.5",
-        "date": "2026-07-10",
+        "version": "0.6",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "framework.md"
       }
@@ -37,8 +37,8 @@
         "path": "data-models/bess.md"
       },
       "circuit": {
-        "version": "0.1",
-        "date": "2026-07-04",
+        "version": "0.2",
+        "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/circuit.md"
       },
@@ -140,6 +140,12 @@
         "status": "DRAFT",
         "path": "capabilities/info.md"
       },
+      "load-shed": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/load-shed.md"
+      },
       "meter": {
         "version": "0.1",
         "date": "2026-07-11",
@@ -203,7 +209,7 @@
     },
     "registries": {
       "capability-types": {
-        "version": "0.15",
+        "version": "0.16",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "registries/capability-types.md"
