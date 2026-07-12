@@ -21,8 +21,10 @@ This area is still being populated: [`tools/check-capability-catalogs.py`](../to
 | Capability | Document | Status |
 |---|---|---|
 | `energy.ebus.capability.breaker` | [`breaker.md`](breaker.md) | DRAFT v0.1 (2026-07-05) |
+| `energy.ebus.capability.charge-limit` | [`charge-limit.md`](charge-limit.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.connection` | [`connection.md`](connection.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.demand` | [`demand.md`](demand.md) | DRAFT v0.1 (2026-07-11) |
+| `energy.ebus.capability.dispatch` | [`dispatch.md`](dispatch.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.doe` | [`doe.md`](doe.md) | DRAFT v0.1 (2026-07-09) |
 | `energy.ebus.capability.door` | [`door.md`](door.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.flex` | [`flex.md`](flex.md) | DRAFT v0.1 (2026-07-10) |

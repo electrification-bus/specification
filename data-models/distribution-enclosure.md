@@ -1,7 +1,7 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.7
+**Version:** 0.8
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -459,7 +459,7 @@ The shared identity properties (`vendor-name`, `serial-number`, `firmware-versio
 |---|---|---|---|---|
 | `active-power` | float | W | SHOULD | Current charging power delivered to the EV. |
 | `imported-energy` | float | Wh | MAY | Cumulative energy delivered to the EV, when integrated metering is available. |
-| `advertised-current` | float | A | SHOULD | The current the EVSE is advertising to the EV via the J1772 pilot signal — the actual offered current, computed as the minimum of `config/max-charge-current`, `config/user-max-charge-current`, and any active PCS import limit. |
+| `advertised-current` | float | A | SHOULD | The current the EVSE is advertising to the EV via the J1772 pilot signal — the actual offered current, computed as the minimum of `charge-limit`'s `installer-max`, `owner-limit`, and `requested-limit`, and any active PCS import limit. |
 
 #### switch
 
@@ -479,14 +479,18 @@ EVSE operational state. Reused from the eBus [`status`](../capabilities/status.m
 |---|---|---|---|
 | `operational-state` | enum | SHOULD | EVSE operational state: `IDLE`, `CONNECTED`, `CHARGING`, `FAULTED`, `UNKNOWN`. |
 
-#### config
+#### charge-limit
 
-**Node type:** `energy.ebus.capability.config`
+The EVSE's charge-current ceiling, composed by `min()` from several sources (the installer rating, the owner's standing limit, an external controller's limit), so any source can lower charging for any reason and the lowest wins. The property catalog is defined in [`capabilities/charge-limit.md`](../capabilities/charge-limit.md); the effective offered current is `meter/advertised-current`.
+
+**Node type:** `energy.ebus.capability.charge-limit`
 
 | Property ID | Datatype | Unit | Req | Settable | Description |
 |---|---|---|---|---|---|
-| `max-charge-current` | integer | A | SHOULD | no | Installer-configured maximum charge current. Reflects breaker rating and J1772 derating. |
-| `user-max-charge-current` | integer | A | SHOULD | yes | User-configured maximum charge current ceiling. MUST be ≤ `max-charge-current`. |
+| `installer-max` | integer | A | SHOULD | no | Installer-configured maximum charge current (breaker rating, J1772 derating); the immutable ceiling. |
+| `owner-limit` | integer | A | MAY | yes | The owner's charge-current ceiling, held until changed. MUST be ≤ `installer-max`. |
+| `requested-limit` | integer | A | MAY | yes | An external controller's (HEMS / grid) charge-current ceiling. |
+| `requested-limit-cause` | enum | — | MAY | no | Why the external limit is set: `LOCAL_OPTIMIZATION`, `GRID_OPTIMIZATION`, `UNKNOWN`. |
 
 The proxied EVSE child's wiring relationship to the enclosure — specifically, which circuit feeds the EVSE — is recorded on the enclosure-side connection-owner's `connection` (the circuit's `feeds-device-id` references the EVSE), not on the EVSE child itself.
 
@@ -611,7 +615,8 @@ Standard capability types shared across enclosure, BESS, and future device specs
 | `energy.ebus.capability.grid` | Grid connection, islanding, and grid-forming-entity identity | MID |
 | `energy.ebus.capability.grid-forming` | Per-inverter grid-forming capability and current state | Inverters (when vendor exposes the detail) |
 | `energy.ebus.capability.status` | Fault and operational status | Enclosure, BESS, adapters |
-| `energy.ebus.capability.config` | Settable configuration | BESS, EVSE |
+| `energy.ebus.capability.charge-limit` | EVSE charge-current ceiling (`min()`-composed) | EVSE |
+| `energy.ebus.capability.dispatch` | BESS external dispatch controls (setpoints, SOC limits, backup-reserve) | BESS |
 | `energy.ebus.capability.switch` | Relay / switch control | Circuits |
 | `energy.ebus.capability.breaker` | Overcurrent / fault protection | Circuits |
 | `energy.ebus.capability.load-shed` | Load-shed participation (shed class) | Circuits |
@@ -830,8 +835,8 @@ ebus/5/ab-1234-c5d67-SD123456789/                energy.ebus.device.evse  (proxi
   info/product-name                             "SPAN Drive"
   info/serial-number                            "SD123456789"
   meter/active-power                            5350.0
-  config/max-charge-current                     48
-  config/user-max-charge-current                40
+  charge-limit/installer-max                    48
+  charge-limit/owner-limit                      40
 ```
 
 Consumer derivation: a scan of enclosure-side connection records finds `<circuit-7-id>/connection/feeds-device-type == energy.ebus.device.bess` → the BESS is IN_PANEL on circuit 7. Same scan finds `<circuit-5-id>/connection/feeds-device-type == energy.ebus.device.evse` → the EVSE is IN_PANEL on circuit 5. Wiring relationships are recorded once, on the connection-owner that physically owns the wiring; no per-DER-class "feed" or "relative-position" property is needed on the DER children.

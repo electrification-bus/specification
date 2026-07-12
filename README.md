@@ -35,9 +35,9 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | **Framework** | |
 | [`framework.md`](framework.md) | DRAFT v0.6 (2026-07-11) |
 | **Data Models** | |
-| [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.12 (2026-07-11) |
+| [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.13 (2026-07-11) |
 | [`data-models/circuit.md`](data-models/circuit.md) | DRAFT v0.2 (2026-07-11) |
-| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.7 (2026-07-11) |
+| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.8 (2026-07-11) |
 | [`data-models/outlet.md`](data-models/outlet.md) | DRAFT v0.1 (2026-06-26) |
 | [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-06-26) |
 | [`data-models/proxy.md`](data-models/proxy.md) | DRAFT v0.1 (2026-05-22) |
@@ -45,14 +45,16 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`data-models/water-heater.md`](data-models/water-heater.md) | DRAFT v0.3 (2026-07-11) |
 | `data-models/mid.md` | Planned (see the standalone-MID note in [`data-models/bess.md`](data-models/bess.md) §Device Hierarchy) |
 | **Registries** | |
-| [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.16 (2026-07-11) |
+| [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.17 (2026-07-11) |
 | [`registries/circuit-tags.md`](registries/circuit-tags.md) | DRAFT v0.1 (2026-05-23) |
 | [`registries/device-types.md`](registries/device-types.md) | DRAFT v0.4 (2026-06-27) |
 | [`registries/external-id-schemes.md`](registries/external-id-schemes.md) | DRAFT v0.1 (2026-05-16) |
 | **Capabilities** | |
 | [`capabilities/breaker.md`](capabilities/breaker.md) | DRAFT v0.1 (2026-07-05) |
+| [`capabilities/charge-limit.md`](capabilities/charge-limit.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/connection.md`](capabilities/connection.md) | DRAFT v0.1 (2026-07-05) |
 | [`capabilities/demand.md`](capabilities/demand.md) | DRAFT v0.1 (2026-07-11) |
+| [`capabilities/dispatch.md`](capabilities/dispatch.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/doe.md`](capabilities/doe.md) | DRAFT v0.1 (2026-07-09) |
 | [`capabilities/door.md`](capabilities/door.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/flex.md`](capabilities/flex.md) | DRAFT v0.1 (2026-07-10) |

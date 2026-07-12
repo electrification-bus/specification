@@ -1,7 +1,7 @@
 # Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.12
+**Version:** 0.13
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -237,6 +237,7 @@ The shared identity properties (`vendor-name`, `serial-number`, `model`, `firmwa
 |---|---|---|---|---|
 | `product-name` | string | — | SHOULD | Product name (e.g., "Powerwall 2 AC") |
 | `nameplate-capacity` | float | kWh | SHOULD | Nameplate energy capacity (battery devices) |
+| `nominal-power` | float | W | MAY | Nameplate maximum rated power output. |
 | `proxied` | boolean | — | MAY | Optional disambiguation when both a proxy publisher and a native publisher of the same physical device coexist. `true` = this representation is proxied (e.g., published by a third-party adapter); `false` = published natively (by the vendor's own implementation); absent = no explicit signal, and consumers fall back to inspecting the `root` device's `$description.type`. See §"Disambiguating publishers" below. |
 
 ### soc
@@ -298,54 +299,11 @@ Device-output island (UPS) state and control for a plug-in BESS or UPS: a clean 
 
 **Node type:** `energy.ebus.capability.output-island`
 
-### config
-
-System-level configuration and operational state. Applies to the parent BESS device.
-
-**Node type:** `energy.ebus.capability.config`
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `backup-reserve` | float | % | MAY | Backup reserve percentage (0–100%). Settable. |
-| `operational-state` | enum | — | SHOULD | Current operational state: `IDLE`, `CHARGING`, `DISCHARGING`, `STANDBY`, `UNKNOWN` |
-| `nominal-power` | float | W | MAY | Maximum rated power output |
-| `available-charge-power` | float | W | MAY | Currently available charge power headroom |
-| `available-discharge-power` | float | W | MAY | Currently available discharge power headroom |
-
 ### dispatch
 
-External dispatch controls — settable charge / discharge rate setpoints and SOC limits — that allow a controller (a distribution enclosure's PowerUp logic, an energy-management system, a HEMS, etc.) to coordinate the BESS's charge/discharge behavior in real time. Applies to the parent BESS device.
-
-`dispatch` is **MAY-level**. A BESS publisher publishes it only when the underlying product exposes the corresponding control surface. A BESS that does not publish `dispatch` follows its own vendor-internal control logic; external controllers can observe its state but cannot directly dispatch it.
+External dispatch controls, settable charge / discharge rate setpoints and SOC limits by which a controller coordinates the BESS in real time. Published when the product exposes the control surface; omitted otherwise (the BESS then self-manages). The full property catalog (the rate setpoints, SOC limits, `backup-reserve`, watchdog / persistence semantics, `dispatch-state`, and the actual-rate observables) is defined in [`capabilities/dispatch.md`](../capabilities/dispatch.md).
 
 **Node type:** `energy.ebus.capability.dispatch`
-
-| Property ID | Datatype | Unit | Req | Settable | Persistence | Description |
-|---|---|---|---|---|---|---|
-| `charge-rate-set` | float | W | MAY | yes | watchdog | Requested charge rate (from grid, or wherever the BESS is configured to charge from). Positive value = charge at this rate. `0` = do not charge. The BESS honors the setpoint when conditions allow (within hardware limits, SOC constraints, and any active `config/operational-state` overrides). |
-| `discharge-rate-set` | float | W | MAY | yes | watchdog | Requested discharge rate (to home or to grid, depending on system configuration). Positive value = discharge at this rate. `0` = do not discharge. Same conditional-honoring semantics as `charge-rate-set`. |
-| `max-soc-set` | float | % | MAY | yes | policy | Upper SOC limit (0–100). The BESS stops charging when SOC reaches this value. Persists indefinitely (set-and-forget) until overwritten or device reset. |
-| `min-soc-set` | float | % | MAY | yes | policy | Lower SOC limit (0–100). The BESS stops discharging when SOC drops to this value. Persists indefinitely. |
-| `dispatch-watchdog-timeout` | integer | s | MAY | no | — | How long a watchdog-class setpoint persists before reverting to the BESS's safe-default behavior. Implementation-defined; typical range 30 s to 300 s. Published so controllers know the refresh cadence required to keep dispatch active. |
-| `dispatch-safe-default` | enum | — | MAY | no | — | What the BESS reverts to after a watchdog-class setpoint expires: `IDLE` (no dispatch — both rates effectively `0`), `VENDOR_DEFAULT` (the BESS's own internal control logic resumes), or `LAST_VALUE` (rare; only for slow-response systems where reverting to default would cause undesirable transients). |
-| `dispatch-state` | enum | — | MAY | no | — | The BESS's current dispatch status: `IDLE` (no external setpoint active), `CHARGING_DISPATCHED` (honoring an external `charge-rate-set`), `DISCHARGING_DISPATCHED` (honoring an external `discharge-rate-set`), `VENDOR_CONTROLLED` (running on vendor-internal logic — either no external setpoint, or a setpoint was active but expired and `dispatch-safe-default = VENDOR_DEFAULT`), `UNKNOWN`. |
-| `dispatch-controller` | string | — | MAY | no | — | Identifier of the most recent client to successfully write a settable property in this capability. Format is implementation-defined; typical values include the writer's MQTT client ID, the Homie device ID of an issuing controller, or an authenticated user identifier. Useful for debugging multi-writer scenarios. Empty / absent when no dispatch is active. |
-| `charge-rate-actual` | float | W | MAY | no | — | Observed instantaneous charge rate. Distinguishes "controller wrote charge-rate-set = 5000, BESS is actually charging at 5000" from "BESS could not honor the setpoint and is charging at a different rate (e.g., hardware-limited)." |
-| `discharge-rate-actual` | float | W | MAY | no | — | Observed instantaneous discharge rate. |
-
-**Persistence classes.** Each settable property declares its persistence semantics:
-
-- **watchdog** — value reverts to the published `dispatch-safe-default` if not refreshed within `dispatch-watchdog-timeout`. Used for rate setpoints, which require ongoing coordination and where stale values would have undesirable consequences (a controller crash should not leave the BESS charging from grid indefinitely).
-- **policy** — value persists indefinitely until overwritten or device reset. Used for SOC limits, which are set-and-forget commissioning decisions where persistence across controller restarts is desirable.
-- **expiry** — *(reserved for future)* value carries an explicit expiry timestamp; reverts after the timestamp passes. Future extension for time-bounded scheduled dispatch.
-
-A BESS publisher MUST declare each settable property's persistence class through the property description above (which is normative); publishers MUST honor the declared semantics.
-
-**Conflict resolution.** If multiple controllers write to the same settable property, the default is last-write-wins. A BESS implementation MAY enforce stricter access control (e.g., by client certificate role per the eBus core spec's security model) but this is implementation-specific and not normatively required by the data model. The `dispatch-controller` observable is the recommended debugging surface for multi-writer scenarios.
-
-**Interaction with `config/backup-reserve`.** A BESS that publishes both `config/backup-reserve` (the off-grid energy reserve) and `dispatch/min-soc-set` (the dispatch-time lower SOC limit) MUST honor whichever is higher when discharging. `backup-reserve` is a backup-mode policy; `min-soc-set` is a dispatch-time policy; the BESS does not discharge below either.
-
-**Relationship to config/operational-state.** When `dispatch-state` is anything other than `VENDOR_CONTROLLED`, the BESS's behavior is being driven by external dispatch and `operational-state` (`IDLE`/`CHARGING`/`DISCHARGING`/`STANDBY`) reflects the *result* of that dispatch, not the cause. Controllers should treat `dispatch-state` as the authoritative signal for "who is driving this BESS right now."
 
 ### status
 
@@ -357,6 +315,7 @@ Operational status and fault reporting. The core (`fault-state` / `communication
 |---|---|---|---|
 | `communication-state` | enum | MUST | Adapter-to-BESS communication: `OK`, `DEGRADED`, `LOST`, `UNKNOWN` |
 | `fault-state` | enum | SHOULD | BESS-reported fault: `OK`, `FAULT`, `UNKNOWN` |
+| `operational-state` | enum | SHOULD | Battery operating state: `IDLE`, `CHARGING`, `DISCHARGING`, `STANDBY`, `UNKNOWN`. Reflects the *result* of any active `dispatch`. |
 | `authentication` | enum | SHOULD | Credential / auth status: `OK`, `FAILED`, `EXPIRED`, `MISSING` |
 | `discovery` | enum | SHOULD | Device discovery status: `OK`, `NOT_FOUND`, `SERIAL_MISMATCH` |
 

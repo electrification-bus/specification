@@ -1,6 +1,6 @@
 # Electrification Bus Capability Type Registry
 
-**Status:** DRAFT v0.16
+**Status:** DRAFT v0.17
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -26,7 +26,8 @@ The **Source** column points to where the identifier is defined: a canonical cap
 | Identifier | Description | Source |
 |---|---|---|
 | `energy.ebus.capability.info` | Device identity and descriptive metadata, present on every device. Its shared identity core (`vendor-name`, `serial-number`, `model`, `hardware-version`, `firmware-version`, `data-model-version`) is canonical in `capabilities/info.md`; device models add device-specific `info` properties (a circuit's load-facing name / tags, a meter's metrology nameplate, and so on). | [`capabilities/info.md`](../capabilities/info.md) |
-| `energy.ebus.capability.config` | Settable configuration properties for a device — runtime-tunable values controlling operational behavior. Appears on BESS and EVSE (e.g., EVSE's `user-max-charge-current`). | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
+| `energy.ebus.capability.charge-limit` | An EVSE's charge-current ceiling, `min()`-composed from several sources (`installer-max` rating, the owner's `owner-limit`, an external `requested-limit` with its cause). Any source lowers the offered current (`meter/advertised-current`); the lowest wins. The same shape as the `pcs` import-limit family. Appears on EVSEs. | [`capabilities/charge-limit.md`](../capabilities/charge-limit.md) |
+| `energy.ebus.capability.dispatch` | External dispatch controls for a storage resource: settable charge / discharge rate setpoints, SOC limits, `backup-reserve`, watchdog / persistence semantics, plus `dispatch-state` and actual-rate observables. Appears on BESS. | [`capabilities/dispatch.md`](../capabilities/dispatch.md) |
 | `energy.ebus.capability.status` | Device operational health: the `fault-state` / `communication-state` / `active-alerts` core, plus device-specific diagnostics (network-interface / relay state and configuration on an enclosure; component runtimes on a water heater; tamper / time-sync on a meter; integration sub-states on a proxied device). The most widely reused capability after `meter`; appears on nearly every device type. | [`capabilities/status.md`](../capabilities/status.md) |
 | `energy.ebus.capability.connection` | Local wiring topology: what is wired downstream of (and, where known, upstream of) this connection point, plus the backup boundary (`backed-up`), the role of an un-modelled downstream node (`feeds-role`), service and overcurrent-protection ratings, and link-health to a connected device. eBus records site topology as these distributed per-device edges, not a central tree. Appears on every electrical connection point: circuits, both lugs devices, and the MID. | [`capabilities/connection.md`](../capabilities/connection.md) |
 | `energy.ebus.capability.meter` | Electrical measurements: instantaneous power (active / reactive / apparent), voltage, current, frequency, power factor, and cumulative energy, with a `-a` / `-b` / `-c` / `-n` per-conductor suffix convention. Appears on the enclosure (service-entrance aggregate), circuits, lugs, utility meters, BESS, PV / EVSE proxies, water heaters, and behind-the-meter sub-meters. | [`capabilities/meter.md`](../capabilities/meter.md) |
