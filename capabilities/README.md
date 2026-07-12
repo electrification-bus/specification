@@ -24,6 +24,7 @@ This area is still being populated: [`tools/check-capability-catalogs.py`](../to
 | `energy.ebus.capability.connection` | [`connection.md`](connection.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.doe` | [`doe.md`](doe.md) | DRAFT v0.1 (2026-07-09) |
 | `energy.ebus.capability.flex` | [`flex.md`](flex.md) | DRAFT v0.1 (2026-07-10) |
+| `energy.ebus.capability.grid` | [`grid.md`](grid.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.grid-event` | [`grid-event.md`](grid-event.md) | DRAFT v0.1 (2026-07-10) |
 | `energy.ebus.capability.info` | [`info.md`](info.md) | DRAFT v0.1 (2026-07-05) |
 | `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.1 (2026-07-05) |

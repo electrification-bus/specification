@@ -31,7 +31,7 @@
     },
     "data-models": {
       "bess": {
-        "version": "0.9",
+        "version": "0.10",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/bess.md"
@@ -43,7 +43,7 @@
         "path": "data-models/circuit.md"
       },
       "distribution-enclosure": {
-        "version": "0.4",
+        "version": "0.5",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/distribution-enclosure.md"
@@ -67,7 +67,7 @@
         "path": "data-models/proxy.md"
       },
       "utility-meter": {
-        "version": "0.4",
+        "version": "0.5",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/utility-meter.md"
@@ -109,6 +109,12 @@
         "date": "2026-07-10",
         "status": "DRAFT",
         "path": "capabilities/grid-event.md"
+      },
+      "grid": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/grid.md"
       },
       "info": {
         "version": "0.1",
@@ -155,7 +161,7 @@
     },
     "registries": {
       "capability-types": {
-        "version": "0.12",
+        "version": "0.13",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "registries/capability-types.md"

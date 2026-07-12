@@ -1,7 +1,7 @@
 # Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.9
+**Version:** 0.10
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -274,21 +274,17 @@ Power and energy metering. The property catalog is in [`capabilities/meter.md`](
 
 ### grid
 
-Grid connection and islanding state. Always published on a MID device — the parent BESS device does not publish this capability.
+Grid connection and islanding state, always published on a MID device (the parent BESS device does not publish it). The property catalog (`islanding-state`, `grid-state`, `grid-forming-entity`, and the islanding-versus-grid-state semantics) is defined in [`capabilities/grid.md`](../capabilities/grid.md); a MID makes `islanding-state` MUST.
 
 **Node type:** `energy.ebus.capability.grid`
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `islanding-state` | enum | MUST | Current operational state: `ON_GRID`, `OFF_GRID`, `UNKNOWN` |
-| `grid-state` | enum | SHOULD | Sensed grid condition: `UP`, `DOWN`, `DEGRADED`, `UNKNOWN`. `DEGRADED` (grid quality outside the band for `UP` but not yet an outage) is OPTIONAL — publishers SHOULD distinguish `DEGRADED` from `UP`/`DOWN` when they have the underlying measurement capability. Proxied black-box MIDs typically do not surface this distinction and report only `UP`/`DOWN`/`UNKNOWN`. |
-| `grid-forming-entity` | string | SHOULD | Identity of the device currently establishing the AC voltage/frequency reference. Value: `"GRID"` when grid-tied, or the Homie device ID of the grid-forming hardware (typically the BESS parent device ID, or a V2H EVSE, or a generator) when islanded. Empty string or absent during transitions or when unknown. |
+| `islanding-state` | enum | MUST | Current operational state: `ON_GRID`, `OFF_GRID`, `UNKNOWN` (the MID's relay position). |
+| `grid-state` | enum | SHOULD | Sensed grid condition: `UP`, `DOWN`, `DEGRADED`, `UNKNOWN`. Proxied black-box MIDs typically report only `UP` / `DOWN` / `UNKNOWN`. |
+| `grid-forming-entity` | string | SHOULD | Identity of the device forming the AC reference: `"GRID"` when grid-tied, or the DER parent device ID (typically the BESS) when islanded. |
 
-`islanding-state` reflects the MID's relay position (are we connected to the grid?). `grid-state` reflects what the MID senses about the grid itself (is power available?). These can differ — a system can be `OFF_GRID` with grid `UP` (intentional island) or `OFF_GRID` with grid `DOWN` (outage).
-
-`grid-forming-entity` identifies *which* DER is acting as the voltage/frequency reference. When grid-tied, the utility is always the grid-forming entity and the value is `"GRID"`. When islanded, exactly one inverter-based DER is forming the grid; its parent device ID is the value. The two signals are correlated but distinct: `islanding-state == ON_GRID` ⇒ `grid-forming-entity == "GRID"`; `islanding-state == OFF_GRID` ⇒ `grid-forming-entity` is a Homie device ID. Consumers may use either signal for binary "tied vs. islanded" decisions; `grid-forming-entity` adds the identity of the GFE on top.
-
-**Granularity convention:** the GFE value is the **DER parent device ID** (the parent BESS, the V2H EVSE parent, the generator), not an inverter child device ID. Vendor opacity is the controlling reason: vendors typically do not expose per-inverter grid-forming coordination to integrators, and reporting at parent granularity matches what is externally observable from any conformant adapter. When a vendor does expose per-inverter grid-forming state, the per-inverter detail lives on the inverter child via the optional `grid-forming` (defined below).
+When a vendor exposes per-inverter grid-forming state, that detail lives on the inverter child via the optional `grid-forming` capability (below).
 
 ### grid-forming
 

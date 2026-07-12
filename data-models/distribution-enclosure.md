@@ -1,7 +1,7 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.4
+**Version:** 0.5
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -367,17 +367,17 @@ The shared identity properties (`vendor-name`, `serial-number`, `model`, `firmwa
 
 **grid:**
 
-Grid connection state, islanding state, and grid-forming-entity identity. This is the canonical home for these three properties; the enclosure device itself does not publish them.
+Grid connection state, islanding state, and grid-forming-entity identity, published on the enclosure-integrated MID (the enclosure device itself does not publish them). The property catalog (the three properties and their semantics) is defined in [`capabilities/grid.md`](../capabilities/grid.md); the MID makes `islanding-state` MUST.
 
 **Node type:** `energy.ebus.capability.grid`
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `islanding-state` | enum | MUST | Current operational state: `ON_GRID`, `OFF_GRID`, `UNKNOWN`. Reflects the MID's relay position (are we electrically connected to the utility?). |
-| `grid-state` | enum | SHOULD | Sensed grid condition: `UP`, `DOWN`, `DEGRADED`, `UNKNOWN`. Reflects what the MID senses about the grid itself. `DEGRADED` (grid quality outside the band for `UP` but not yet declared an outage) is OPTIONAL — publishers SHOULD distinguish it when they have the underlying measurement capability; proxied black-box MIDs typically report only `UP`/`DOWN`/`UNKNOWN`. `islanding-state` and `grid-state` can differ — a system can be `OFF_GRID` with `grid-state = UP` (intentional island) or `OFF_GRID` with `grid-state = DOWN` (outage). |
-| `grid-forming-entity` | string | SHOULD | Identity of the device currently establishing the AC voltage/frequency reference. Value: `"GRID"` when grid-tied, or the Homie device ID of the grid-forming device (typically the DER parent device ID, e.g., the BESS) when islanded. Empty string or absent during transitions or when unknown. In a multi-DER islanded chain where more than one DER is technically capable of grid-forming, exactly one is the actual reference at any given moment, and its parent device ID is the published value; behavior during simultaneous grid-forming (parallel BESSs) is implementation-defined and out of scope here. |
+| `islanding-state` | enum | MUST | `ON_GRID`, `OFF_GRID`, `UNKNOWN` (the MID's relay position). |
+| `grid-state` | enum | SHOULD | `UP`, `DOWN`, `DEGRADED`, `UNKNOWN` (sensed grid condition). |
+| `grid-forming-entity` | string | SHOULD | `"GRID"` when grid-tied, or the DER parent device ID when islanded. |
 
-Native eBus MIDs (those implementing the in-progress eBus MID data-model specification — a separate companion document) publish additional `grid` properties (`system-state` 8-state machine, `mid-relay-state`, cross-side phase angles, `sync-ready`, etc.) and per-side meter children. The three properties above are the minimum surface any MID — proxied or native — MUST/SHOULD publish.
+Native eBus MIDs (per the in-progress MID companion specification) publish additional `grid` properties (`system-state`, `mid-relay-state`, cross-side phase angles, `sync-ready`) and per-side meter children; the three above are the minimum any MID publishes.
 
 **connection** (when the enclosure-integrated MID is a connection point):
 

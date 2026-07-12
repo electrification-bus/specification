@@ -1,7 +1,7 @@
 # Electrification Bus Utility Meter Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.4
+**Version:** 0.5
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -152,17 +152,15 @@ Meter-as-device operational state — distinct from the meter's view of the *gri
 
 #### grid
 
-The meter's **verdict view** of utility supply health, observed at the service entrance. Published when the meter exposes any grid-sensing signal; omitted otherwise.
+The meter's **verdict view** of utility supply health, observed at the service entrance. Published when the meter exposes any grid-sensing signal; omitted otherwise. Reused from the eBus [`grid`](../capabilities/grid.md) capability: a utility meter publishes only `grid-state` and the outage / restoration timestamps; it is not qualified for `islanding-state` or `grid-forming-entity` (MID concerns) and omits them (framework principle #7).
 
 **Node type:** `energy.ebus.capability.grid`
 
-This is the same capability node type used on MID devices in [`distribution-enclosure.md`](distribution-enclosure.md) — re-used here because a utility meter and a MID are publishing the same conceptual signal (verdict on the state of the AC supply they observe). The property subset each publishes differs: the meter is qualified to publish `grid-state` and grid-event timestamps; it is **not** qualified to publish `islanding-state` (that property describes whether the customer site is currently islanded, which is a MID concern) or `grid-forming-entity` (which describes which device is establishing the AC reference, again a MID concern). Per framework principle #7 (properties belong on the device that authoritatively knows them), the utility-meter omits those properties.
-
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `grid-state` | enum | — | MAY | Sensed condition of the utility supply: `UP`, `DOWN`, `DEGRADED`, `UNKNOWN`. A revenue-grade utility meter is qualified to distinguish `DEGRADED` (voltage / frequency outside the band for `UP` but not yet a declared outage) from `UP` based on its measurement gear — populating `DEGRADED` rather than collapsing to `UP` / `DOWN` is encouraged where the meter has the underlying capability. |
-| `last-outage-time` | datetime | — | MAY | Timestamp of the most recent transition from `UP` (or `DEGRADED`) to `DOWN` observed by the meter. ISO-8601 UTC. |
-| `last-restoration-time` | datetime | — | MAY | Timestamp of the most recent transition from `DOWN` to `UP` (or `DEGRADED`) observed by the meter. ISO-8601 UTC. |
+| `grid-state` | enum | — | MAY | Sensed condition of the utility supply: `UP`, `DOWN`, `DEGRADED`, `UNKNOWN`. A revenue-grade meter is qualified to distinguish `DEGRADED` from `UP`; populating it rather than collapsing to `UP` / `DOWN` is encouraged where the meter has the capability. |
+| `last-outage-time` | datetime | — | MAY | Timestamp (ISO-8601 UTC) of the most recent transition from `UP` / `DEGRADED` to `DOWN` observed by the meter. |
+| `last-restoration-time` | datetime | — | MAY | Timestamp (ISO-8601 UTC) of the most recent transition from `DOWN` to `UP` / `DEGRADED` observed by the meter. |
 
 #### doe
 

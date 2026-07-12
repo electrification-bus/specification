@@ -1,6 +1,6 @@
 # Electrification Bus Capability Type Registry
 
-**Status:** DRAFT v0.12
+**Status:** DRAFT v0.13
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -33,7 +33,7 @@ The **Source** column points to where the identifier is defined: a canonical cap
 | `energy.ebus.capability.switch` | Remotely-controllable relay: the on/off **control** surface (relay state, controllability, and last-change source attribution). Distinct from `breaker` (protection). Appears on circuits and other devices with a controllable relay. | [`capabilities/switch.md`](../capabilities/switch.md) |
 | `energy.ebus.capability.breaker` | Overcurrent and fault **protection** provided by a circuit breaker: rating, poles, interrupting rating, protection functions, trip curve, and trip state / cause. Distinct from `switch` (remote control). Appears on circuits and proxied smart breakers. | [`capabilities/breaker.md`](../capabilities/breaker.md) |
 | `energy.ebus.capability.door` | Enclosure door state (e.g., `OPEN` / `CLOSED` / `UNKNOWN`). | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
-| `energy.ebus.capability.grid` | Grid connection, islanding state, and grid-forming-entity identity. Carries properties like `islanding-state` (`ON_GRID` / `OFF_GRID` / …), `grid-state`, and `grid-forming-entity`. Primarily appears on MID devices. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
+| `energy.ebus.capability.grid` | Grid-boundary state (grid-tied versus islanded, sensed utility-supply health, and which device forms the AC reference): `islanding-state`, `grid-state`, `grid-forming-entity`, and outage / restoration timestamps. Cross-cutting: a MID publishes the islanding subset, a utility meter the supply-health subset (each per framework principle #7). Appears on MIDs (enclosure- or BESS-integrated) and utility meters. | [`capabilities/grid.md`](../capabilities/grid.md) |
 | `energy.ebus.capability.grid-forming` | Per-inverter grid-forming capability and current state — exposed by inverters whose vendor surfaces this detail. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
 | `energy.ebus.capability.soc` | The charge state of an energy reservoir (an electrochemical store such as a BESS, or a thermal store such as a water heater's hot-water tank): state-of-charge (`soc`, a ratio comparable across reservoirs) plus present / total stored energy and load-up headroom, in the device's native energy unit. Publishers populate the subset that applies. | [`capabilities/soc.md`](../capabilities/soc.md) |
 | `energy.ebus.capability.pcs` | UL 3141 Power Control Systems (PCS) configuration, state, and the family of import-limit properties (a firm feed limit, a dynamic IEEE 2030.5 grid envelope, plus off-grid and requested limits) that the PCS composes by `min()`. Appears on the distribution-enclosure parent device. | [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md) |
