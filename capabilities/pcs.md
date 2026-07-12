@@ -1,8 +1,8 @@
 # Electrification Bus Capability: pcs
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-11
+**Version:** 0.2
+**Date:** 2026-07-12
 **Authors:** Don Jackson
 
 ## Identifier
@@ -37,6 +37,28 @@ The three protection classes differ in lifecycle, and that difference is a **fai
 - The **grid envelope** ([`doe`](doe.md)) is **time-bounded and externally provided**: present only while an envelope is in effect, and absent between envelopes or when the signalling channel is unreachable.
 
 Therefore, **when no `doe` is active, transformer protection lapses to the always-on FSR + voltage-support baseline, and import is never reverted to unlimited.** The voltage-support baseline is what provides continuous transformer protection beneath the intermittent, coordinated grid envelope.
+
+## Relationship to the other grid-coordination capabilities
+
+A distribution enclosure publishes several grid-coordination capabilities, and `pcs` occupies a specific niche among them. The line between them is **hard limit versus coordination signal**.
+
+**Constraints that compose into the `pcs` `min()`** are enforceable ceilings on import current, each carried in its own native unit and reconciled by the enclosure to amps:
+
+- `pcs` itself: the FSR (`feed-import-limit`), plus `off-grid-import-limit` and `requested-import-limit` (amps).
+- [`doe`](doe.md): the dynamic grid operating envelope (watts).
+- [`voltage-response`](voltage-response.md): the undervoltage current trim (volts).
+
+These set the enforced `import-limit`, and `binding-constraint` names which one is binding.
+
+**Coordination signals that do *not* compose into `pcs`** shape how the site chooses to operate *beneath* the hard limit, not the limit itself:
+
+- [`price`](price.md): a dynamic price stream. It drives economic DER dispatch and flexible-load timing (implicit demand response), changing *what the site does*, never the ceiling on what it *may* do.
+- [`grid-event`](grid-event.md): explicit demand-response asks and grid-condition alerts. The enclosure decomposes each event and drives its flexible loads through their device-level [`flex`](flex.md) surface; an event does not set a `pcs` import limit.
+- [`flex`](flex.md): a device-level control surface (shed / load-up / opt-out) on an individual DER, where that device's flexibility is exercised, not an enclosure-wide current cap.
+
+The rule that sorts a new signal onto the right side: a signal that must be **physically enforced regardless of what is commanded** belongs in the `min()` (as `doe`, or as a `requested-import-limit`); a signal that **incentivizes or requests** a behavior does not. `pcs` is the hard-limit backstop the site must never exceed; `price` / `grid-event` / `flex` are how the site elects to operate within that envelope.
+
+**Setpoint provenance.** The enforced limit's source is already reported by `binding-constraint` (`FSR` / `DOE` / `VOLTAGE` / `OFF_GRID` / `REQUESTED`), at the granularity that matters: which constraint class is binding. No separate `setpoint-source` property is required; `binding-constraint` is that signal.
 
 ## Standards
 

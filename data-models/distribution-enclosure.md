@@ -1,7 +1,7 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.10
+**Version:** 0.11
 **Date:** 2026-07-12
 **Authors:** Don Jackson
 
@@ -132,6 +132,8 @@ UL 3141 Power Control System: the enclosure enforces an upper bound on import cu
 The enclosure's **amps-native** constraints (the firm `feed-import-limit`, `off-grid-import-limit`, `requested-import-limit`) live here. The **grid envelope** ([`doe`](../capabilities/doe.md), watts) and the **voltage-support** reduction ([`voltage-response`](../capabilities/voltage-response.md), volts) live in their own capabilities in their native units; the enclosure reconciles all of them to a current limit and publishes the effective `import-limit` and `binding-constraint` (`FSR` / `DOE` / `VOLTAGE` / `OFF_GRID` / `REQUESTED`). The always-on `feed-import-limit` (FSR) and `voltage-response` baseline protect premises and transformer whenever the time-bounded `doe` is inactive; the enclosure never reverts to unlimited.
 
 The enclosure's **main breaker** rating is published on its [`breaker`](../capabilities/breaker.md) capability (`breaker/rating`) — a further hard ceiling the `min()` respects — not here. Grid-forming-entity identity is on the MID device's `grid`, not here.
+
+The enclosure's other grid-coordination capabilities (`price`, `grid-event`, `flex`) are **coordination signals, not hard limits**: they shape how the enclosure operates beneath the enforced import limit but do not compose into the `min()`. See [`pcs.md` §"Relationship to the other grid-coordination capabilities"](../capabilities/pcs.md#relationship-to-the-other-grid-coordination-capabilities).
 
 #### doe
 

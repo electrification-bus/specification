@@ -43,7 +43,7 @@
         "path": "data-models/circuit.md"
       },
       "distribution-enclosure": {
-        "version": "0.10",
+        "version": "0.11",
         "date": "2026-07-12",
         "status": "DRAFT",
         "path": "data-models/distribution-enclosure.md"
@@ -171,8 +171,8 @@
         "path": "capabilities/output-island.md"
       },
       "pcs": {
-        "version": "0.1",
-        "date": "2026-07-11",
+        "version": "0.2",
+        "date": "2026-07-12",
         "status": "DRAFT",
         "path": "capabilities/pcs.md"
       },
