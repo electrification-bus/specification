@@ -1,8 +1,8 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.9
-**Date:** 2026-07-11
+**Version:** 0.10
+**Date:** 2026-07-12
 **Authors:** Don Jackson
 
 ## Overview
@@ -191,30 +191,11 @@ Computed forecast of how long backup loads stay served when the home is or becom
 
 #### shed
 
-Enclosure-wide shed-policy controls: the consumer-asserted islanding-state for emergencies when the enclosure's own view of islanding state has become untrustworthy, and the BESS SOC threshold that governs SOC-triggered shedding. Published only when at least one BESS is commissioned; omitted otherwise (same presence rule as `shed-forecast`).
+Enclosure-wide settable shed-policy controls: the two settable inputs to the enclosure's automatic load-shedding. Published only when at least one BESS is commissioned; omitted otherwise (same presence rule as `shed-forecast`). The full property catalog (`asserted-islanding-state` with its scoped-fallback semantics, comm-loss runtime-acceptance rule, and effective-islanding-state derivation; and the self-describing `policy` document) is defined in [`capabilities/shed.md`](../capabilities/shed.md).
 
 **Node type:** `energy.ebus.capability.shed`
 
-| Property ID | Datatype | Unit | Req | Settable | Description |
-|---|---|---|---|---|---|
-| `asserted-islanding-state` | enum | — | MAY | yes | Consumer-asserted islanding-state, consulted only while the enclosure has lost or degraded communication with the MID/BESS. `$format = "NONE,ON_GRID,OFF_GRID"`; default `NONE`. `ON_GRID` / `OFF_GRID` assert that state as the effective islanding-state (see "Effective islanding-state" below), overriding what the enclosure last sensed; `NONE` means no assertion is in force. A consumer asserts only `ON_GRID` or `OFF_GRID`; `NONE` is enclosure-authored (it is the default, and the value the enclosure publishes when it clears an assertion on comm-restore). The Homie `$settable` attribute is statically `true`; the enclosure enforces eligibility at write time (see Runtime acceptance rule below). |
-| `soc-threshold` | integer | % | MAY | (impl-defined) | BESS SOC threshold (range 0–100) below which circuits with `load-shed/priority = SOC_THRESHOLD` are auto-shed. Enclosure-wide policy parameter — the same value applies to every SOC_THRESHOLD circuit. Conforming implementations MAY publish this property with `$settable = true` to expose runtime tuning, or MAY publish it read-only with a built-in default. |
-
-**SOC threshold semantics.** A circuit with `load-shed/priority = SOC_THRESHOLD` is shed when the enclosure's aggregate BESS SOC falls below `soc-threshold`. The `<enclosure>/shed-forecast/time-to-priority-shed` value (see §"shed-forecast") forecasts how long until this threshold is reached given current discharge rate. Asserting `asserted-islanding-state = ON_GRID` (accepted only during comm-loss) makes the effective islanding-state on-grid and thereby short-circuits all auto-shed paths, including SOC-triggered shedding.
-
-**Extensibility — supporting additional shed triggers.** An enclosure's supported shed triggers are discoverable from the `$format` attribute on any circuit's `load-shed/priority` property — the enum values listed there are exactly the triggers this enclosure implements. The baseline `UNKNOWN` / `NEVER` / `OFF_GRID` are required of every conforming enclosure; other triggers (`SOC_THRESHOLD`, plus future spec- or vendor-defined extensions) are optional and appear in `$format` only when implemented. Each optional trigger that has a tunable parameter publishes that parameter as a sibling property under `shed`, named as the lowercase-hyphenated form of the enum value (`SOC_THRESHOLD` ↔ `soc-threshold`). When a trigger is in `$format`, its companion property SHOULD be published if the spec defines one; triggers with no tunable (e.g., `OFF_GRID`, which fires unconditionally when islanded) publish no companion. Vendors introducing new triggers should propose them upstream so the spec registry can track them and prevent name collisions.
-
-**Effective islanding-state.** The islanding-state the enclosure acts on is derived, not simply the sensed value. While communication with the MID/BESS is healthy the effective islanding-state is the sensed `<mid>/grid/islanding-state`, and any `asserted-islanding-state` is ignored. While communication is lost or degraded the effective islanding-state is the asserted value when one is in force (`ON_GRID` or `OFF_GRID`), or the last-known sensed value when the assertion is `NONE`. This lets the consumer correct a stale or wrong sensed state precisely in the window where the enclosure can no longer trust its own sensing.
-
-**Effective shed gate:** the enclosure auto-sheds when the effective islanding-state is not `ON_GRID`. Because the assertion already feeds the effective islanding-state, no separate override term is needed: asserting `ON_GRID` yields an effective state of `ON_GRID` and suspends the auto-shed even when the last sensed state was `OFF_GRID`, while asserting `OFF_GRID` forces shedding.
-
-**Runtime acceptance rule.** A consumer write of `ON_GRID` or `OFF_GRID` to `asserted-islanding-state` is accepted only while the enclosure has lost or degraded communication with the MID and/or BESS (observable from `connection/feeds-device-status` or `connection/fed-by-device-status` on whichever connection-owner references the BESS/MID being `LOST` or `DEGRADED`), regardless of the sensed grid-state (`ON_GRID`, `OFF_GRID`, or `UNKNOWN`). The rationale: once comm to the MID/BESS is lost the enclosure can no longer trust its own islanding-state, so the consumer is permitted to assert either direction. Out-of-condition writes (those made while comm to the MID/BESS is healthy) are silently ignored: the published value does not change, which is how consumers detect rejection. A consumer write of `NONE` is likewise ignored: `NONE` is enclosure-authored, and a consumer does not clear an assertion; the enclosure itself returns the property to `NONE` when it reclaims authority (see below).
-
-**Clearing and comm-restore.** The enclosure clears an active assertion by publishing `NONE` as a normal retained value; it MUST NOT retract the topic with an empty retained payload, which would delete the retained state and make the property appear absent to late subscribers. Because `NONE` is a first-class `$format` value, the topic always carries a value. On comm-restore the enclosure resumes following the sensed islanding-state and republishes `NONE`; to avoid prematurely clearing a still-needed assertion when a marginal link flaps, the enclosure SHOULD apply hysteresis to the comm-health signal before treating communication as restored.
-
-**Why static `settable: true` rather than dynamically-toggled.** The Homie 5 `$description` mutability rule restricts `$description` changes to `$state` transitions through `init` / `disconnected` / `lost`. Toggling `$settable` based on real-time eligibility would require cycling `$state` on every transition (and during any comm flapping): heavyweight and visible to consumers. Keeping `settable: true` static and enforcing eligibility at write time avoids this churn at the cost of one specific user-visible quirk: a naive write may be silently ignored. The single `$format` (`NONE,ON_GRID,OFF_GRID`) likewise advertises `NONE` as a settable value even though only the enclosure authors it; that too is enforced at write time. Consumers compute eligibility client-side from the MID/BESS comm-status signals alone (a `LOST` or `DEGRADED` `feeds-device-status` / `fed-by-device-status` on the connection-owner referencing the BESS/MID), offer only `ON_GRID` and `OFF_GRID` as choices, and grey out the control otherwise.
-
-**Why this is a separate capability from `shed-forecast`.** The forecast capability holds read-only computed values; the shed capability holds settable controls. Mixing read and write properties under one capability would muddle the concerns. The two capabilities are siblings on the enclosure device — `shed-forecast` (read) and `shed` (write) — and future shed-related controls (manual force-shed-now, configurable shed-aggressiveness, scheduled shed policies) can be added to `shed` additively.
+On this enclosure the `shed/policy` algorithm is `soc-priority.v1`: circuits with `load-shed/priority = OFF_GRID` shed when the enclosure islands, `SOC_THRESHOLD` circuits shed once aggregate BESS state of charge falls below `policy.parameters.soc-threshold`, and `NEVER` circuits are never auto-shed. `<enclosure>/shed-forecast/time-to-priority-shed` (see §"shed-forecast") forecasts how long until that SOC threshold is reached. `asserted-islanding-state` is accepted only while the enclosure has lost or degraded communication with its MID / BESS (observable from a `LOST` / `DEGRADED` `connection/feeds-device-status` or `fed-by-device-status` on the connection-owner referencing that device); an accepted `ON_GRID` makes the effective islanding-state on-grid and short-circuits all auto-shed paths, including SOC-triggered shedding.
 
 ---
 
@@ -249,7 +230,7 @@ A **multi-load breaker** (a *tandem* sharing one space, or a *quad* across a two
 
 The circuit's capabilities are defined in [`circuit.md`](circuit.md). What is specific to a circuit *inside a distribution enclosure* is how its `load-shed` and `pcs` capabilities couple to the enclosure's enclosure-wide shed and PCS policies:
 
-- **`load-shed/priority`** is interpreted against this enclosure. The baseline values `UNKNOWN` / `NEVER` / `OFF_GRID` are supported by every enclosure; the `SOC_THRESHOLD` value (and any future triggers, advertised in the property's `$format`) defers shedding until the enclosure's aggregate BESS SOC falls below `<enclosure>/shed/soc-threshold`. See §"shed" and §"shed — Extensibility".
+- **`load-shed/priority`** is interpreted against this enclosure. The baseline values `UNKNOWN` / `NEVER` / `OFF_GRID` are supported by every enclosure; the `SOC_THRESHOLD` value (and any future triggers, advertised in the property's `$format`) defers shedding until the enclosure's aggregate BESS SOC falls below the `soc-threshold` parameter of `<enclosure>/shed/policy`. See §"shed".
 - When the enclosure's auto-shed logic drives a circuit's relay, the circuit publishes **`switch/relay-requester = LOAD_SHED`**. The **effective shed gate** (the condition under which the enclosure sheds a circuit) is defined in §"shed".
 - **`pcs/managed`** and **`pcs/priority`** are consulted by the enclosure's PCS import-limit enforcement to decide which circuits are controlled when the active import limit is binding. See §"pcs".
 - A circuit's `switch/relay` is settable only when its `switch/relay-controllable = true`; the enclosure never opens a circuit commissioned as permanently `OFF_GRID` / locked.
@@ -583,7 +564,7 @@ Standard capability types shared across enclosure, BESS, and future device specs
 | `energy.ebus.capability.power-flows` | Site-level power aggregation | Enclosure |
 | `energy.ebus.capability.pcs` | Power Control System (UL 3141); enclosure import limits, per-circuit participation | Enclosure, circuits |
 | `energy.ebus.capability.shed-forecast` | Off-grid backup time-remaining forecast (read-only) | Enclosure (when a BESS is commissioned) |
-| `energy.ebus.capability.shed` | Enclosure-wide shed-policy controls (consumer-asserted islanding-state, SOC threshold) | Enclosure (when a BESS is commissioned) |
+| `energy.ebus.capability.shed` | Enclosure-wide settable shed-policy controls: a consumer-asserted islanding-state fallback and the self-describing shedding `policy` document | Enclosure (when a BESS is commissioned) |
 
 ---
 
@@ -717,7 +698,7 @@ ebus/5/ab-1234-c5d67/                          energy.ebus.device.distribution-e
   shed-forecast/full-charge-time-to-priority-shed 480
   shed-forecast/confidence                      HIGH
   shed/asserted-islanding-state                 NONE
-  shed/soc-threshold                            50
+  shed/policy                                   {"algorithm":"soc-priority.v1","parameters":{"soc-threshold":50}}
 
 ebus/5/ab-1234-c5d67-lugs-up/             energy.ebus.device.lugs
   info/direction                                UPSTREAM

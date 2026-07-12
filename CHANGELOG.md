@@ -6,6 +6,19 @@ All notable changes to the Electrification Bus specification: the data models, c
 
 Entries are tagged with the affected artifact and a category (Added / Changed / Renamed / Deprecated / Removed / Fixed). The commit hash in parentheses links each entry to git history. Formal releases and version tags will begin once the specification stabilizes.
 
+## 2026-07-12
+
+### Added
+
+- **capability/shed** 0.1 — canonicalized the enclosure-wide shed controls into a versioned catalog, completing the capability-catalog completeness backlog (every registered capability now has a catalog, except the allowlisted device-defining `water-heater`). `shed` is the settable, write-side sibling of the read-only `shed-forecast`: two inputs to one auto-shed engine. `asserted-islanding-state` (unchanged mechanism) is now framed as a *scoped* fallback (it overrides the effective islanding-state of the host's own premises-segment island, consistent with the islanding-scopes model, not a global bit). The standalone `soc-threshold` scalar is **retired** in favor of a self-describing `policy` document.
+
+### Changed
+
+- **framework** 0.6 → 0.7 — broadened design principle #10 from "scalars by default; `json` only for atomic compounds" to **"scalars by default; `json` as the escape hatch."** Homie 5 is scalar-first; `json` is the deliberate fallback for a value a scalar cannot represent, now for **two** reasons: *atomicity* (a compound applied as one unit, as before) and *expressiveness* (an open-ended or structured scheme no fixed scalar or enum can capture, made self-describing by a JSON Schema in `$format`). The `json-datatype` framework-feature description was updated to match.
+- **capability/shed policy** — the shed algorithm and its tunable parameters are now one settable `json` property, `shed/policy` = `{ "algorithm": <id>, "parameters": { … } }`, whose parameter shape is advertised as a JSON Schema in `$format`. This is the *expressiveness* use of principle #10: the model is no longer tied to one algorithm. The `algorithm` id is the behavioral contract (a consumer that recognizes it may tune; one that does not treats the policy as opaque). SPAN's scheme becomes the worked `soc-priority.v1` example. Supersedes the earlier per-trigger companion-scalar convention (`shed/soc-threshold`).
+- **capability/load-shed** 0.1 → 0.2 — extensibility section rewritten to reference `shed/policy` instead of the companion-scalar rule; added a note that `load-shed/priority`'s datatype is implementation-determined (`enum` by default, but MAY be `json` with a JSON Schema `$format` for schemes that need structured per-circuit policy — the same escape hatch, per principle #10).
+- **data-model/distribution-enclosure** 0.9 → 0.10, **registry/capability-types** → 0.19 — the inline `shed` spec re-pointed to `capabilities/shed.md` (keeping the enclosure-specific interaction note: the `soc-priority.v1` algorithm and the comm-status observation); `soc-threshold` references updated to `policy.parameters.soc-threshold`.
+
 ## 2026-07-11
 
 ### Fixed

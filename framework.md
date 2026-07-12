@@ -1,8 +1,8 @@
 # Electrification Bus Specification
 
 **Status:** DRAFT
-**Version:** 0.6
-**Date:** 2026-07-11
+**Version:** 0.7
+**Date:** 2026-07-12
 
 ---
 
@@ -145,7 +145,7 @@ The following principles guide the structure of every eBus data model and the fr
 7. **Properties belong on the device that authoritatively knows them**, even when proxying makes other placements convenient. A property that could not be populated by a non-proxying publisher belongs elsewhere. This is a direct consequence of principle 6: the property contract must be satisfiable by *any* conformant publisher, native or proxy, and a property smuggled onto an adjacent device because only the proxy happens to know it breaks the contract for the native publisher.
 8. **Forward compatibility is a design goal.** The data model defines slots for richer data than current implementations capture. Properties are MAY-level by default; datatypes are chosen for extensibility (open-vocabulary strings, not hardcoded enums where the value space is open); capabilities accept new properties additively. The model serves as a contract for the evolving ecosystem, not as a transcript of any one current feature set.
 9. **Multi-instance from the outset.** Identifying attributes and inter-device relationships are recorded per-device rather than enumerated as class-level properties on a containing parent, so N instances of any class can coexist without model changes (for example, multiple BESSs, PV inverters, or EVSEs in a single distribution enclosure).
-10. **Scalars by default; `json` only for atomic compounds.** Property values use scalar datatypes (`float`, `integer`, `enum`, `datetime`, and so on) by default: they are directly readable, chartable, and validatable by generic Homie tooling. The `json` datatype is used sparingly, and only where a value is a compound whose parts must be read or applied as a single atomic unit. Splitting such a value across separately-retained scalar topics would let a consumer observe a torn state: parts from different updates, with no way to tell which belong together, or when each was published. Current uses include the `flex` request, the `doe` / `price` per-direction schedules, the `grid-event` array, and the `voltage-response` curve.
+10. **Scalars by default; `json` as the escape hatch.** Homie 5 is scalar-first by design, and eBus follows suit: property values use scalar datatypes (`float`, `integer`, `enum`, `datetime`, and so on) wherever the value can be modelled as one, because scalars are directly readable, chartable, and validatable by generic Homie tooling. The `json` datatype is the deliberate escape hatch, the right tool for the specific job when a value cannot be represented as a scalar, for one of two reasons. **Atomicity:** the value is a compound whose parts must be read or applied as a single unit; splitting it across separately-retained scalar topics would let a consumer observe a torn state (parts from different updates, with no way to tell which belong together, or when each was published). Current atomic-compound uses include the `flex` request, the `doe` / `price` per-direction schedules, the `grid-event` array, and the `voltage-response` curve. **Expressiveness:** the value is an open-ended or structured scheme that no fixed scalar or enum can capture and that different implementations will populate differently; here a `json` property whose shape is advertised as a JSON Schema in `$format` (a forward-compatibility mechanism, principle #8) lets a simple implementation stay on a scalar or enum while a richer one opts into structure with no spec change. Current expressiveness uses include the `shed` policy and the escape-hatch form of `load-shed/priority`. In both cases a `json` value SHOULD carry a JSON Schema `$format` so it remains self-describing.
 
 ---
 
@@ -162,7 +162,7 @@ The framework defines a set of named **features**: the reusable mechanisms that 
 | Device-type discriminator | `device-type-discriminator` | 0.3 | `$description.type` (`energy.ebus.device.*`) as the device identity discriminator. |
 | Capability-type identifiers | `capability-type-identifiers` | 0.3 | `energy.ebus.capability.*` node types. |
 | Scalar datatypes and units | `scalar-datatypes` | 0.3 | Homie 5 scalar datatypes with units; scalars by default. |
-| JSON datatype | `json-datatype` | 0.3 | The Homie 5 `json` datatype for atomic compound values (design principle #10). |
+| JSON datatype | `json-datatype` | 0.3 | The Homie 5 `json` datatype, the escape hatch for compound or open-ended values that no scalar can represent (design principle #10). |
 | JSON Schema `$format` | `jsonschema-format` | 0.3 | `$format` as a JSON Schema constraining and self-describing a `json` property. |
 | Settable properties | `settable-properties` | 0.3 | Settable properties and their `/set` control topics. |
 | Empty-string encoding | `empty-string-encoding` | 0.3 | The Homie 5 empty-string wire convention. |

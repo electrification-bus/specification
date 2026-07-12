@@ -1,8 +1,8 @@
 # Electrification Bus Capability: load-shed
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-11
+**Version:** 0.2
+**Date:** 2026-07-12
 **Authors:** Don Jackson
 
 ## Identifier
@@ -27,7 +27,9 @@ This document is the canonical property catalog for the `load-shed` capability. 
 
 ## Shed triggers and extensibility
 
-The set of shed triggers a host supports is discoverable from the `$format` on this `priority` property: the enum values listed there are exactly the triggers that host implements. The baseline `UNKNOWN` / `NEVER` / `OFF_GRID` are required of every conforming host; others (`SOC_THRESHOLD`, plus future extensions) appear in `$format` only when implemented. Each optional trigger that has a tunable parameter publishes that parameter as a companion property on the **host's** shed surface, named as the lowercase-hyphenated form of the enum value (`SOC_THRESHOLD` corresponds to `shed/soc-threshold` on a distribution enclosure). Triggers with no tunable (for example `OFF_GRID`, which fires unconditionally when islanded) publish no companion. Vendors introducing new triggers should propose them upstream so the registry can track them and prevent name collisions.
+The set of shed triggers a host supports is discoverable from the `$format` on this `priority` property: the enum values listed there are exactly the triggers that host implements. The baseline `UNKNOWN` / `NEVER` / `OFF_GRID` are required of every conforming host; others (`SOC_THRESHOLD`, plus future spec- or vendor-defined extensions) appear in `$format` only when implemented. The **host** carries the shedding algorithm and whatever tunable parameters those triggers need in its `shed/policy` document (see [`shed`](shed.md)); this capability contributes only the per-circuit class the algorithm acts on. Vendors introducing new triggers should propose them upstream so the registry can track them and prevent name collisions.
+
+**`priority` datatype is implementation-determined.** `priority` is an `enum` here because a single class label per circuit is all the baseline SOC-priority scheme needs. That is not a constraint on future schemes: consistent with the scalar-first / `json`-escape-hatch principle (framework design principle #10), an implementation whose scheme needs *structured* per-circuit policy (a shed-order weight, a per-circuit threshold) MAY instead publish `priority` as a `json` property whose shape is advertised as a JSON Schema in `$format`. A simple host stays on the enum; a richer one opts into structure with no change to this spec.
 
 ## Host interaction
 

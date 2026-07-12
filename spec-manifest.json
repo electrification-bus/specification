@@ -23,8 +23,8 @@
   "artifacts": {
     "framework": {
       "framework": {
-        "version": "0.6",
-        "date": "2026-07-11",
+        "version": "0.7",
+        "date": "2026-07-12",
         "status": "DRAFT",
         "path": "framework.md"
       }
@@ -43,8 +43,8 @@
         "path": "data-models/circuit.md"
       },
       "distribution-enclosure": {
-        "version": "0.9",
-        "date": "2026-07-11",
+        "version": "0.10",
+        "date": "2026-07-12",
         "status": "DRAFT",
         "path": "data-models/distribution-enclosure.md"
       },
@@ -153,8 +153,8 @@
         "path": "capabilities/info.md"
       },
       "load-shed": {
-        "version": "0.1",
-        "date": "2026-07-11",
+        "version": "0.2",
+        "date": "2026-07-12",
         "status": "DRAFT",
         "path": "capabilities/load-shed.md"
       },
@@ -200,6 +200,12 @@
         "status": "DRAFT",
         "path": "capabilities/shed-forecast.md"
       },
+      "shed": {
+        "version": "0.1",
+        "date": "2026-07-12",
+        "status": "DRAFT",
+        "path": "capabilities/shed.md"
+      },
       "soc": {
         "version": "0.1",
         "date": "2026-07-11",
@@ -227,8 +233,8 @@
     },
     "registries": {
       "capability-types": {
-        "version": "0.18",
-        "date": "2026-07-11",
+        "version": "0.19",
+        "date": "2026-07-12",
         "status": "DRAFT",
         "path": "registries/capability-types.md"
       },
