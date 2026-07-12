@@ -1,7 +1,7 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.6
+**Version:** 0.7
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -95,13 +95,9 @@ Publishers MAY add vendor-specific informational properties (subsystem versions,
 
 #### door
 
-Some distribution enclosures expose a digitally-monitored door (for access to breakers, terminals, etc.). Enclosures with such a sensor publish this capability; enclosures without one omit it.
+A digitally-monitored access door, when the enclosure has the sensor; omitted otherwise. Defined in [`capabilities/door.md`](../capabilities/door.md) (`state`: `OPEN` / `CLOSED` / `UNKNOWN`).
 
 **Node type:** `energy.ebus.capability.door`
-
-| Property ID | Datatype | Req | Description |
-|---|---|---|---|
-| `state` | enum | MUST | Door state: `OPEN`, `CLOSED`, `UNKNOWN`. |
 
 #### meter
 

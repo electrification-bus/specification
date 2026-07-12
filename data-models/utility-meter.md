@@ -1,7 +1,7 @@
 # Electrification Bus Utility Meter Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.5
+**Version:** 0.6
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -182,39 +182,15 @@ On a utility meter, `price` is the **source** representation on eBus: the meter 
 
 #### demand
 
-Peak-average demand quantities for commercial demand-charge billing. Published when the meter computes interval demand; omitted otherwise.
+Peak-average demand for commercial demand-charge billing. Published when the meter computes interval demand; omitted otherwise. The property catalog (`integration-window`, the interval and peak demand properties, and the peak-reset semantics) is defined in [`capabilities/demand.md`](../capabilities/demand.md).
 
 **Node type:** `energy.ebus.capability.demand`
 
-Demand is the time-averaged active power over a fixed integration window (the *demand interval*). Each closed interval yields a single number; the peak across some longer billing period (typically a calendar month) is the basis for a demand charge in many commercial tariffs.
-
-| Property ID | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `integration-window` | integer | s | MAY | Demand integration interval length, in seconds. Common values: `900` (15 min), `1800` (30 min), `3600` (1 hour). |
-| `current-interval-demand` | float | W | MAY | Running average over the *currently-open* demand interval. Updates as the interval fills; resets at each interval boundary. |
-| `previous-interval-demand` | float | W | MAY | Closed value of the most-recently-completed demand interval. |
-| `peak-demand-this-period` | float | W | MAY | The highest `previous-interval-demand` observed since the most recent peak reset. |
-| `peak-demand-time` | datetime | — | MAY | Timestamp of the interval that produced `peak-demand-this-period`. ISO-8601 UTC. |
-| `peak-demand-reset-time` | datetime | — | MAY | When `peak-demand-this-period` was last reset (typically the start of the current billing period). ISO-8601 UTC. |
-
-The peak-reset semantics — billing-month vs. rolling-30-day vs. since-last-utility-read — are determined by the meter's configuration and are not constrained by this data model. Consumers reading `peak-demand-this-period` should also read `peak-demand-reset-time` to know what window the value covers.
-
-Reactive and apparent demand variants are not included in this v0; they will be added additively if a real consumer requires them.
-
 #### power-quality
 
-Quantitative power-quality measurements. Published when the meter computes them; omitted otherwise.
+Quantitative power-quality figures (harmonic distortion and unbalance). Published when the meter computes them; omitted otherwise. The property catalog (`thd-voltage-*`, `thd-current-*`, `tdd-current-*`, `voltage-unbalance`) is defined in [`capabilities/power-quality.md`](../capabilities/power-quality.md).
 
 **Node type:** `energy.ebus.capability.power-quality`
-
-| Property ID pattern | Datatype | Unit | Req | Description |
-|---|---|---|---|---|
-| `thd-voltage-{a,b,c}` | float | % | MAY | Total Harmonic Distortion of voltage on the named phase, as a percentage of the fundamental component. |
-| `thd-current-{a,b,c}` | float | % | MAY | Total Harmonic Distortion of current on the named phase, as a percentage of the fundamental. |
-| `tdd-current-{a,b,c}` | float | % | MAY | Total Demand Distortion of current on the named phase — like THD-current but normalized to the demand interval's peak current rather than to the instantaneous fundamental. |
-| `voltage-unbalance` | float | % | MAY | Voltage unbalance across phases (typically the NEMA definition: max deviation from the average, divided by the average). |
-
-Higher-order harmonic spectra, individual harmonic magnitudes, and disturbance event records (sags, swells, transient captures) are out of scope for v0. They begin to straddle the boundary into the high-rate waveform tier this data model explicitly excludes.
 
 ---
 

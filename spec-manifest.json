@@ -31,7 +31,7 @@
     },
     "data-models": {
       "bess": {
-        "version": "0.11",
+        "version": "0.12",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/bess.md"
@@ -43,7 +43,7 @@
         "path": "data-models/circuit.md"
       },
       "distribution-enclosure": {
-        "version": "0.6",
+        "version": "0.7",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/distribution-enclosure.md"
@@ -67,7 +67,7 @@
         "path": "data-models/proxy.md"
       },
       "utility-meter": {
-        "version": "0.5",
+        "version": "0.6",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "data-models/utility-meter.md"
@@ -92,11 +92,23 @@
         "status": "DRAFT",
         "path": "capabilities/connection.md"
       },
+      "demand": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/demand.md"
+      },
       "doe": {
         "version": "0.1",
         "date": "2026-07-09",
         "status": "DRAFT",
         "path": "capabilities/doe.md"
+      },
+      "door": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/door.md"
       },
       "flex": {
         "version": "0.1",
@@ -134,11 +146,23 @@
         "status": "DRAFT",
         "path": "capabilities/meter.md"
       },
+      "output-island": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/output-island.md"
+      },
       "power-flows": {
         "version": "0.1",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "capabilities/power-flows.md"
+      },
+      "power-quality": {
+        "version": "0.1",
+        "date": "2026-07-11",
+        "status": "DRAFT",
+        "path": "capabilities/power-quality.md"
       },
       "price": {
         "version": "0.1",
@@ -179,7 +203,7 @@
     },
     "registries": {
       "capability-types": {
-        "version": "0.14",
+        "version": "0.15",
         "date": "2026-07-11",
         "status": "DRAFT",
         "path": "registries/capability-types.md"

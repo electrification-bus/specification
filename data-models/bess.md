@@ -1,7 +1,7 @@
 # Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.11
+**Version:** 0.12
 **Date:** 2026-07-11
 **Authors:** Don Jackson
 
@@ -294,19 +294,9 @@ Per-inverter grid-forming capability and state, on an inverter child when the ve
 
 ### output-island
 
-Device-output island (UPS) state and control, for a plug-in BESS or UPS. This is the **device-output** island scope: the device forms a clean island of its own `outlet` children, physically isolated from the premises wiring by an internal transfer switch, and never energizes premises wiring. It is kept strictly separate from the premises-wiring island scope, which lives on the MID `grid` capability, and nests inside it. A plug-in BESS / UPS publishes `output-island`; a premises-wiring grid-forming BESS does not (it uses the MID `grid`); a no-backup BESS publishes neither. See §"BESS topologies and the two islanding scopes".
+Device-output island (UPS) state and control for a plug-in BESS or UPS: a clean island of the device's own outlets, never energizing premises wiring (distinct from and nested inside the MID `grid` scope). Published by a plug-in BESS / UPS; omitted otherwise. Defined in [`capabilities/output-island.md`](../capabilities/output-island.md) (`state`, settable `mode`, `transfer-time`, and the backup-runtime-forecast note).
 
 **Node type:** `energy.ebus.capability.output-island`
-
-| Property ID | Datatype | Unit | Req | Settable | Description |
-|---|---|---|---|---|---|
-| `state` | enum | — | SHOULD | no | Current output state: `PASS_THROUGH` (input present; the outlets are powered through from the input, the battery idle or charging), `ON_BATTERY` (islanded; the outlets are powered from battery / solar, isolated from the input), `NO_OUTPUT` (no input and no output), `UNKNOWN`. |
-| `mode` | enum | — | MAY | yes | Requested output mode: `FOLLOW_INPUT` (normal; island automatically only on loss of input) or `ISLAND` (force the device-output island now, running the outlets from battery even with input present). Mirrors a plug-in battery's manual grid-mode control. |
-| `transfer-time` | float | ms | MAY | no | Nameplate input-to-battery switchover time (e.g., `15`). The UPS ride-through spec. |
-
-`state` answers "is the device powering its outlets from the input or from its own battery." `mode` is the control: a plug-in battery typically runs `FOLLOW_INPUT` and transfers to its island automatically on an outage, but may be told to `ISLAND` on demand. This capability never energizes premises wiring; that is exclusively the MID `grid` scope.
-
-**Backup-runtime forecast.** This capability does not carry a backup-time-remaining figure. A plug-in BESS that forecasts its backup runtime publishes the existing `shed-forecast` capability (`total-time-remaining`, and `time-to-priority-shed` if it sheds its outlets by priority), computing it itself because it authoritatively knows its own outlet loads. This is the same capability and property a distribution enclosure publishes for a centralized BESS (see [`distribution-enclosure.md`](distribution-enclosure.md)); the only difference is who knows the backup loads (the plug-in BESS itself, versus the enclosure). Per principle #7, the forecast lives on whichever device knows both the stored energy and the loads, so a centralized BESS does not publish it (the enclosure does), and a plug-in BESS does.
 
 ### config
 
