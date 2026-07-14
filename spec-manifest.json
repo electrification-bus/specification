@@ -171,8 +171,8 @@
         "path": "capabilities/output-island.md"
       },
       "pcs": {
-        "version": "0.2",
-        "date": "2026-07-12",
+        "version": "0.3",
+        "date": "2026-07-14",
         "status": "DRAFT",
         "path": "capabilities/pcs.md"
       },

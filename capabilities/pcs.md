@@ -1,8 +1,8 @@
 # Electrification Bus Capability: pcs
 
 **Status:** DRAFT
-**Version:** 0.2
-**Date:** 2026-07-12
+**Version:** 0.3
+**Date:** 2026-07-14
 **Authors:** Don Jackson
 
 ## Identifier
@@ -22,7 +22,7 @@ A `pcs` is the enclosure's import current limiter. It has one physical actuator 
 
 Crucially, the constraints come from **different regimes in different native units, and each lives in its own capability**:
 
-- the **FSR** and the other amps-native operational limits (`feed-import-limit`, `off-grid-import-limit`, `requested-import-limit`) live **here**, in amps;
+- the **FSR** and the other amps-native operational limits (`feed-import-limit`, `off-grid-import-limit`, `requested-import-limit`, `operator-import-limit`) live **here**, in amps;
 - the dynamic grid operating envelope lives on [`doe`](doe.md), in **watts** (IEEE 2030.5);
 - the voltage-support reduction lives on [`voltage-response`](voltage-response.md), in **volts** (ANSI C84.1).
 
@@ -44,7 +44,7 @@ A distribution enclosure publishes several grid-coordination capabilities, and `
 
 **Constraints that compose into the `pcs` `min()`** are enforceable ceilings on import current, each carried in its own native unit and reconciled by the enclosure to amps:
 
-- `pcs` itself: the FSR (`feed-import-limit`), plus `off-grid-import-limit` and `requested-import-limit` (amps).
+- `pcs` itself: the FSR (`feed-import-limit`), plus `off-grid-import-limit`, `requested-import-limit`, and `operator-import-limit` (amps).
 - [`doe`](doe.md): the dynamic grid operating envelope (watts).
 - [`voltage-response`](voltage-response.md): the undervoltage current trim (volts).
 
@@ -58,7 +58,7 @@ These set the enforced `import-limit`, and `binding-constraint` names which one 
 
 The rule that sorts a new signal onto the right side: a signal that must be **physically enforced regardless of what is commanded** belongs in the `min()` (as `doe`, or as a `requested-import-limit`); a signal that **incentivizes or requests** a behavior does not. `pcs` is the hard-limit backstop the site must never exceed; `price` / `grid-event` / `flex` are how the site elects to operate within that envelope.
 
-**Setpoint provenance.** The enforced limit's source is already reported by `binding-constraint` (`FSR` / `DOE` / `VOLTAGE` / `OFF_GRID` / `REQUESTED`), at the granularity that matters: which constraint class is binding. No separate `setpoint-source` property is required; `binding-constraint` is that signal.
+**Setpoint provenance.** The enforced limit's source is already reported by `binding-constraint` (`FSR` / `DOE` / `VOLTAGE` / `OFF_GRID` / `REQUESTED` / `OPERATOR`), at the granularity that matters: which constraint class is binding. No separate `setpoint-source` property is required; `binding-constraint` is that signal.
 
 ## Standards
 
@@ -73,15 +73,23 @@ Aligned with [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?produc
 | `enabled` | boolean | — | SHOULD | Is the PCS enabled on this enclosure? |
 | `active` | boolean | — | SHOULD | Is the PCS actively limiting import right now? |
 | `import-limit` | float | A | SHOULD | The **effective** enforced import limit: the `min()` across all active constraints reconciled to amps (the amps-native limits below, plus the reconciled `doe` and `voltage-response`). |
-| `binding-constraint` | enum | — | SHOULD | Which constraint class currently sets `import-limit`: `FSR`, `DOE`, `VOLTAGE`, `OFF_GRID`, `REQUESTED`, `NONE`, `UNKNOWN`. The provenance of the enforced limit; publishers MAY extend via `$format`. |
+| `binding-constraint` | enum | — | SHOULD | Which constraint class currently sets `import-limit`: `FSR`, `DOE`, `VOLTAGE`, `OFF_GRID`, `REQUESTED`, `OPERATOR`, `NONE`, `UNKNOWN`. The provenance of the enforced limit; publishers MAY extend via `$format` (see the note on vendor-specific sources below). |
 | `feed-import-limit` | float | A | SHOULD | The **FSR**: commissioned firm feed / service capacity (premises-equipment protection), set at install. The always-on floor. May be less than the main-breaker rating when the upstream feed conductor is smaller (e.g. a 200 A panel on a 100 A service feed publishes `feed-import-limit = 100`). |
 | `feed-import-limit-enablement` | enum | — | SHOULD | `UNSPECIFIED`, `UNCONFIGURED`, `DISABLED`, `ENABLED`. |
+| `feed-import-limit-active` | boolean | — | SHOULD | Is this constraint currently enforcing (enabled **and** its activation conditions met)? Distinct from `binding-constraint`: several constraints may be active at once, but only the most restrictive is binding. |
 | `off-grid-import-limit` | float | A | MAY | Import cap when islanded (from BESS / DER). |
 | `off-grid-import-limit-enablement` | enum | — | MAY | Same domain. |
-| `requested-import-limit` | float | A | MAY | User- or operator-requested temporary limit (a homeowner via mobile app; a fleet operator via REST). Distinct from the utility grid envelope, which lives on `doe`. |
+| `off-grid-import-limit-active` | boolean | — | MAY | Typically active only while islanded. See `feed-import-limit-active`. |
+| `requested-import-limit` | float | A | MAY | A **voluntary**, self-imposed temporary limit requested by the homeowner or installer (e.g. via a mobile app). Self-revocable. Distinct from an externally imposed operator cap (`operator-import-limit`) and from the utility grid envelope (`doe`). |
 | `requested-import-limit-enablement` | enum | — | MAY | Same domain. |
+| `requested-import-limit-active` | boolean | — | MAY | See `feed-import-limit-active`. |
+| `operator-import-limit` | float | A | MAY | An **externally imposed** cap set by a fleet / aggregator operator over a management API (a DER aggregator, VPP, or utility program acting through the vendor's fleet REST interface). Persists until the operator changes or clears it. Distinct from `requested-import-limit` (self-imposed) and from `doe` (the standardized IEEE 2030.5 / CSIP watts envelope): `operator-import-limit` is a vendor-API amps cap, not a CSIP DOE. |
+| `operator-import-limit-enablement` | enum | — | MAY | Same domain. |
+| `operator-import-limit-active` | boolean | — | MAY | See `feed-import-limit-active`. |
 
 The main breaker rating is **not** carried here: it is a `breaker` property (`breaker/rating`) on the device's [`breaker`](breaker.md) capability, and is a further hard ceiling the `min()` respects.
+
+**Constraint sources vary by vendor.** The amps-native sources above (`feed`, `off-grid`, `requested`, `operator`) are a *vendor-neutral* set: they name the constraint classes that recur across premises-equipment protection, islanding, voluntary user limits, and operator-dispatched limits. A conformant publisher populates whichever apply to its equipment and omits the rest (each is `MAY`, and its `-enablement` reports `UNCONFIGURED` when unset), so an implementation that distinguishes fewer sources, or that can only determine some of them, is fully conformant. The **number and naming of sources is not fixed by this spec.** A vendor whose equipment arbitrates additional or differently-partitioned constraints MAY publish further amps-native limits using the same `{<source>-import-limit, -enablement, -active}` triplet, and MAY report them through `binding-constraint` by extending its enum via `$format`. The four names above are the interoperable core a consumer can rely on; anything beyond them is an implementation extension. What every conformant `pcs` guarantees, regardless of how many sources it tracks, is the reconciled result: the effective `import-limit` and the `binding-constraint` that names the winning source.
 
 ### Participation (a circuit under the PCS)
 
