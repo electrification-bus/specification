@@ -6,6 +6,12 @@ All notable changes to the Electrification Bus specification: the data models, c
 
 Entries are tagged with the affected artifact and a category (Added / Changed / Renamed / Deprecated / Removed / Fixed). The commit hash in parentheses links each entry to git history. Formal releases and version tags will begin once the specification stabilizes.
 
+## 2026-07-15
+
+### Fixed
+
+- **capability/shed** — corrected the `soc-priority.v1` worked example to model the real two-sided hysteresis it uses in practice: the single `soc-threshold` scalar becomes a shed/release **pair** (`soc-threshold-shed` / `soc-threshold-release`, defaults 49 / 51), with the deadband between them preventing relay chatter when aggregate BESS SoC hovers at the setpoint. Illustration-only: the `shed` capability contract (the `asserted-islanding-state` and `policy` properties, and the `json` escape-hatch mechanism) is unchanged, and `soc-priority.v1`'s parameter schema is publisher-advertised in `$format`, not normative here. In-place DRAFT fix: the artifact version stays 0.1 and no downstream lockfile re-pin is required; only the document Date header moved (manifest + README status table regenerated).
+
 ## 2026-07-12
 
 ### Added

@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.1
-**Date:** 2026-07-12
+**Date:** 2026-07-15
 **Authors:** Don Jackson
 
 ## Identifier
@@ -51,15 +51,15 @@ A consumer asserts only `ON_GRID` or `OFF_GRID`; `NONE` is enclosure-authored (i
 
 ```json
 { "algorithm": "soc-priority.v1",
-  "parameters": { "soc-threshold": 50 } }
+  "parameters": { "soc-threshold-shed": 49, "soc-threshold-release": 51 } }
 ```
 
-- **`algorithm`** (string) is the algorithm's stable identifier and version, and is the **behavioral contract**. The JSON Schema in `$format` validates the *structure* of `parameters` (that `soc-threshold` is an integer 0–100); only the `algorithm` id conveys the *semantics* (what the algorithm does with that number, since two algorithms could share an identically-shaped parameter set yet behave oppositely). A consumer that recognizes the id knows the semantics and may read and tune the policy; one that does not recognize it treats the policy as opaque and read-only. Ids SHOULD be proposed upstream so the registry can track them and prevent collisions, exactly as shed-trigger enum values are.
+- **`algorithm`** (string) is the algorithm's stable identifier and version, and is the **behavioral contract**. The JSON Schema in `$format` validates the *structure* of `parameters` (that `soc-threshold-shed` and `soc-threshold-release` are integers 0–100, with `soc-threshold-shed` not exceeding `soc-threshold-release`); only the `algorithm` id conveys the *semantics* (what the algorithm does with that number, since two algorithms could share an identically-shaped parameter set yet behave oppositely). A consumer that recognizes the id knows the semantics and may read and tune the policy; one that does not recognize it treats the policy as opaque and read-only. Ids SHOULD be proposed upstream so the registry can track them and prevent collisions, exactly as shed-trigger enum values are.
 - **`parameters`** (object) holds the algorithm's tunable values. Its shape is advertised by the JSON Schema in the property's `$format`, whose `$id` SHOULD equal the `algorithm` value.
 
 The `json` datatype here is the deliberate escape hatch (framework design principle #10): a fixed scalar or enum cannot represent an open-ended family of algorithms whose parameter sets differ, so the value is a JSON document made self-describing by a JSON Schema. A simple host runs one well-known algorithm; a future host runs a different one, publishing a different `algorithm` id, a different `parameters` shape, and a different `$format` schema, with no change to this spec.
 
-**Worked example: the SOC-priority scheme.** The baseline algorithm `soc-priority.v1` sheds each circuit according to its [`load-shed/priority`](load-shed.md) class: `OFF_GRID` circuits shed as soon as the site islands, `SOC_THRESHOLD` circuits shed once the host's aggregate BESS state of charge falls below `parameters.soc-threshold` (an integer percentage), and `NEVER` circuits are never auto-shed. Here the per-circuit `load-shed/priority` enum values are the **classes the algorithm operates on**, and `policy` names the algorithm and carries its one global knob. (Asserting `asserted-islanding-state = ON_GRID` during comm-loss makes the effective islanding-state on-grid and short-circuits every auto-shed path, including the SOC path.)
+**Worked example: the SOC-priority scheme.** The baseline algorithm `soc-priority.v1` sheds each circuit according to its [`load-shed/priority`](load-shed.md) class: `OFF_GRID` circuits shed as soon as the site islands, `SOC_THRESHOLD` circuits follow a two-sided hysteresis on the host's aggregate BESS state of charge: a circuit sheds once SoC falls below `parameters.soc-threshold-shed` and is restored only once SoC rises back above `parameters.soc-threshold-release` (both integer percentages; defaults 49 and 51), the deadband between the two preventing relay chatter when SoC hovers at the setpoint. `NEVER` circuits are never auto-shed. Here the per-circuit `load-shed/priority` enum values are the **classes the algorithm operates on**, and `policy` names the algorithm and carries its one global knob. (Asserting `asserted-islanding-state = ON_GRID` during comm-loss makes the effective islanding-state on-grid and short-circuits every auto-shed path, including the SOC path.)
 
 ## Relationship to `load-shed`
 
