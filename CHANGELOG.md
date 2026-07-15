@@ -8,6 +8,10 @@ Entries are tagged with the affected artifact and a category (Added / Changed / 
 
 ## 2026-07-15
 
+### Changed
+
+- **capability/pcs** 0.2 → 0.3 — restored the operator-set import limit as `operator-import-limit` (with `-enablement` / `-active` companions) and added `OPERATOR` to `binding-constraint`. This reinstates the fourth amps-native constraint the earlier de-conflation had folded away as `grid-import-limit`, under a provenance-correct name: an aggregator / fleet-operator cap set over a vendor management API (e.g. SPAN `SOURCE_FLEET_CONTROL_API`), distinct from `requested-import-limit` (homeowner-voluntary, `SOURCE_USER`) and from `doe` (the CSIP watts envelope). Also added per-source `-active` companions to every amps limit (`feed` / `off-grid` / `requested` / `operator`), mirroring the "enabled and activation conditions met" signal that `binding-constraint` (only the single winning source) does not carry; sharpened `requested-import-limit` to the voluntary, self-imposed case; and noted that the source set is vendor-neutral and extensible via `$format`. The amps-native limit family now mirrors SPAN's Gen3 PowerUp `ConfigurableServiceLimit` map 1:1. Additive; no break to the prior 0.2 surface.
+
 ### Fixed
 
 - **capability/shed** — corrected the `soc-priority.v1` worked example to model the real two-sided hysteresis it uses in practice: the single `soc-threshold` scalar becomes a shed/release **pair** (`soc-threshold-shed` / `soc-threshold-release`, defaults 49 / 51), with the deadband between them preventing relay chatter when aggregate BESS SoC hovers at the setpoint. Illustration-only: the `shed` capability contract (the `asserted-islanding-state` and `policy` properties, and the `json` escape-hatch mechanism) is unchanged, and `soc-priority.v1`'s parameter schema is publisher-advertised in `$format`, not normative here. In-place DRAFT fix: the artifact version stays 0.1 and no downstream lockfile re-pin is required; only the document Date header moved (manifest + README status table regenerated).
