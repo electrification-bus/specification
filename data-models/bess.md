@@ -548,20 +548,20 @@ ebus/5/PILA-7K2-outlet-1/                 energy.ebus.device.outlet
   info/name                               "Fridge"
   info/port-type                          AC_OUTLET
   info/nominal-voltage                    120
-  switch/state                            ON
+  switch/relay                            CLOSED
   meter/active-power                      142.0
   meter/exported-energy                   84210.0
 
 ebus/5/PILA-7K2-outlet-2/                 energy.ebus.device.outlet
   info/name                               "Back Lower Outlet"
-  switch/state                            OFF
+  switch/relay                            OPEN
   meter/active-power                      0.0
 
 ebus/5/PILA-7K2-usb-1/                    energy.ebus.device.outlet
   info/name                               "Right USB Port"
   info/port-type                          USB_C
   info/nameplate-power                    100
-  switch/state                            ON
+  switch/relay                            CLOSED
   meter/active-power                      18.0
 ```
 

@@ -65,7 +65,7 @@ When the outlet is a child of a host, a native publication names it `{host-id}-o
 
 #### switch
 
-**Node type:** `energy.ebus.capability.switch`. Reused unchanged: the outlet's relay `state` (on/off) and its settable `/set` topic, exactly as for a distribution-enclosure circuit relay.
+**Node type:** `energy.ebus.capability.switch`. Reused unchanged: the outlet's `relay` (`OPEN` / `CLOSED` / `UNKNOWN`) and its settable `relay/set` topic, exactly as for a distribution-enclosure circuit relay.
 
 #### meter
 
@@ -83,20 +83,20 @@ ebus/5/<host>-outlet-1/info/name            = "Fridge"
 ebus/5/<host>-outlet-1/info/port-type       = "AC_OUTLET"
 ebus/5/<host>-outlet-1/info/nominal-voltage = 120
 ebus/5/<host>-outlet-1/info/nameplate-power = 1800
-ebus/5/<host>-outlet-1/switch/state         = "ON"
+ebus/5/<host>-outlet-1/switch/relay         = "CLOSED"
 ebus/5/<host>-outlet-1/meter/active-power   = 142.0
 ebus/5/<host>-outlet-1/meter/exported-energy = 84210.0
 
 ebus/5/<host>-outlet-2/$description.type    = energy.ebus.device.outlet
 ebus/5/<host>-outlet-2/info/name            = "Lamp"
-ebus/5/<host>-outlet-2/switch/state         = "OFF"
+ebus/5/<host>-outlet-2/switch/relay         = "OPEN"
 ebus/5/<host>-outlet-2/meter/active-power   = 0.0
 ```
 
 To switch an outlet:
 
 ```
-ebus/5/<host>-outlet-2/switch/state/set = "ON"
+ebus/5/<host>-outlet-2/switch/relay/set = "CLOSED"
 ```
 
 ---
