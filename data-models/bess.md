@@ -144,7 +144,6 @@ The parent device represents the BESS system as a whole. It provides aggregated 
 | `info` | MUST | Includes `data-model-version` |
 | `soc` | MUST | Aggregated across all battery children |
 | `meter` | MUST | Aggregated power/energy at the BESS's external boundary (i.e., what the BESS exchanges with the rest of the system); `active-power` MUST be published. The external boundary may be a single connection point or, for a multi-unit system that lands on separate enclosure circuits, several; the parent `meter` aggregates across them. See §"Multi-unit systems and connection to the enclosure". |
-| `config` | MAY | System-level settings (backup-reserve, etc.) |
 | `dispatch` | MAY | External-dispatch controls (charge-rate setpoint, SOC ceilings, etc.). See §"dispatch" below. |
 | `output-island` | MAY | Device-output island (UPS) state and control, for a plug-in BESS / UPS. See §"output-island" below. |
 | `power-flows` | MAY | Aggregate grid / battery / solar / load flows reported on the device, for an all-in-one (plug-in) unit. Reused from [`distribution-enclosure.md`](distribution-enclosure.md). |
@@ -231,7 +230,7 @@ System and device identification.
 
 **Node type:** `energy.ebus.capability.info`
 
-The shared identity properties (`vendor-name`, `serial-number`, `model`, `firmware-version`, `data-model-version`) are defined in [`capabilities/info.md`](../capabilities/info.md); a BESS publishes `data-model-version` on the parent device only. BESS-specific identity properties:
+The shared identity properties (`vendor-name`, `serial-number`, `model`, `firmware-version`, `hardware-version`, `data-model-version`) are defined in [`capabilities/info.md`](../capabilities/info.md); a BESS publishes `data-model-version` on the parent device only. BESS-specific identity properties:
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
@@ -264,12 +263,12 @@ Power and energy metering. The property catalog is in [`capabilities/meter.md`](
 | `active-power` | float | W | MUST | Instantaneous active power. Positive = power flowing out of device. |
 | `imported-energy` | float | Wh | SHOULD | Cumulative energy imported (consumed) by the device. Always positive. |
 | `exported-energy` | float | Wh | SHOULD | Cumulative energy exported (produced) by the device. Always positive. |
-| `current` | float | A | MAY | RMS current |
-| `voltage` | float | V | MAY | RMS voltage |
+| `current-a` | float | A | MAY | RMS current on phase a (per-conductor; see `meter.md`) |
+| `voltage-a` | float | V | MAY | RMS voltage on phase a (per-conductor; see `meter.md`) |
 | `frequency` | float | Hz | MAY | AC frequency |
 | `reactive-power` | float | var | MAY | Reactive power |
 | `apparent-power` | float | VA | MAY | Apparent power |
-| `power-factor` | float | — | MAY | True power factor (0–1) |
+| `power-factor` | float | — | MAY | System power factor, signed: positive = lagging, negative = leading; range `[-1.0, 1.0]` |
 | `apparent-energy-imported` | float | VAh | MAY | Cumulative apparent energy imported. Always positive. |
 | `apparent-energy-exported` | float | VAh | MAY | Cumulative apparent energy exported. Always positive. |
 
@@ -453,12 +452,12 @@ An Enphase system with an IQ Gateway (Envoy), IQ Battery (Encharge), 6 microinve
 | `wNow` | `/ivp/meters/reports` | `meter/active-power` | None (already W) |
 | `whLifetime` (whDlvdCum) | `/ivp/meters/reports` | `meter/exported-energy` | None (already Wh) |
 | `whLifetime` (whRcvdCum) | `/ivp/meters/reports` | `meter/imported-energy` | None (already Wh) |
-| `rmsCurrent` | `/ivp/meters/reports` | `meter/current` | None (already A) |
-| `rmsVoltage` | `/ivp/meters/reports` | `meter/voltage` | None (already V) |
+| `rmsCurrent` | `/ivp/meters/reports` | `meter/current-a` | None (already A) |
+| `rmsVoltage` | `/ivp/meters/reports` | `meter/voltage-a` | None (already V) |
 | `freq` | `/ivp/meters/reports` | `meter/frequency` | None (already Hz) |
 | `reactPwr` | `/ivp/meters/reports` | `meter/reactive-power` | None (already var) |
 | `apprntPwr` | `/ivp/meters/reports` | `meter/apparent-power` | None (already VA) |
-| `pwrFactor` | `/ivp/meters/reports` | `meter/power-factor` | None (already 0–1) |
+| `pwrFactor` | `/ivp/meters/reports` | `meter/power-factor` | Magnitude only (0-1); `meter/power-factor` is signed [-1,1] per `meter.md` |
 | `lastReportWatts` | `/api/v1/production/inverters` | `meter/active-power` | None (already W) |
 | `serialNumber` | `/inventory.json` | `info/serial-number` | None |
 
@@ -499,8 +498,8 @@ ebus/5/202211182691-solar-meter/                  energy.ebus.device.meter
   meter/active-power                              1354.5
   meter/imported-energy                           0.0
   meter/exported-energy                           10453248.4
-  meter/current                                   11.0
-  meter/voltage                                   247.3
+  meter/current-a                                   11.0
+  meter/voltage-a                                   247.3
   meter/frequency                                 60.0
   meter/power-factor                              1.0
 
@@ -509,8 +508,8 @@ ebus/5/202211182691-grid-meter/                   energy.ebus.device.meter
   meter/active-power                              -1308.5
   meter/imported-energy                           872827.1
   meter/exported-energy                           9579927.3
-  meter/current                                   10.7
-  meter/voltage                                   247.2
+  meter/current-a                                   10.7
+  meter/voltage-a                                   247.2
 
 ebus/5/202211182691-load-meter/                   energy.ebus.device.meter
   info/product-name                               "Load Meter"
@@ -659,10 +658,10 @@ The parent BESS device's `$description` topic publishes a JSON object conforming
       "name": "System status",
       "type": "energy.ebus.capability.status",
       "properties": {
-        "communication": {
+        "communication-state": {
           "name": "Communication status",
           "datatype": "enum",
-          "format": "OK,LOST,DEGRADED"
+          "format": "OK,DEGRADED,LOST,UNKNOWN"
         },
         "authentication": {
           "name": "Authentication status",
