@@ -125,11 +125,11 @@ Site-level aggregate power flows across all energy sources, computed by the encl
 
 #### pcs
 
-UL 3141 Power Control System: the enclosure enforces an upper bound on import current, reconciling every active import constraint to a single effective limit by `min()` (most-restrictive-wins) and reporting which is binding. Published when the enclosure runs a PCS; omitted otherwise. The full property catalog (the amps-native limits `feed-import-limit` / `off-grid-import-limit` / `requested-import-limit`, the effective `import-limit`, the `binding-constraint` attribution, the failsafe structure, and the UL 3141 / IEEE 2030.5 anchoring) is defined in [`capabilities/pcs.md`](../capabilities/pcs.md).
+UL 3141 Power Control System: the enclosure enforces an upper bound on import current, reconciling every active import constraint to a single effective limit by `min()` (most-restrictive-wins) and reporting which is binding. Published when the enclosure runs a PCS; omitted otherwise. The full property catalog (the amps-native limits `feed-import-limit` / `off-grid-import-limit` / `requested-import-limit` / `operator-import-limit`, the effective `import-limit`, the `binding-constraint` attribution, the failsafe structure, and the UL 3141 / IEEE 2030.5 anchoring) is defined in [`capabilities/pcs.md`](../capabilities/pcs.md).
 
 **Node type:** `energy.ebus.capability.pcs`
 
-The enclosure's **amps-native** constraints (the firm `feed-import-limit`, `off-grid-import-limit`, `requested-import-limit`) live here. The **grid envelope** ([`doe`](../capabilities/doe.md), watts) and the **voltage-support** reduction ([`voltage-response`](../capabilities/voltage-response.md), volts) live in their own capabilities in their native units; the enclosure reconciles all of them to a current limit and publishes the effective `import-limit` and `binding-constraint` (`FSR` / `DOE` / `VOLTAGE` / `OFF_GRID` / `REQUESTED`). The always-on `feed-import-limit` (FSR) and `voltage-response` baseline protect premises and transformer whenever the time-bounded `doe` is inactive; the enclosure never reverts to unlimited.
+The enclosure's **amps-native** constraints (the firm `feed-import-limit`, `off-grid-import-limit`, `requested-import-limit`, `operator-import-limit`) live here. The **grid envelope** ([`doe`](../capabilities/doe.md), watts) and the **voltage-support** reduction ([`voltage-response`](../capabilities/voltage-response.md), volts) live in their own capabilities in their native units; the enclosure reconciles all of them to a current limit and publishes the effective `import-limit` and `binding-constraint` (`FSR` / `DOE` / `VOLTAGE` / `OFF_GRID` / `REQUESTED` / `OPERATOR`). The always-on `feed-import-limit` (FSR) and `voltage-response` baseline protect premises and transformer whenever the time-bounded `doe` is inactive; the enclosure never reverts to unlimited.
 
 The enclosure's **main breaker** rating is published on its [`breaker`](../capabilities/breaker.md) capability (`breaker/rating`) — a further hard ceiling the `min()` respects — not here. Grid-forming-entity identity is on the MID device's `grid`, not here.
 
@@ -559,7 +559,7 @@ Standard capability types shared across enclosure, BESS, and future device specs
 | `energy.ebus.capability.charge-limit` | EVSE charge-current ceiling (`min()`-composed) | EVSE |
 | `energy.ebus.capability.dispatch` | BESS external dispatch controls (setpoints, SOC limits, backup-reserve) | BESS |
 | `energy.ebus.capability.switch` | Relay / switch control | Circuits |
-| `energy.ebus.capability.breaker` | Overcurrent / fault protection | Circuits |
+| `energy.ebus.capability.breaker` | Overcurrent / fault protection | Circuits, Enclosure (main breaker) |
 | `energy.ebus.capability.load-shed` | Load-shed participation (shed class) | Circuits |
 | `energy.ebus.capability.connection` | Wiring relationship (downstream and upstream) and enclosure's view of link health | Circuits, lugs, enclosure-integrated MID |
 | `energy.ebus.capability.door` | Door state sensor | Enclosure (when applicable) |
