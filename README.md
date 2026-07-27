@@ -35,11 +35,11 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | **Framework** | |
 | [`framework.md`](framework.md) | DRAFT v0.7 (2026-07-12) |
 | **Data Models** | |
-| [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.13 (2026-07-11) |
-| [`data-models/circuit.md`](data-models/circuit.md) | DRAFT v0.3 (2026-07-11) |
-| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.11 (2026-07-12) |
-| [`data-models/outlet.md`](data-models/outlet.md) | DRAFT v0.1 (2026-06-26) |
-| [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-06-26) |
+| [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.14 (2026-07-27) |
+| [`data-models/circuit.md`](data-models/circuit.md) | DRAFT v0.3 (2026-07-27) |
+| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.12 (2026-07-27) |
+| [`data-models/outlet.md`](data-models/outlet.md) | DRAFT v0.1 (2026-07-27) |
+| [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-07-27) |
 | [`data-models/proxy.md`](data-models/proxy.md) | DRAFT v0.1 (2026-05-22) |
 | [`data-models/utility-meter.md`](data-models/utility-meter.md) | DRAFT v0.6 (2026-07-11) |
 | [`data-models/water-heater.md`](data-models/water-heater.md) | DRAFT v0.3 (2026-07-11) |
@@ -63,20 +63,21 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`capabilities/grid-forming.md`](capabilities/grid-forming.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/info.md`](capabilities/info.md) | DRAFT v0.1 (2026-07-05) |
 | [`capabilities/load-shed.md`](capabilities/load-shed.md) | DRAFT v0.2 (2026-07-12) |
-| [`capabilities/meter.md`](capabilities/meter.md) | DRAFT v0.1 (2026-07-11) |
+| [`capabilities/meter.md`](capabilities/meter.md) | DRAFT v0.2 (2026-07-27) |
 | [`capabilities/output-island.md`](capabilities/output-island.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/pcs.md`](capabilities/pcs.md) | DRAFT v0.3 (2026-07-14) |
 | [`capabilities/power-flows.md`](capabilities/power-flows.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/power-quality.md`](capabilities/power-quality.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/price.md`](capabilities/price.md) | DRAFT v0.1 (2026-07-10) |
-| [`capabilities/shed.md`](capabilities/shed.md) | DRAFT v0.1 (2026-07-15) |
+| [`capabilities/shed.md`](capabilities/shed.md) | DRAFT v0.2 (2026-07-27) |
 | [`capabilities/shed-forecast.md`](capabilities/shed-forecast.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/soc.md`](capabilities/soc.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/status.md`](capabilities/status.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/switch.md`](capabilities/switch.md) | DRAFT v0.1 (2026-07-05) |
 | [`capabilities/voltage-response.md`](capabilities/voltage-response.md) | DRAFT v0.1 (2026-07-11) |
 | **Integration Guides** | |
-| [`integration-guides/utility-meter-and-distribution-enclosure.md`](integration-guides/utility-meter-and-distribution-enclosure.md) | DRAFT v0.2 (2026-07-01) |
+| [`integration-guides/bess-and-distribution-enclosure.md`](integration-guides/bess-and-distribution-enclosure.md) | DRAFT v0.1 (2026-07-27) |
+| [`integration-guides/utility-meter-and-distribution-enclosure.md`](integration-guides/utility-meter-and-distribution-enclosure.md) | DRAFT v0.3 (2026-07-27) |
 | **Extensions** | |
 | [`extensions/imported.md`](extensions/imported.md) | STABLE v1.0.0 (2026-07-04) |
 | **Conventions** | |

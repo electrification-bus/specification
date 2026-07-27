@@ -31,32 +31,32 @@
     },
     "data-models": {
       "bess": {
-        "version": "0.13",
-        "date": "2026-07-11",
+        "version": "0.14",
+        "date": "2026-07-27",
         "status": "DRAFT",
         "path": "data-models/bess.md"
       },
       "circuit": {
         "version": "0.3",
-        "date": "2026-07-11",
+        "date": "2026-07-27",
         "status": "DRAFT",
         "path": "data-models/circuit.md"
       },
       "distribution-enclosure": {
-        "version": "0.11",
-        "date": "2026-07-12",
+        "version": "0.12",
+        "date": "2026-07-27",
         "status": "DRAFT",
         "path": "data-models/distribution-enclosure.md"
       },
       "outlet": {
         "version": "0.1",
-        "date": "2026-06-26",
+        "date": "2026-07-27",
         "status": "DRAFT",
         "path": "data-models/outlet.md"
       },
       "pdu": {
         "version": "0.1",
-        "date": "2026-06-26",
+        "date": "2026-07-27",
         "status": "DRAFT",
         "path": "data-models/pdu.md"
       },
@@ -159,8 +159,8 @@
         "path": "capabilities/load-shed.md"
       },
       "meter": {
-        "version": "0.1",
-        "date": "2026-07-11",
+        "version": "0.2",
+        "date": "2026-07-27",
         "status": "DRAFT",
         "path": "capabilities/meter.md"
       },
@@ -201,8 +201,8 @@
         "path": "capabilities/shed-forecast.md"
       },
       "shed": {
-        "version": "0.1",
-        "date": "2026-07-15",
+        "version": "0.2",
+        "date": "2026-07-27",
         "status": "DRAFT",
         "path": "capabilities/shed.md"
       },
@@ -258,9 +258,15 @@
       }
     },
     "integration-guides": {
+      "bess-and-distribution-enclosure": {
+        "version": "0.1",
+        "date": "2026-07-27",
+        "status": "DRAFT",
+        "path": "integration-guides/bess-and-distribution-enclosure.md"
+      },
       "utility-meter-and-distribution-enclosure": {
-        "version": "0.2",
-        "date": "2026-07-01",
+        "version": "0.3",
+        "date": "2026-07-27",
         "status": "DRAFT",
         "path": "integration-guides/utility-meter-and-distribution-enclosure.md"
       }
