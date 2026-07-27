@@ -55,6 +55,8 @@ When the outlet is a child of a host, a native publication names it `{host-id}-o
 
 **Node type:** `energy.ebus.capability.info`
 
+The shared identity core (`vendor-name`, `serial-number`, `model`, `hardware-version`, `firmware-version`, `data-model-version`) is defined in [`capabilities/info.md`](../capabilities/info.md). An outlet is a port on its host, which carries the product identity, so an outlet publishes the port-descriptor properties below and MAY carry identity properties only when it is itself a distinct addressable product:
+
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
 | `name` | string | — | MAY | User-assigned name for the outlet or the appliance plugged into it (e.g., `"Fridge"`). |
