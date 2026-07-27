@@ -197,7 +197,7 @@ Enclosure-wide settable shed-policy controls: the two settable inputs to the enc
 
 **Node type:** `energy.ebus.capability.shed`
 
-On this enclosure the `shed/policy` algorithm is `soc-priority.v1`: circuits with `load-shed/priority = OFF_GRID` shed when the enclosure islands, `SOC_THRESHOLD` circuits shed once aggregate BESS state of charge falls below `policy.parameters.soc-threshold`, and `NEVER` circuits are never auto-shed. `<enclosure>/shed-forecast/time-to-priority-shed` (see §"shed-forecast") forecasts how long until that SOC threshold is reached. `asserted-islanding-state` is accepted only while the enclosure has lost or degraded communication with its MID / BESS (observable from a `LOST` / `DEGRADED` `connection/feeds-device-status` or `fed-by-device-status` on the connection-owner referencing that device); an accepted `ON_GRID` makes the effective islanding-state on-grid and short-circuits all auto-shed paths, including SOC-triggered shedding.
+On this enclosure the `shed/policy` algorithm is `soc-priority.v1`: circuits with `load-shed/priority = OFF_GRID` shed when the enclosure islands, `SOC_THRESHOLD` circuits shed once aggregate BESS state of charge falls below `policy.parameters.soc-threshold-shed` (and restore once it rises back above `soc-threshold-release`, the deadband preventing relay chatter), and `NEVER` circuits are never auto-shed. `<enclosure>/shed-forecast/time-to-priority-shed` (see §"shed-forecast") forecasts how long until that SOC threshold is reached. `asserted-islanding-state` is accepted only while the enclosure has lost or degraded communication with its MID / BESS (observable from a `LOST` / `DEGRADED` `connection/feeds-device-status` or `fed-by-device-status` on the connection-owner referencing that device); an accepted `ON_GRID` makes the effective islanding-state on-grid and short-circuits all auto-shed paths, including SOC-triggered shedding.
 
 ---
 
@@ -232,7 +232,7 @@ A **multi-load breaker** (a *tandem* sharing one space, or a *quad* across a two
 
 The circuit's capabilities are defined in [`circuit.md`](circuit.md). What is specific to a circuit *inside a distribution enclosure* is how its `load-shed` and `pcs` capabilities couple to the enclosure's enclosure-wide shed and PCS policies:
 
-- **`load-shed/priority`** is interpreted against this enclosure. The baseline values `UNKNOWN` / `NEVER` / `OFF_GRID` are supported by every enclosure; the `SOC_THRESHOLD` value (and any future triggers, advertised in the property's `$format`) defers shedding until the enclosure's aggregate BESS SOC falls below the `soc-threshold` parameter of `<enclosure>/shed/policy`. See §"shed".
+- **`load-shed/priority`** is interpreted against this enclosure. The baseline values `UNKNOWN` / `NEVER` / `OFF_GRID` are supported by every enclosure; the `SOC_THRESHOLD` value (and any future triggers, advertised in the property's `$format`) defers shedding until the enclosure's aggregate BESS SOC falls below the `soc-threshold-shed` parameter of `<enclosure>/shed/policy` (restoring above `soc-threshold-release`). See §"shed".
 - When the enclosure's auto-shed logic drives a circuit's relay, the circuit publishes **`switch/relay-requester = LOAD_SHED`**. The **effective shed gate** (the condition under which the enclosure sheds a circuit) is defined in §"shed".
 - **`pcs/managed`** and **`pcs/priority`** are consulted by the enclosure's PCS import-limit enforcement to decide which circuits are controlled when the active import limit is binding. See §"pcs".
 - A circuit's `switch/relay` is settable only when its `switch/relay-controllable = true`; the enclosure never opens a circuit commissioned as permanently `OFF_GRID` / locked.
@@ -700,7 +700,7 @@ ebus/5/ab-1234-c5d67/                          energy.ebus.device.distribution-e
   shed-forecast/full-charge-time-to-priority-shed 480
   shed-forecast/confidence                      HIGH
   shed/asserted-islanding-state                 NONE
-  shed/policy                                   {"algorithm":"soc-priority.v1","parameters":{"soc-threshold":50}}
+  shed/policy                                   {"algorithm":"soc-priority.v1","parameters":{"soc-threshold-shed":49,"soc-threshold-release":51}}
 
 ebus/5/ab-1234-c5d67-lugs-up/             energy.ebus.device.lugs
   info/direction                                UPSTREAM
