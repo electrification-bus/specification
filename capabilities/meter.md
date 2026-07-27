@@ -21,7 +21,7 @@ All properties are MAY at the capability level; a device model tightens specific
 
 ## Per-conductor representation
 
-Per-conductor measurements use property-name **suffixes**: `-a` / `-b` / `-c` for the phase positions and `-n` for the neutral. System aggregates carry no suffix (`active-power`, not `active-power-system`). A single-phase point populates only `-a`; a US split-phase service populates `-a` and `-b`; a three-phase service populates `-a` / `-b` / `-c`.
+Per-conductor measurements use property-name **suffixes**: `-a` / `-b` / `-c` for the phase positions and `-n` for the neutral. System-level aggregates and single-point measurements carry no suffix: `active-power` (not `active-power-system`), and a single-conductor meter's bare `voltage` / `current`. The suffixes are for a meter with more than one measured conductor: a US split-phase service populates `-a` and `-b`, and a three-phase service `-a` / `-b` / `-c`. A single measured conductor never takes `-a` alone (there is no `-a` without a `-b`); it uses the bare property.
 
 In US residential split-phase wiring the two hot legs are commonly labelled **L1** and **L2** by electricians and on panel schedules; these correspond directly to `-a` and `-b`. eBus uses the `-a` / `-b` / `-c` / `-n` suffix as its single per-conductor convention because it generalises to three-phase and names a neutral position; the equivalent `l1-` / `l2-` prefix spelling that appeared on some earlier device drafts is not used.
 
@@ -36,6 +36,8 @@ In US residential split-phase wiring the two hot legs are commonly labelled **L1
 | `apparent-power` | float | VA | MAY | Total apparent power. |
 | `power-factor` | float | — | MAY | System power factor, signed: positive = lagging (inductive), negative = leading (capacitive); range `[-1.0, 1.0]`. |
 | `frequency` | float | Hz | MAY | Line frequency. |
+| `voltage` | float | V | MAY | RMS voltage at a single-point meter (one measured conductor, e.g. a branch circuit or a device's single AC boundary). A split-phase or three-phase meter uses the per-conductor `voltage-{a,b,c}` instead. |
+| `current` | float | A | MAY | RMS current at a single-point meter (one measured conductor). A split-phase or three-phase meter uses the per-conductor `current-{a,b,c,n}` instead. |
 | `imported-energy` | float | Wh | MAY | Cumulative active energy imported (into the metered device / consumed). Monotonically non-decreasing. |
 | `exported-energy` | float | Wh | MAY | Cumulative active energy exported (out of the metered device / produced or backfed). Monotonically non-decreasing. |
 | `imported-reactive-energy` | float | varh | MAY | Cumulative reactive energy imported. |

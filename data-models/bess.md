@@ -263,8 +263,8 @@ Power and energy metering. The property catalog is in [`capabilities/meter.md`](
 | `active-power` | float | W | MUST | Instantaneous active power. Positive = power flowing out of device. |
 | `imported-energy` | float | Wh | SHOULD | Cumulative energy imported (consumed) by the device. Always positive. |
 | `exported-energy` | float | Wh | SHOULD | Cumulative energy exported (produced) by the device. Always positive. |
-| `current-a` | float | A | MAY | RMS current on phase a (per-conductor; see `meter.md`) |
-| `voltage-a` | float | V | MAY | RMS voltage on phase a (per-conductor; see `meter.md`) |
+| `current` | float | A | MAY | RMS current |
+| `voltage` | float | V | MAY | RMS voltage |
 | `frequency` | float | Hz | MAY | AC frequency |
 | `reactive-power` | float | var | MAY | Reactive power |
 | `apparent-power` | float | VA | MAY | Apparent power |
@@ -452,8 +452,8 @@ An Enphase system with an IQ Gateway (Envoy), IQ Battery (Encharge), 6 microinve
 | `wNow` | `/ivp/meters/reports` | `meter/active-power` | None (already W) |
 | `whLifetime` (whDlvdCum) | `/ivp/meters/reports` | `meter/exported-energy` | None (already Wh) |
 | `whLifetime` (whRcvdCum) | `/ivp/meters/reports` | `meter/imported-energy` | None (already Wh) |
-| `rmsCurrent` | `/ivp/meters/reports` | `meter/current-a` | None (already A) |
-| `rmsVoltage` | `/ivp/meters/reports` | `meter/voltage-a` | None (already V) |
+| `rmsCurrent` | `/ivp/meters/reports` | `meter/current` | None (already A) |
+| `rmsVoltage` | `/ivp/meters/reports` | `meter/voltage` | None (already V) |
 | `freq` | `/ivp/meters/reports` | `meter/frequency` | None (already Hz) |
 | `reactPwr` | `/ivp/meters/reports` | `meter/reactive-power` | None (already var) |
 | `apprntPwr` | `/ivp/meters/reports` | `meter/apparent-power` | None (already VA) |
@@ -498,8 +498,8 @@ ebus/5/202211182691-solar-meter/                  energy.ebus.device.meter
   meter/active-power                              1354.5
   meter/imported-energy                           0.0
   meter/exported-energy                           10453248.4
-  meter/current-a                                   11.0
-  meter/voltage-a                                   247.3
+  meter/current                                   11.0
+  meter/voltage                                   247.3
   meter/frequency                                 60.0
   meter/power-factor                              1.0
 
@@ -508,8 +508,8 @@ ebus/5/202211182691-grid-meter/                   energy.ebus.device.meter
   meter/active-power                              -1308.5
   meter/imported-energy                           872827.1
   meter/exported-energy                           9579927.3
-  meter/current-a                                   10.7
-  meter/voltage-a                                   247.2
+  meter/current                                   10.7
+  meter/voltage                                   247.2
 
 ebus/5/202211182691-load-meter/                   energy.ebus.device.meter
   info/product-name                               "Load Meter"
