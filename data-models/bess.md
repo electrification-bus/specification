@@ -1,8 +1,8 @@
 # Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.13
-**Date:** 2026-07-11
+**Version:** 0.14
+**Date:** 2026-07-27
 **Authors:** Don Jackson
 
 ## Overview

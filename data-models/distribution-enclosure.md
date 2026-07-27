@@ -1,8 +1,8 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.11
-**Date:** 2026-07-12
+**Version:** 0.12
+**Date:** 2026-07-27
 **Authors:** Don Jackson
 
 ## Overview

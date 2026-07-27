@@ -3,7 +3,7 @@
 **Type:** Integration Guide (informative)
 **Status:** DRAFT
 **Version:** 0.1
-**Date:** 2026-07-25
+**Date:** 2026-07-27
 **Authors:** Don Jackson
 
 ## Overview

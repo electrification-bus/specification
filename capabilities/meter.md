@@ -1,8 +1,8 @@
 # Electrification Bus Capability: meter
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-11
+**Version:** 0.2
+**Date:** 2026-07-27
 **Authors:** Don Jackson
 
 ## Identifier
