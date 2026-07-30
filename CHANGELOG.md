@@ -8,6 +8,10 @@ Entries are tagged with the affected artifact and a category (Added / Changed / 
 
 ## 2026-07-30
 
+### Added
+
+- **convention/property-json**: device profiles now cover every device model. Added `outlet`, `pdu`, `utility-meter`, and `water-heater` (`devices/*.json`) alongside `bess`, `circuit`, and `distribution-enclosure`; `proxy.md` has no profile (it is the proxy-publication convention and declares no device type). No version change: the profiles are generated siblings, co-versioned with their prose.
+
 ### Changed
 
 - **framework** — added a "Conformance Latitude" clarification to the Conformance Language section, making the specification's permissive posture explicit: it describes what a device *can* and *should* publish, and *how*, not a fixed set every device must publish. A publisher publishes the subset it supports, MAY publish properties this spec does not define, and MAY widen or redefine a property's datatype or value set, provided it advertises the shape it publishes in its Homie 5 `$description` / `$format`. The RFC 2119 keywords govern *how* a property is published, not *whether*. Also noted that the capability catalogs, data models, and their machine-readable property-JSON siblings are a recommendation and a reference, not a checklist a conformant device must match. In-place DRAFT clarification: no mechanism or feature changed, the artifact version stays 0.7 and no downstream re-pin is required; only the document Date header moved.

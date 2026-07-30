@@ -456,10 +456,10 @@ def catalog_paths():
             if fn.endswith(".md") and fn.upper() != "README.MD"]
 
 
-# Device models whose device tree the light profile parser reads cleanly. A model still
-# stating its composition only in prose is added once it tabulates it; nothing here forces
-# that tabulation.
-PROFILES_READY = {"bess", "circuit", "distribution-enclosure"}
+# Every data model gets a device profile, EXCEPT proxy.md, which is the proxy-publication
+# convention and declares no device type (energy.ebus.device.*), so it has no profile.
+# pv / evse / mid join here once those data models are authored.
+PROFILES_READY = {"bess", "circuit", "distribution-enclosure", "outlet", "pdu", "utility-meter", "water-heater"}
 
 
 def profile_paths():
