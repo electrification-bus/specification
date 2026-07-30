@@ -33,14 +33,15 @@
     "property": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "datatype"],
+      "required": ["datatype"],
       "properties": {
         "name": { "type": "string" },
         "datatype": { "$ref": "#/$defs/datatype" },
         "unit": { "type": "string" },
         "format": { "type": "string" },
         "settable": { "type": "boolean" },
-        "req": { "$ref": "#/$defs/req" }
+        "req": { "$ref": "#/$defs/req" },
+        "description": { "type": "string" }
       }
     },
     "propertyPattern": {
@@ -54,14 +55,12 @@
         "format": { "type": "string" },
         "settable": { "type": "boolean" },
         "req": { "$ref": "#/$defs/req" },
+        "description": { "type": "string" },
         "expand": {
-          "type": "object",
-          "minProperties": 1,
-          "additionalProperties": {
-            "type": "array",
-            "minItems": 1,
-            "items": { "type": "string" }
-          }
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "The suffix tokens the pattern's {a,b,c}-style placeholder expands over; a concrete property id substitutes each token for the braces, e.g. voltage-{a,b,c} with [a,b,c] yields voltage-a / voltage-b / voltage-c."
         }
       }
     }

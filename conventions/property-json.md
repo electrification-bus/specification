@@ -56,33 +56,30 @@ A capability catalog is the normalized, complete property vocabulary of one capa
   "version": "0.2",
   "status": "DRAFT",
   "date": "2026-07-27",
-  "req_default": "MAY",
-  "reference_direction_default": "positive-in",
   "properties": {
-    "active-power":    { "name": "Active power", "datatype": "float", "unit": "W" },
-    "power-factor":    { "name": "Power factor", "datatype": "float", "format": "-1.0:1.0" },
-    "imported-energy": { "name": "Imported energy", "datatype": "float", "unit": "Wh" },
-    "exported-energy": { "name": "Exported energy", "datatype": "float", "unit": "Wh" }
+    "active-power":    { "datatype": "float", "unit": "W", "req": "MAY", "description": "Total active power. Sign per the reference-direction rule below." },
+    "power-factor":    { "datatype": "float", "req": "MAY", "format": "-1.0:1.0", "description": "System power factor, signed; range [-1.0, 1.0]." },
+    "imported-energy": { "datatype": "float", "unit": "Wh", "req": "MAY", "description": "Cumulative active energy imported. Monotonically non-decreasing." },
+    "exported-energy": { "datatype": "float", "unit": "Wh", "req": "MAY", "description": "Cumulative active energy exported. Monotonically non-decreasing." }
   },
   "property_patterns": {
-    "voltage-{phase}":     { "datatype": "float", "unit": "V",
-                             "expand": { "phase": ["a", "b", "c"] } },
-    "current-{conductor}": { "datatype": "float", "unit": "A",
-                             "expand": { "conductor": ["a", "b", "c", "n"] } }
+    "voltage-{a,b,c}":     { "datatype": "float", "unit": "V", "expand": ["a", "b", "c"] },
+    "current-{a,b,c,n}":   { "datatype": "float", "unit": "A", "expand": ["a", "b", "c", "n"] }
   }
 }
 ```
 
-- **`req_default`** is the capability-level conformance floor. Most catalogs are `MAY` at the capability level (a device selects and tightens); a property carries its own `req` only where the catalog is stricter than the floor.
+- **`req_default`** is an optional capability-level conformance floor. The generator states each property's `req` explicitly from its catalog table, so `req_default` is usually omitted; it remains available for a catalog that prefers to declare a floor once and mark only the exceptions.
 - **`reference_direction_default`** records the capability's default sign convention where one applies (metering, power flows); a device profile may override it per capability.
 - **`properties`** maps each property identifier to its definition. Property fields:
-  - **`name`** (string, required): the human-readable name from the prose table.
   - **`datatype`** (string, required): a Homie 5 datatype (`integer`, `float`, `boolean`, `string`, `enum`, `color`, `datetime`, `duration`, `json`).
-  - **`unit`** (string): present if and only if the datatype is numeric.
+  - **`req`** (string, one of `MUST` / `SHOULD` / `MAY`): the property's conformance from the catalog table's Req column.
+  - **`unit`** (string): a numeric property's unit. Omitted for non-numeric properties and for a dimensionless numeric (a power factor has no unit).
   - **`format`** (string): the value domain. For `enum`, a comma-separated token list (`OK,FAULT,UNKNOWN`). For a bounded numeric, a `min:max` or `min:max:step` range (`-1.0:1.0`). For `json`, a JSON Schema. Lifted from what the prose Description states.
   - **`settable`** (boolean): present and `true` only for settable properties; omitted when false.
-  - **`req`** (string, one of `MUST` / `SHOULD` / `MAY`): present only where the catalog is stricter than `req_default`.
-- **`property_patterns`** holds parameterized property families whose concrete identifiers expand over a domain (per-phase, per-conductor). Each pattern names one or more `{placeholder}` segments and an `expand` map giving each placeholder's domain. `voltage-{phase}` with `phase: ["a","b","c"]` expands to `voltage-a`, `voltage-b`, `voltage-c`.
+  - **`description`** (string): the prose from the table's Description column.
+  - **`name`** (string): a short human name, when the source table carries a Name column. Catalog tables do not, so the generator usually omits it.
+- **`property_patterns`** holds parameterized property families whose concrete identifiers expand over a suffix set (per-phase, per-conductor). The pattern key carries the suffix set inline in braces, matching the catalog prose, and `expand` lists those tokens. `voltage-{a,b,c}` with `expand: ["a","b","c"]` expands to `voltage-a`, `voltage-b`, `voltage-c` (a concrete id substitutes each token for the braces).
 
 ## The `device-profile` file
 
@@ -116,9 +113,10 @@ A device model defines a device tree: a parent device type and its child device 
         "status":   { "catalog": "energy.ebus.capability.status",   "catalog_version": "0.1", "req": "MUST" }
       },
       "added_properties": {
-        "info":   { "nameplate-capacity": { "name": "Nameplate capacity", "datatype": "float", "unit": "kWh", "req": "SHOULD" } },
-        "status": { "operational-state": { "name": "Operational state", "datatype": "enum",
-                                           "format": "IDLE,CHARGING,DISCHARGING,STANDBY,UNKNOWN", "req": "SHOULD" } }
+        "info": {
+          "nameplate-capacity": { "datatype": "float", "unit": "kWh", "req": "SHOULD", "description": "Nameplate energy capacity (battery devices)" },
+          "nominal-power":       { "datatype": "float", "unit": "W", "req": "MAY", "description": "Nameplate maximum rated power output." }
+        }
       }
     },
     "energy.ebus.device.mid": {
@@ -140,7 +138,7 @@ A device model defines a device tree: a parent device type and its child device 
     - **`req`** (string): the device-level conformance for the whole capability, from the model's `| Capability | Required |` table.
     - **`reference_direction`** (string): overrides the catalog's default sign convention for this device where it differs (a BESS meters `positive-out`).
     - **`properties`**: per-property `req` overrides, referenced by property identifier only. The profile lists only the properties the device selects or tightens; it never restates the property's datatype or unit (those live in the catalog).
-  - **`added_properties`** fully defines device-specific properties that have no catalog home, grouped by the capability node they attach to. These carry the full property fields (`name`, `datatype`, `unit`, `format`, `settable`, `req`) because there is no catalog to inherit from.
+  - **`added_properties`** fully defines device-specific properties that have no catalog home, grouped by the capability node they attach to. These carry the full property fields (`datatype`, `unit`, `format`, `settable`, `req`, `description`) because there is no catalog to inherit from.
 
 ### Device-defining inline capabilities
 
@@ -150,7 +148,7 @@ A small number of capabilities are intrinsically bound to a single device type a
 
 Conformance is expressed in two layers that compose:
 
-1. **Catalog layer:** `req_default` sets the floor; a property's own `req` raises it where the catalog is stricter.
+1. **Catalog layer:** each property carries its own `req` from the catalog table (or, where a catalog prefers it, a `req_default` floor with per-property `req` marking only the exceptions).
 2. **Device layer:** a capability's `req` sets the device-level requirement; a selected property's `req` raises it further for that device.
 
 The effective requirement of a property on a device is the strictest of the applicable levels. Tightening is **monotonic**: a device may move a property `MAY` -> `SHOULD` -> `MUST`, but may never set it below the catalog floor. Loosening is a verification failure. This lets a catalog stay permissive (a capability that many device types share) while a specific device makes the properties it depends on mandatory.
@@ -168,7 +166,7 @@ CI runs `--check`, so a prose edit that is not reflected in the JSON (or a hand-
 2. **Reference integrity.** Every property a device profile selects or overrides exists in the referenced catalog, with a matching datatype and unit.
 3. **Monotonic conformance.** No device profile loosens a property below its catalog floor.
 4. **Registered types.** Every capability `type` is registered in [`../registries/capability-types.md`](../registries/capability-types.md), reusing the existing registry invariant.
-5. **Well-formed properties.** Each datatype is in the Homie 5 set; a unit is present if and only if the datatype is numeric; an `enum` carries a `format`.
+5. **Well-formed properties.** Each datatype is in the Homie 5 set; a unit appears only on a numeric property (a non-numeric property carrying a unit is an error; a dimensionless numeric such as a power factor simply has no unit); an `enum` carries a `format`.
 
 The `catalog_version` a profile records is **advisory**. When it lags the catalog's current version the verifier emits a warning with a regenerate-then-review workflow, not a hard failure: a single widely-consumed catalog bump (metering is used by many device models) would otherwise cascade into a fleet-wide CI failure.
 

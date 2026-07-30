@@ -1,0 +1,41 @@
+{
+  "$schema": "https://ebus.energy/schemas/property-catalog.json",
+  "schema_version": "property-schema-v1",
+  "kind": "capability-catalog",
+  "capability": "energy.ebus.capability.info",
+  "version": "0.1",
+  "status": "DRAFT",
+  "date": "2026-07-05",
+  "properties": {
+    "vendor-name": {
+      "datatype": "string",
+      "req": "SHOULD",
+      "description": "Manufacturer name (e.g., \"SPAN\", \"Tesla\", \"Rheem\")."
+    },
+    "serial-number": {
+      "datatype": "string",
+      "req": "SHOULD",
+      "description": "Device serial number."
+    },
+    "model": {
+      "datatype": "string",
+      "req": "SHOULD",
+      "description": "Vendor-defined model identifier. The valid set is publisher-defined and MAY be advertised via Homie `$format` on the property."
+    },
+    "hardware-version": {
+      "datatype": "string",
+      "req": "MAY",
+      "description": "Hardware revision."
+    },
+    "firmware-version": {
+      "datatype": "string",
+      "req": "SHOULD",
+      "description": "Firmware version. Published when the device has firmware; a bare or surveyed device (e.g., a dumb load center) omits it."
+    },
+    "data-model-version": {
+      "datatype": "string",
+      "req": "SHOULD",
+      "description": "Version of the eBus data model this device publishes (e.g., `\"1.0\"`)."
+    }
+  }
+}
