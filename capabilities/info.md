@@ -28,8 +28,8 @@ This catalog defines the shared identity core. Each device model references it a
 |---|---|---|---|---|
 | `vendor-name` | string | - | SHOULD | Manufacturer name (e.g., "SPAN", "Tesla", "Rheem"). |
 | `serial-number` | string | - | SHOULD | Device serial number. |
-| `model` | string | - | SHOULD | Vendor-defined model identifier. The valid set is publisher-defined and MAY be advertised via Homie `$format` on the property. |
-| `part-number` | string | - | MAY | Manufacturer part or SKU number. MAY differ from `model`: distinct part numbers can designate the same model (packaging, regional, or minor-revision variants). |
+| `model` | string | - | SHOULD | The human-facing model or product designation, the name a person recognizes (e.g., `Powerwall 3`, `IQ Battery 5P`, or a configuration code such as `MAIN_32`). This is the display designation, not the orderable part code (that is `part-number`). The valid set is publisher-defined and MAY be advertised via Homie `$format` on the property. |
+| `part-number` | string | - | MAY | The vendor's orderable part or SKU code (e.g., Tesla `1232100-00-E`): the specific hardware variant beneath `model`, finer-grained so distinct part numbers (packaging, regional, or minor-revision variants) can share one `model`. A publisher that has both a coded identifier and a human-facing name publishes the code here and the designation in `model`, not a separate product-name property. |
 | `hardware-version` | string | - | MAY | Hardware revision. |
 | `firmware-version` | string | - | SHOULD | Firmware version. Published when the device has firmware; a bare or surveyed device (e.g., a dumb load center) omits it. |
 | `data-model-version` | string | - | SHOULD | Version of the eBus data model this device publishes (e.g., `"1.0"`). |

@@ -211,7 +211,7 @@ Represents a metering point. Used for site-level, load, or solar metering when t
 
 | Capability | Required | Notes |
 |---|---|---|
-| `info` | MUST | `product-name` identifies the metering point (e.g., "Site Meter", "Solar Meter") |
+| `info` | MUST | the device's Homie `$name` identifies the metering point (e.g., "Site Meter", "Solar Meter") |
 | `meter` | MUST | |
 
 ### Outlet Device (child)
@@ -230,11 +230,10 @@ System and device identification.
 
 **Node type:** `energy.ebus.capability.info`
 
-The shared identity properties (`vendor-name`, `serial-number`, `model`, `part-number`, `firmware-version`, `hardware-version`, `data-model-version`, `nameplate-capacity`) are defined in [`capabilities/info.md`](../capabilities/info.md); a BESS publishes `data-model-version` on the parent device only, and SHOULD publish `nameplate-capacity` (its rated energy capacity, in kWh electrical). BESS-specific identity properties:
+The shared identity properties (`vendor-name`, `serial-number`, `model`, `part-number`, `firmware-version`, `hardware-version`, `data-model-version`, `nameplate-capacity`) are defined in [`capabilities/info.md`](../capabilities/info.md); a BESS publishes `data-model-version` on the parent device only, and SHOULD publish `nameplate-capacity` (its rated energy capacity, in kWh electrical). A BESS's human-facing product designation is the shared `model` (e.g. "Powerwall 2 AC") and any vendor part code is `part-number` (e.g. "1232100-00-E"); there is no separate product-name property. BESS-specific identity properties:
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `product-name` | string | — | SHOULD | Product name (e.g., "Powerwall 2 AC") |
 | `nominal-power` | float | W | MAY | Nameplate maximum rated power output. |
 | `proxied` | boolean | — | MAY | Optional disambiguation when both a proxy publisher and a native publisher of the same physical device coexist. `true` = this representation is proxied (e.g., published by a third-party adapter); `false` = published natively (by the vendor's own implementation); absent = no explicit signal, and consumers fall back to inspecting the `root` device's `$description.type`. See §"Disambiguating publishers" below. |
 
@@ -403,19 +402,19 @@ ebus/5/TG123456789-mid/                       energy.ebus.device.mid
   grid/grid-forming-entity                    "GRID"
 
 ebus/5/TG123456789-site-meter/                energy.ebus.device.meter
-  info/product-name                           "Site Meter"
+  $name                                       "Site Meter"
   meter/active-power                          -2750.0
   meter/imported-energy                       99828300.0
   meter/exported-energy                       5990700.0
 
 ebus/5/TG123456789-solar-meter/               energy.ebus.device.meter
-  info/product-name                           "Solar Meter"
+  $name                                       "Solar Meter"
   meter/active-power                          5530.0
   meter/imported-energy                       7300.0
   meter/exported-energy                       33558900.0
 
 ebus/5/TG123456789-load-meter/                energy.ebus.device.meter
-  info/product-name                           "Load Meter"
+  $name                                       "Load Meter"
   meter/active-power                          2740.0
   meter/imported-energy                       125308600.0
   meter/exported-energy                       0.0
@@ -470,7 +469,7 @@ An Enphase system with an IQ Gateway (Envoy), IQ Battery (Encharge), 6 microinve
 ebus/5/202211182691/                              energy.ebus.device.bess (parent)
   info/vendor-name                                "Enphase"
   info/serial-number                              "202211182691"
-  info/product-name                               "IQ Gateway"
+  info/model                                      "IQ Gateway"
   info/firmware-version                           "8.2.127"
   info/data-model-version                         "1.0"
   soc/soc                                         72.5
@@ -481,19 +480,19 @@ ebus/5/202211182691/                              energy.ebus.device.bess (paren
 ebus/5/202211182691-battery-1/                    energy.ebus.device.battery
   info/vendor-name                                "Enphase"
   info/serial-number                              "ENB-001"
-  info/product-name                               "IQ Battery 10"
+  info/model                                      "IQ Battery 10"
   info/nameplate-capacity                         10.08
   soc/soc                                         72.5
 
 ebus/5/202211182691-mid/                          energy.ebus.device.mid
   info/vendor-name                                "Enphase"
   info/serial-number                              "202252017752"
-  info/product-name                               "IQ System Controller"
+  info/model                                      "IQ System Controller"
   grid/islanding-state                            ON_GRID
   grid/grid-forming-entity                        "GRID"
 
 ebus/5/202211182691-solar-meter/                  energy.ebus.device.meter
-  info/product-name                               "Solar Meter"
+  $name                                           "Solar Meter"
   meter/active-power                              1354.5
   meter/imported-energy                           0.0
   meter/exported-energy                           10453248.4
@@ -503,7 +502,7 @@ ebus/5/202211182691-solar-meter/                  energy.ebus.device.meter
   meter/power-factor                              1.0
 
 ebus/5/202211182691-grid-meter/                   energy.ebus.device.meter
-  info/product-name                               "Grid Meter"
+  $name                                           "Grid Meter"
   meter/active-power                              -1308.5
   meter/imported-energy                           872827.1
   meter/exported-energy                           9579927.3
@@ -511,7 +510,7 @@ ebus/5/202211182691-grid-meter/                   energy.ebus.device.meter
   meter/voltage                                   247.2
 
 ebus/5/202211182691-load-meter/                   energy.ebus.device.meter
-  info/product-name                               "Load Meter"
+  $name                                           "Load Meter"
   meter/active-power                              46.0
   meter/imported-energy                           872827.1
   meter/exported-energy                           0.0
@@ -529,7 +528,7 @@ A Pila Mesh Home Battery: a grid-following, plug-in battery (1.6 kWh, 2.4 kW) th
 ebus/5/PILA-7K2/                          energy.ebus.device.bess (parent, plug-in; no MID)
   info/vendor-name                        "Pila Energy"
   info/serial-number                      "PILA-7K2"
-  info/product-name                       "Mesh Home Battery"
+  info/model                              "Mesh Home Battery"
   info/nameplate-capacity                 1.6
   soc/soc                                 64.0
   soc/soe                                 1.02
@@ -607,8 +606,8 @@ The parent BESS device's `$description` topic publishes a JSON object conforming
           "name": "Serial number",
           "datatype": "string"
         },
-        "product-name": {
-          "name": "Product name",
+        "model": {
+          "name": "Model",
           "datatype": "string"
         },
         "firmware-version": {

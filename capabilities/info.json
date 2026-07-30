@@ -20,12 +20,12 @@
     "model": {
       "datatype": "string",
       "req": "SHOULD",
-      "description": "Vendor-defined model identifier. The valid set is publisher-defined and MAY be advertised via Homie `$format` on the property."
+      "description": "The human-facing model or product designation, the name a person recognizes (e.g., `Powerwall 3`, `IQ Battery 5P`, or a configuration code such as `MAIN_32`). This is the display designation, not the orderable part code (that is `part-number`). The valid set is publisher-defined and MAY be advertised via Homie `$format` on the property."
     },
     "part-number": {
       "datatype": "string",
       "req": "MAY",
-      "description": "Manufacturer part or SKU number. MAY differ from `model`: distinct part numbers can designate the same model (packaging, regional, or minor-revision variants)."
+      "description": "The vendor's orderable part or SKU code (e.g., Tesla `1232100-00-E`): the specific hardware variant beneath `model`, finer-grained so distinct part numbers (packaging, regional, or minor-revision variants) can share one `model`. A publisher that has both a coded identifier and a human-facing name publishes the code here and the designation in `model`, not a separate product-name property."
     },
     "hardware-version": {
       "datatype": "string",
