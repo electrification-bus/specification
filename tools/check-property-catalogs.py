@@ -37,7 +37,9 @@ VERSION_RE = re.compile(r"^\*\*Version:\*\*\s*(\S+)", re.M)
 STATUS_RE = re.compile(r"^\*\*Status:\*\*\s*(\w+)", re.M)
 DATE_RE = re.compile(r"^\*\*Date:\*\*\s*(\S+)", re.M)
 NODE_RE = re.compile(r"\*\*Node type:\*\*\s*`energy\.ebus\.capability\.([a-z0-9-]+)`")
+TYPE_RE = re.compile(r"\*\*Type:\*\*\s*`energy\.ebus\.device\.([a-z0-9-]+)`")
 IDENT_RE = re.compile(r"`energy\.ebus\.capability\.([a-z0-9-]+)`")
+PROP_REQ_RE = re.compile(r"`([a-z][a-z0-9-]*)`[^.`|]*?\b(MUST|SHOULD|MAY)\b")
 ENUM_TOKEN_RE = re.compile(r"`([A-Z][A-Z0-9_]*)`")
 RANGE_RE = re.compile(r"\[\s*(-?\d[\d.]*)\s*,\s*(-?\d[\d.]*)\s*\]")
 BRACE_RE = re.compile(r"\{([^}]*)\}")
@@ -74,9 +76,11 @@ def _is_sep(line):
 
 
 def tables(md):
-    """Yield dicts {headers, rows, section, node} for every Markdown table."""
+    """Yield dicts {headers, rows, section, node, devtype} for every Markdown table.
+    node tracks the last `**Node type:**` (a capability); devtype the last `**Type:**`
+    (a device type)."""
     lines = md.splitlines()
-    section = node = None
+    section = node = devtype = None
     out = []
     i, n = 0, len(lines)
     while i < n:
@@ -87,6 +91,9 @@ def tables(md):
         m = NODE_RE.search(line)
         if m:
             node = m.group(1)
+        m = TYPE_RE.search(line)
+        if m:
+            devtype = m.group(1)
         if line.lstrip().startswith("|") and i + 1 < n and _is_sep(lines[i + 1]):
             headers = _split_row(line)
             rows = []
@@ -94,7 +101,7 @@ def tables(md):
             while j < n and lines[j].lstrip().startswith("|"):
                 rows.append(_split_row(lines[j]))
                 j += 1
-            out.append({"headers": headers, "rows": rows, "section": section, "node": node})
+            out.append({"headers": headers, "rows": rows, "section": section, "node": node, "devtype": devtype})
             i = j
             continue
         i += 1
@@ -298,6 +305,175 @@ def dumps(obj):
     return json.dumps(obj, indent=2, ensure_ascii=False) + "\n"
 
 
+# ---------------------------------------------------------------- device profiles
+
+_CAP_CACHE = {}
+_CAP_ORDER = ["catalog", "catalog_version", "reference_direction", "properties",
+              "added", "added_patterns", "defines_capability"]
+RANK = {"MAY": 0, "SHOULD": 1, "MUST": 2}
+
+
+def _catalogs():
+    """capability -> {members: set of concrete property ids, req: {id: req}, version}."""
+    if _CAP_CACHE:
+        return _CAP_CACHE
+    for path in catalog_paths():
+        jp = path[:-3] + ".json"
+        if not os.path.exists(jp):
+            continue
+        d = json.load(io.open(jp, encoding="utf-8"))
+        cap = (d.get("capability") or "").rsplit(".", 1)[-1]
+        members, reqs = set(), {}
+        for pid, p in d.get("properties", {}).items():
+            members.add(pid)
+            if "req" in p:
+                reqs[pid] = p["req"]
+        for key, p in d.get("property_patterns", {}).items():
+            for tok in p.get("expand", []):
+                members.add(re.sub(r"\{[^}]*\}", tok, key))
+        _CAP_CACHE[cap] = {"members": members, "req": reqs, "version": d.get("version")}
+    return _CAP_CACHE
+
+
+def is_capability_table(t):
+    cm = _colmap(t["headers"])
+    return "capability" in cm and ("req" in cm or "required" in cm) and "datatype" not in cm
+
+
+def is_override_table(t):
+    cm = _colmap(t["headers"])
+    return bool(set(cm) & PROP_ID_HEADERS) and "req" in cm and "datatype" not in cm
+
+
+def _ordered_cap(e):
+    return {k: e[k] for k in _CAP_ORDER if k in e}
+
+
+def _reference_direction(md, node):
+    if node not in ("meter", "power-flows"):
+        return None
+    if re.search(r"positive[^.\n]{0,45}(out of the device|discharg\w*|produc\w*|export\w*|deliver\w*)", md, re.I):
+        return "positive-out"
+    if re.search(r"positive[^.\n]{0,45}(import\w*|to the load|consum\w*)", md, re.I):
+        return "positive-in"
+    return None
+
+
+def parse_profile(path):
+    md = io.open(path, encoding="utf-8").read()
+    version, status, date = _header(md)
+    catalogs = _catalogs()
+    devtypes = [m.group(1) for m in TYPE_RE.finditer(md)]
+    primary = devtypes[0] if devtypes else None
+    multi = len(set(devtypes)) > 1
+    device_types, caps = {}, {}
+
+    def cap_entry(node):
+        e = caps.setdefault(node, {})
+        e.setdefault("catalog", f"energy.ebus.capability.{node}")
+        if catalogs.get(node, {}).get("version"):
+            e.setdefault("catalog_version", catalogs[node]["version"])
+        return e
+
+    for t in tables(md):
+        cm = _colmap(t["headers"])
+        if is_capability_table(t) and t["devtype"]:
+            req_key = "req" if "req" in cm else "required"
+            pub = {}
+            for row in t["rows"]:
+                if cm["capability"] >= len(row) or cm[req_key] >= len(row):
+                    continue
+                capnode = _clean(row[cm["capability"]])
+                m = REQ_KEYWORD_RE.search(row[cm[req_key]])
+                if capnode and m:
+                    pub[capnode] = m.group(1).upper()
+            if pub:
+                dt = device_types.setdefault(f"energy.ebus.device.{t['devtype']}", {})
+                if multi:
+                    dt["role"] = "parent" if t["devtype"] == primary else "child"
+                dt.setdefault("publishes", {}).update(pub)
+        elif is_override_table(t) and t["node"]:
+            e, cm_id = cap_entry(t["node"]), next(k for k in ("property id", "property") if k in cm)
+            for row in t["rows"]:
+                if cm[cm_id] >= len(row) or cm["req"] >= len(row):
+                    continue
+                pid, m = _clean(row[cm[cm_id]]), REQ_KEYWORD_RE.search(row[cm["req"]])
+                if pid and m:
+                    e.setdefault("properties", {})[pid] = {"req": m.group(1).upper()}
+        elif is_property_table(t) and t["node"]:
+            node = t["node"]
+            members = catalogs.get(node, {}).get("members", set())
+            has_catalog = node in catalogs
+            e = cap_entry(node)
+            id_key = next(k for k in ("property id pattern", "property id", "property") if k in cm)
+            for row in t["rows"]:
+                if cm[id_key] >= len(row):
+                    continue
+                pid = _clean(row[cm[id_key]])
+                if not pid:
+                    continue
+                prop = _property(cm, row)
+                brace = BRACE_RE.search(pid)
+                if has_catalog and pid in members:
+                    if "req" in prop:
+                        e.setdefault("properties", {})[pid] = {"req": prop["req"]}
+                elif brace:
+                    prop["expand"] = [tok.strip() for tok in brace.group(1).split(",") if tok.strip()]
+                    e.setdefault("added_patterns", {})[pid] = _ordered(prop)
+                else:
+                    e.setdefault("added", {})[pid] = _ordered(prop)
+            if not has_catalog:
+                e["defines_capability"] = True
+
+    for node in list(caps):
+        rd = _reference_direction(md, node)
+        if rd:
+            caps[node]["reference_direction"] = rd
+
+    obj = {
+        "$schema": "https://ebus.energy/schemas/device-profile.json",
+        "schema_version": SCHEMA_VERSION,
+        "kind": "device-profile",
+        "device": f"energy.ebus.device.{primary}" if primary else None,
+        "version": version,
+    }
+    if status:
+        obj["status"] = status
+    if date:
+        obj["date"] = date
+    obj["device_types"] = device_types
+    obj["capabilities"] = {k: _ordered_cap(v) for k, v in caps.items()}
+    return obj
+
+
+def semantic_errors_profile(obj):
+    errs, warns = [], []
+    catalogs = _catalogs()
+    if not obj.get("version"):
+        errs.append("missing Version header")
+    for dtype, dt in obj.get("device_types", {}).items():
+        for cap, req in dt.get("publishes", {}).items():
+            if req not in REQ:
+                errs.append(f"{dtype} publishes {cap} at '{req}', not MUST/SHOULD/MAY")
+    for node, e in obj.get("capabilities", {}).items():
+        cap = (e.get("catalog") or "").rsplit(".", 1)[-1]
+        inline = e.get("defines_capability")
+        if not inline and cap not in catalogs and cap not in ALLOWLIST_INLINE:
+            errs.append(f"capability '{cap}' has no catalog and is not allowlisted inline")
+        members = catalogs.get(cap, {}).get("members", set())
+        creq = catalogs.get(cap, {}).get("req", {})
+        for pid, ov in e.get("properties", {}).items():
+            if members and pid not in members:
+                errs.append(f"{node}: override '{pid}' is not a property of catalog {e.get('catalog')}")
+            r = ov.get("req")
+            if r and pid in creq and RANK[r] < RANK[creq[pid]]:
+                errs.append(f"{node}/{pid}: device req {r} loosens catalog req {creq[pid]}")
+        for pid in e.get("added", {}):
+            if pid in members:
+                warns.append(f"{node}: added '{pid}' also exists in the catalog (should it be an override?)")
+    return errs, warns
+
+
 # ---------------------------------------------------------------- driver
 
 def catalog_paths():
@@ -305,32 +481,38 @@ def catalog_paths():
             if fn.endswith(".md") and fn.upper() != "README.MD"]
 
 
-def parse_profile(path):  # next increment: data-models/*.md -> device-profile
-    raise NotImplementedError("device-profile generation is the next increment")
+DM_DIR = os.path.join(REPO, "data-models")
+# Device models whose per-device Req is fully tabulated and whose structure the
+# profile parser handles. Others (the multi-DER distribution enclosure, and
+# models still stating conformance in prose) are added as they are made ready.
+PROFILES_READY = {"bess", "circuit"}
+
+
+def profile_paths():
+    return [os.path.join(DM_DIR, f"{stem}.md") for stem in sorted(PROFILES_READY)
+            if os.path.exists(os.path.join(DM_DIR, f"{stem}.md"))]
 
 
 def main():
     check = "--check" in sys.argv
-    cat_validator = _validator("property-catalog.schema.json")
-    stale, invalid, total = [], [], 0
-    warn_count = 0
-    for path in catalog_paths():
-        total += 1
-        rel = os.path.relpath(path, REPO)
-        obj = parse_catalog(path)
+    validators = {"catalog": _validator("property-catalog.schema.json"),
+                  "profile": _validator("device-profile.schema.json")}
+    stale, invalid, counts, warn_count = [], [], {"catalog": 0, "profile": 0}, 0
+
+    def process(path, kind, parse, sem):
+        nonlocal warn_count
         out_path = path[:-3] + ".json"
         rel_json = os.path.relpath(out_path, REPO)
-
-        schema_errs = [f"schema: {e.message} (at {list(e.path)})" for e in cat_validator.iter_errors(obj)]
-        sem_errs, warns = semantic_errors(obj)
-        errs = schema_errs + sem_errs
+        obj = parse(path)
+        errs = [f"schema: {e.message} (at {list(e.path)})" for e in validators[kind].iter_errors(obj)]
+        sem_errs, warns = sem(obj)
         for w in warns:
             warn_count += 1
             print(f"  warn  {rel_json}: {w}")
+        errs += sem_errs
         if errs:
             invalid.append((rel_json, errs))
-            continue
-
+            return
         new = dumps(obj)
         if check:
             old = io.open(out_path, encoding="utf-8").read() if os.path.exists(out_path) else None
@@ -338,6 +520,13 @@ def main():
                 stale.append(rel_json)
         else:
             io.open(out_path, "w", encoding="utf-8").write(new)
+        counts[kind] += 1
+
+    # catalogs first: device profiles classify their properties against the catalog JSON
+    for path in catalog_paths():
+        process(path, "catalog", parse_catalog, semantic_errors)
+    for path in profile_paths():
+        process(path, "profile", parse_profile, semantic_errors_profile)
 
     if invalid:
         print("\nINVALID (fix the prose or the generator):")
@@ -345,16 +534,17 @@ def main():
             print(f"  {rel_json}")
             for e in errs:
                 print(f"      {e}")
+    summary = f"{counts['catalog']} capability catalog(s) + {counts['profile']} device profile(s)"
     if check:
         if stale:
             print("\nSTALE (run tools/check-property-catalogs.py): " + ", ".join(stale))
         if stale or invalid:
             sys.exit(1)
-        print(f"{total} capability catalog(s) up to date and valid; {warn_count} warning(s).")
+        print(f"{summary} up to date and valid; {warn_count} warning(s).")
     else:
         if invalid:
             sys.exit(1)
-        print(f"wrote {total} capability catalog JSON file(s); {warn_count} warning(s).")
+        print(f"wrote {summary}; {warn_count} warning(s).")
 
 
 if __name__ == "__main__":

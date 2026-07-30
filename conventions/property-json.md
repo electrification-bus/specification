@@ -83,7 +83,7 @@ A capability catalog is the normalized, complete property vocabulary of one capa
 
 ## The `device-profile` file
 
-A device model defines a device tree: a parent device type and its child device types, each publishing its own capability set. A device profile carries one entry per device type in that tree.
+A device model defines a device tree: a parent device type and its child device types. A profile records the tree in `device_types` (which type publishes which capability, at what conformance) and, once per capability node, the model's property-level detail in `capabilities`.
 
 ```json
 {
@@ -95,54 +95,51 @@ A device model defines a device tree: a parent device type and its child device 
   "status": "DRAFT",
   "date": "2026-07-27",
   "device_types": {
-    "energy.ebus.device.bess": {
-      "role": "parent",
-      "capabilities": {
-        "info": { "catalog": "energy.ebus.capability.info", "catalog_version": "0.1", "req": "MUST" },
-        "soc":  { "catalog": "energy.ebus.capability.soc",  "catalog_version": "0.1", "req": "MUST" },
-        "meter": {
-          "catalog": "energy.ebus.capability.meter", "catalog_version": "0.2", "req": "MUST",
-          "reference_direction": "positive-out",
-          "properties": {
-            "active-power":    { "req": "MUST" },
-            "imported-energy": { "req": "SHOULD" },
-            "exported-energy": { "req": "SHOULD" }
-          }
-        },
-        "dispatch": { "catalog": "energy.ebus.capability.dispatch", "catalog_version": "0.1", "req": "MAY" },
-        "status":   { "catalog": "energy.ebus.capability.status",   "catalog_version": "0.1", "req": "MUST" }
-      },
-      "added_properties": {
-        "info": {
-          "nameplate-capacity": { "datatype": "float", "unit": "kWh", "req": "SHOULD", "description": "Nameplate energy capacity (battery devices)" },
-          "nominal-power":       { "datatype": "float", "unit": "W", "req": "MAY", "description": "Nameplate maximum rated power output." }
-        }
+    "energy.ebus.device.bess":    { "role": "parent", "publishes": { "info": "MUST", "soc": "MUST", "meter": "MUST", "dispatch": "MAY", "status": "MUST" } },
+    "energy.ebus.device.battery": { "role": "child",  "publishes": { "info": "MUST", "soc": "MUST", "meter": "SHOULD", "status": "MAY" } },
+    "energy.ebus.device.mid":     { "role": "child",  "publishes": { "info": "MUST", "grid": "MUST", "status": "MAY" } }
+  },
+  "capabilities": {
+    "meter": {
+      "catalog": "energy.ebus.capability.meter", "catalog_version": "0.2",
+      "reference_direction": "positive-out",
+      "properties": { "active-power": { "req": "MUST" }, "imported-energy": { "req": "SHOULD" }, "exported-energy": { "req": "SHOULD" } }
+    },
+    "grid": {
+      "catalog": "energy.ebus.capability.grid", "catalog_version": "0.1",
+      "properties": { "islanding-state": { "req": "MUST" }, "grid-state": { "req": "SHOULD" } }
+    },
+    "info": {
+      "catalog": "energy.ebus.capability.info", "catalog_version": "0.1",
+      "added": {
+        "nameplate-capacity": { "datatype": "float", "unit": "kWh", "req": "SHOULD", "description": "Nameplate energy capacity (battery devices)" },
+        "nominal-power":       { "datatype": "float", "unit": "W", "req": "MAY", "description": "Nameplate maximum rated power output." }
       }
     },
-    "energy.ebus.device.mid": {
-      "role": "child",
-      "capabilities": {
-        "info": { "catalog": "energy.ebus.capability.info", "catalog_version": "0.1", "req": "MUST" },
-        "grid": { "catalog": "energy.ebus.capability.grid", "catalog_version": "0.1", "req": "MUST" }
+    "status": {
+      "catalog": "energy.ebus.capability.status", "catalog_version": "0.1",
+      "properties": { "communication-state": { "req": "MUST" }, "fault-state": { "req": "SHOULD" } },
+      "added": {
+        "operational-state": { "datatype": "enum", "format": "IDLE,CHARGING,DISCHARGING,STANDBY,UNKNOWN", "req": "SHOULD", "description": "Battery operating state." }
       }
     }
   }
 }
 ```
 
-- **`device_types`** maps each device type in the model to its published surface. Each entry:
-  - **`role`** (string): `parent` or `child`, matching the device hierarchy.
-  - **`capabilities`** maps a capability node identifier to a **reference**, never a copy:
-    - **`catalog`** (string, required): the `energy.ebus.capability.*` type the node implements.
-    - **`catalog_version`** (string): the catalog version the profile was authored against (advisory; see below).
-    - **`req`** (string): the device-level conformance for the whole capability, from the model's `| Capability | Required |` table.
-    - **`reference_direction`** (string): overrides the catalog's default sign convention for this device where it differs (a BESS meters `positive-out`).
-    - **`properties`**: per-property `req` overrides, referenced by property identifier only. The profile lists only the properties the device selects or tightens; it never restates the property's datatype or unit (those live in the catalog).
-  - **`added_properties`** fully defines device-specific properties that have no catalog home, grouped by the capability node they attach to. These carry the full property fields (`datatype`, `unit`, `format`, `settable`, `req`, `description`) because there is no catalog to inherit from.
+- **`device_types`** records the device tree. Each entry:
+  - **`role`** (string, optional): `parent` or `child` in the device hierarchy (omitted for a single-device model).
+  - **`publishes`** (object): capability node id to the device-level conformance (`MUST` / `SHOULD` / `MAY`) for that capability on this device type, from the model's `| Capability | Required |` (or `| Capability | ... | Req |`) table.
+- **`capabilities`** carries, once per capability node, the model's property-level detail. Each entry:
+  - **`catalog`** (string, required): the `energy.ebus.capability.*` type this node implements.
+  - **`catalog_version`** (string): the catalog version the profile was authored against (advisory; see below).
+  - **`reference_direction`** (string): the model's sign convention for this capability where it differs from the catalog default (a BESS meters `positive-out`).
+  - **`properties`**: per-property `req` overrides of catalog properties the model tightens, referenced by property id only. It never restates a catalog property's datatype or unit; those live in the catalog.
+  - **`added`** / **`added_patterns`**: device-model-specific properties (and per-conductor patterns) not present in the catalog, each with the full property fields (`datatype`, `unit`, `format`, `settable`, `req`, `description`). The generator classifies each property-table row as an override or an addition by testing catalog membership.
 
 ### Device-defining inline capabilities
 
-A small number of capabilities are intrinsically bound to a single device type and are defined inline in that device's model rather than in a standalone catalog (for example the `water-heater` capability's setpoint, tank-temperature, and operating-mode surface). These are allowlisted in [`../tools/check-capability-catalogs.py`](../tools/check-capability-catalogs.py). For such a capability, the device profile carries a **`defines_capability`** block: the same normalized property structure a `capability-catalog` file uses, embedded in the device type that owns it. The verifier validates that block with the same catalog validator, and reads the allowlist from `check-capability-catalogs.py` so the two tools agree on the exception set.
+A small number of capabilities are intrinsically bound to a single device type and are defined inline in that device's model rather than in a standalone catalog (for example the `water-heater` capability's setpoint, tank-temperature, and operating-mode surface). These are allowlisted in [`../tools/check-capability-catalogs.py`](../tools/check-capability-catalogs.py). For such a capability the `capabilities` entry sets **`defines_capability`** to `true` and carries its full property set under `added`, which the verifier validates with the same catalog rules, reading the allowlist from `check-capability-catalogs.py` so the two tools agree on the exception set.
 
 ## The conformance model: floor plus monotonic tightening
 

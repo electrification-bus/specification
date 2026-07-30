@@ -1,0 +1,73 @@
+{
+  "$schema": "https://ebus.energy/schemas/device-profile.json",
+  "schema_version": "property-schema-v1",
+  "kind": "device-profile",
+  "device": "energy.ebus.device.circuit",
+  "version": "0.3",
+  "status": "DRAFT",
+  "date": "2026-07-29",
+  "device_types": {
+    "energy.ebus.device.circuit": {
+      "publishes": {
+        "info": "MUST",
+        "connection": "SHOULD",
+        "meter": "MAY",
+        "switch": "MAY",
+        "breaker": "MAY",
+        "load-shed": "MAY",
+        "pcs": "MAY"
+      }
+    }
+  },
+  "capabilities": {
+    "info": {
+      "catalog": "energy.ebus.capability.info",
+      "catalog_version": "0.1",
+      "added": {
+        "name": {
+          "datatype": "string",
+          "settable": true,
+          "req": "SHOULD",
+          "description": "User-assigned circuit name (e.g., \"Kitchen\", \"Water Heater\"). Free-text."
+        },
+        "tags": {
+          "datatype": "string",
+          "req": "MAY",
+          "description": "Controlled vocabulary of load-type tags (e.g., `WATER_HEATER`, `EVSE`, `RANGE`). Multi-valued, comma-separated. See [`registries/circuit-tags.md`](../registries/circuit-tags.md)."
+        },
+        "external-ids": {
+          "datatype": "string",
+          "req": "MAY",
+          "description": "Multi-valued list of `<scheme>:<identifier>` references from external systems. See [`registries/external-id-schemes.md`](../registries/external-id-schemes.md)."
+        },
+        "dedicated": {
+          "datatype": "boolean",
+          "req": "MAY",
+          "description": "True when commissioned as serving a single load; false when explicitly mixed-load; omitted when undetermined. Absence is *not* equivalent to false."
+        }
+      }
+    },
+    "meter": {
+      "catalog": "energy.ebus.capability.meter",
+      "catalog_version": "0.2",
+      "reference_direction": "positive-in",
+      "properties": {
+        "active-power": {
+          "req": "SHOULD"
+        }
+      }
+    },
+    "pcs": {
+      "catalog": "energy.ebus.capability.pcs",
+      "catalog_version": "0.3",
+      "properties": {
+        "managed": {
+          "req": "MAY"
+        },
+        "priority": {
+          "req": "MAY"
+        }
+      }
+    }
+  }
+}
