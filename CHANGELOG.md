@@ -20,6 +20,10 @@ Entries are tagged with the affected artifact and a category (Added / Changed / 
 
 - **directory `data-models/` renamed to `devices/`**: the per-device data models moved from `data-models/` to `devices/`, giving clean symmetry with the registries (`devices/` pairs with `registries/device-types.md`, as `capabilities/` pairs with `registries/capability-types.md`) and retiring the overloaded name (a capability catalog is itself a data model). `capabilities/` is unchanged, and every intra-repo link was updated. One-line redirect stubs remain at the old `data-models/*.md` paths for a deprecation window, so existing `blob/main/data-models/*.md` links still resolve. Downstream action: the lockfile pin key `implements.data-models` is renamed to `implements.devices` (see [`conventions/spec-provenance.md`](conventions/spec-provenance.md)); re-key and re-sync `.ebus-spec.json`. The generated `devices/*.json` device profiles moved with their prose.
 
+### Fixed
+
+- **data-model/distribution-enclosure**: the generated device profile (`devices/distribution-enclosure.json`) now composes the `breaker` capability for the enclosure's main breaker. The prose already declared it (the node tree, the conformance-latitude list, and the `pcs` section all reference the main-breaker rating published on `breaker/rating`), but the machine-readable profile omitted it because the section lacked a `Node type:` anchor. Added the anchoring `#### breaker` section so the profile matches the documented capability set. In-place DRAFT correction: the artifact version stays 0.12 and no downstream re-pin is required; only the document Date header moved.
+
 ## 2026-07-29
 
 ### Added

@@ -41,7 +41,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | **Devices** | |
 | [`devices/bess.md`](devices/bess.md) | DRAFT v0.14 (2026-07-27) |
 | [`devices/circuit.md`](devices/circuit.md) | DRAFT v0.3 (2026-07-29) |
-| [`devices/distribution-enclosure.md`](devices/distribution-enclosure.md) | DRAFT v0.12 (2026-07-27) |
+| [`devices/distribution-enclosure.md`](devices/distribution-enclosure.md) | DRAFT v0.12 (2026-07-30) |
 | [`devices/outlet.md`](devices/outlet.md) | DRAFT v0.1 (2026-07-27) |
 | [`devices/pdu.md`](devices/pdu.md) | DRAFT v0.1 (2026-07-27) |
 | [`devices/proxy.md`](devices/proxy.md) | DRAFT v0.1 (2026-05-22) |

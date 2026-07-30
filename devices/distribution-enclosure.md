@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.12
-**Date:** 2026-07-27
+**Date:** 2026-07-30
 **Authors:** Don Jackson
 
 ## Overview
@@ -134,6 +134,12 @@ The enclosure's **amps-native** constraints (the firm `feed-import-limit`, `off-
 The enclosure's **main breaker** rating is published on its [`breaker`](../capabilities/breaker.md) capability (`breaker/rating`) — a further hard ceiling the `min()` respects — not here. Grid-forming-entity identity is on the MID device's `grid`, not here.
 
 The enclosure's other grid-coordination capabilities (`price`, `grid-event`, `flex`) are **coordination signals, not hard limits**: they shape how the enclosure operates beneath the enforced import limit but do not compose into the `min()`. See [`pcs.md` §"Relationship to the other grid-coordination capabilities"](../capabilities/pcs.md#relationship-to-the-other-grid-coordination-capabilities).
+
+#### breaker
+
+The enclosure's **main breaker**: the panel's main overcurrent device, whose `rating` is a further hard ceiling the `pcs` `min()` respects. Published when the enclosure exposes its main-breaker rating; a panel that does not surface it omits this capability. The property catalog (`rating`, `poles`, and the protection-rating properties) is defined in [`capabilities/breaker.md`](../capabilities/breaker.md).
+
+**Node type:** `energy.ebus.capability.breaker`
 
 #### doe
 

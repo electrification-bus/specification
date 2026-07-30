@@ -5,7 +5,7 @@
   "device": "energy.ebus.device.distribution-enclosure",
   "version": "0.12",
   "status": "DRAFT",
-  "date": "2026-07-27",
+  "date": "2026-07-30",
   "device_types": {
     "energy.ebus.device.circuit": {
       "role": "child",
@@ -14,6 +14,10 @@
     "energy.ebus.device.distribution-enclosure": {
       "role": "parent",
       "capabilities": {
+        "breaker": {
+          "catalog": "energy.ebus.capability.breaker",
+          "catalog_version": "0.1"
+        },
         "doe": {
           "catalog": "energy.ebus.capability.doe",
           "catalog_version": "0.1"
