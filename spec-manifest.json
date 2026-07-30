@@ -282,7 +282,7 @@
     "conventions": {
       "property-json": {
         "version": "0.1",
-        "date": "2026-07-29",
+        "date": "2026-07-30",
         "status": "DRAFT",
         "path": "conventions/property-json.md"
       },

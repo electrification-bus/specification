@@ -2,27 +2,31 @@
 
 **Status:** DRAFT
 **Version:** 0.1
-**Date:** 2026-07-29
+**Date:** 2026-07-30
 **Authors:** Don Jackson
 
 ## Purpose
 
-Every capability catalog and data-model document defines its properties as prose tables: a property identifier, a human name, a Homie datatype, a unit, a value domain, a settable flag, and a conformance level (MUST / SHOULD / MAY). Those tables are the normative source, but prose is not directly consumable by tools. A proxy validating an inbound `/set`, an SDK generating typed accessors, a simulator shaping a device tree, or a drift checker comparing a published device against the spec all need the same information in a machine-readable form.
+The capability catalogs and data-model documents describe, in prose and tables, the vocabulary a device can publish: for each property, its datatype, unit, value domain, and whether it is settable. This convention makes that vocabulary available as co-located JSON, so a proxy, an SDK, a simulator, or a dashboard can read it as data. The JSON is generated from the Markdown and checked against it in CI, so it does not drift.
 
-This convention defines that form. Each versioned prose document gains a co-located JSON sibling that carries its property definitions as structured data. The JSON is **generated from the prose and verified against it in CI**, so it can never silently diverge. The prose remains the single source of truth; the JSON is its machine projection.
+## Descriptive, not prescriptive
+
+These artifacts describe the spec's vocabulary and guidance. They are not a conformance contract, and they are not an exhaustive or required property set. That follows directly from the framework's Design Principles:
+
+- **Properties are MAY by default** (principle 8). The model is a contract for the evolving ecosystem, not a transcript of any one current feature set.
+- **Publish what you have, omit what you don't** (principle 3). A publisher populates the subset it can; absent means unknown or not-applicable.
+- **Scalars by default, `json` as the escape hatch** (principle 10). A simple implementation stays on a scalar or enum; a richer one opts into structure, and advertises the shape it publishes in `$format`.
+
+A device's runtime Homie 5 `$description` is the authority for what it actually publishes. Relative to this spec, a publisher **may publish a subset**, **may add a property this spec does not list**, and **may redefine a property's datatype or enum value set**, as long as it advertises the shape it publishes in its `$description` / `$format`. All of that is legal. So a `capability-catalog` here says "here is the recommended way to publish this property if you publish it," and a `device-profile` says "here are the capabilities this device type typically composes." Neither says "you must publish exactly this." A `meter` on a circuit and a `meter` on a lugs device carrying different properties, or two OEMs' circuits differing, is expected.
 
 ## Two families, mirroring the two prose families
 
-The specification separates cross-cutting capability catalogs (`capabilities/`) from the device models that compose them (`data-models/`). The property JSON mirrors that separation exactly, so each JSON file binds one-to-one to one prose file and there is no new conceptual model to learn.
-
-- A **capability catalog** (`capabilities/<name>.md`) gets a **`capability-catalog`** JSON: the normalized, full vocabulary of that capability, defined once.
-- A **device profile** (`data-models/<name>.md`) gets a **`device-profile`** JSON: a composition that selects capabilities, records the device's conformance, and adds device-specific properties by reference. It is a projection, not a second source of truth: it never restates a catalog property's datatype or unit, only which properties a device publishes and at what conformance level.
-
-This is the normalization the denormalized, device-centric wire profiles seen in the wild throw away: a wire profile inlines each capability's properties per device and drops the conformance level, so the full catalog and the MUST / SHOULD / MAY contract are lost. The capability-canonical plus device-projection split preserves both.
+- A **capability catalog** (`capabilities/<name>.md`) gets a **`capability-catalog`** JSON: the recommended, extensible property vocabulary for that capability, defined once and reused across device types.
+- A **device model** (`data-models/<name>.md`) gets a **`device-profile`** JSON: a light, advisory composition of which capabilities each device type in the model typically publishes, and the spec's capability-level Req guidance where it states one. It carries no property-level detail; how to publish each property lives in the capability catalog it references.
 
 ## File layout and naming
 
-The JSON sibling sits next to its prose file and shares its basename, with a `.json` suffix:
+The JSON sibling sits next to its prose file and shares its basename:
 
 ```
 capabilities/meter.md      capabilities/meter.json      (kind: capability-catalog)
@@ -31,21 +35,19 @@ data-models/bess.md        data-models/bess.json        (kind: device-profile)
 data-models/circuit.md     data-models/circuit.json
 ```
 
-The parent directory tells you the family, and the `kind` field inside each file states it explicitly, so the plain `.json` suffix is unambiguous without a longer `.catalog.json` / `.profile.json` naming scheme.
-
-These JSON files are **generated artifacts**. Do not hand-edit them: edit the prose table and regenerate. They are marked `linguist-generated=true` in `.gitattributes` so GitHub collapses them in diffs and directory listings.
+The parent directory tells you the family, and the `kind` field states it explicitly. These JSON files are **generated**: do not hand-edit them, edit the prose table and regenerate. They are marked `linguist-generated=true` in `.gitattributes` so GitHub collapses them in diffs.
 
 ## Versioning
 
-A property-JSON file **inherits its prose file's `Version:`** and never declares its own. Because the JSON shares the prose artifact's version, the artifact's existing entry in `spec-manifest.json` (for example `capabilities/meter`) already covers both files: pinning `capabilities/meter` in a downstream [`.ebus-spec.json`](spec-provenance.md) lockfile pins the prose and its JSON together. No new pin key is introduced, and the drift tooling needs no change. The manifest simply surfaces the sibling JSON path alongside each artifact's prose path.
+A property-JSON file **inherits its prose file's `Version:`** and never declares its own. Because it shares the prose artifact's version, that artifact's existing entry in `spec-manifest.json` (for example `capabilities/meter`) already covers both files: pinning `capabilities/meter` in a downstream [`.ebus-spec.json`](spec-provenance.md) lockfile pins the prose and its JSON together. No new pin key is introduced.
 
 ### The `schema_version` token
 
-Separate from the artifact version is the **shape** of the JSON itself: the field names and structure defined by this document. Each JSON file stamps a `schema_version` token (currently `property-schema-v1`) naming the shape it conforms to. The normative contract for that token is this convention document, which is itself a versioned, pinnable manifest artifact (`conventions/property-json`). A downstream that consumes the property JSON pins `conventions/property-json` to declare which shape it understands. A change to the JSON shape (a new field, a renamed key) bumps both the `schema_version` token and this document's `Version:`.
+Separate from the artifact version is the shape of the JSON itself, defined by this document. Each JSON file stamps a `schema_version` token (currently `property-schema-v1`). The normative contract for that token is this convention, which is itself a versioned, pinnable manifest artifact (`conventions/property-json`). A change to the JSON shape (a new field, a renamed key) bumps both the token and this document's `Version:`.
 
 ## The `capability-catalog` file
 
-A capability catalog is the normalized, complete property vocabulary of one capability. It carries the full catalog, not a publish-subset: every property the capability defines, whether or not any particular device publishes it.
+The recommended, complete property vocabulary of one capability. Every property it defines, whether or not any particular device publishes it.
 
 ```json
 {
@@ -59,31 +61,28 @@ A capability catalog is the normalized, complete property vocabulary of one capa
   "properties": {
     "active-power":    { "datatype": "float", "unit": "W", "req": "MAY", "description": "Total active power. Sign per the reference-direction rule below." },
     "power-factor":    { "datatype": "float", "req": "MAY", "format": "-1.0:1.0", "description": "System power factor, signed; range [-1.0, 1.0]." },
-    "imported-energy": { "datatype": "float", "unit": "Wh", "req": "MAY", "description": "Cumulative active energy imported. Monotonically non-decreasing." },
-    "exported-energy": { "datatype": "float", "unit": "Wh", "req": "MAY", "description": "Cumulative active energy exported. Monotonically non-decreasing." }
+    "imported-energy": { "datatype": "float", "unit": "Wh", "req": "MAY", "description": "Cumulative active energy imported. Monotonically non-decreasing." }
   },
   "property_patterns": {
-    "voltage-{a,b,c}":     { "datatype": "float", "unit": "V", "expand": ["a", "b", "c"] },
-    "current-{a,b,c,n}":   { "datatype": "float", "unit": "A", "expand": ["a", "b", "c", "n"] }
+    "voltage-{a,b,c}":   { "datatype": "float", "unit": "V", "req": "MAY", "expand": ["a", "b", "c"] },
+    "current-{a,b,c,n}": { "datatype": "float", "unit": "A", "req": "MAY", "expand": ["a", "b", "c", "n"] }
   }
 }
 ```
 
-- **`req_default`** is an optional capability-level conformance floor. The generator states each property's `req` explicitly from its catalog table, so `req_default` is usually omitted; it remains available for a catalog that prefers to declare a floor once and mark only the exceptions.
-- **`reference_direction_default`** records the capability's default sign convention where one applies (metering, power flows); a device profile may override it per capability.
-- **`properties`** maps each property identifier to its definition. Property fields:
-  - **`datatype`** (string, required): a Homie 5 datatype (`integer`, `float`, `boolean`, `string`, `enum`, `color`, `datetime`, `duration`, `json`).
-  - **`req`** (string, one of `MUST` / `SHOULD` / `MAY`): the property's conformance from the catalog table's Req column.
-  - **`unit`** (string): a numeric property's unit. Omitted for non-numeric properties and for a dimensionless numeric (a power factor has no unit).
-  - **`format`** (string): the value domain. For `enum`, a comma-separated token list (`OK,FAULT,UNKNOWN`). For a bounded numeric, a `min:max` or `min:max:step` range (`-1.0:1.0`). For `json`, a JSON Schema. Lifted from what the prose Description states.
-  - **`settable`** (boolean): present and `true` only for settable properties; omitted when false.
-  - **`description`** (string): the prose from the table's Description column.
-  - **`name`** (string): a short human name, when the source table carries a Name column. Catalog tables do not, so the generator usually omits it.
-- **`property_patterns`** holds parameterized property families whose concrete identifiers expand over a suffix set (per-phase, per-conductor). The pattern key carries the suffix set inline in braces, matching the catalog prose, and `expand` lists those tokens. `voltage-{a,b,c}` with `expand: ["a","b","c"]` expands to `voltage-a`, `voltage-b`, `voltage-c` (a concrete id substitutes each token for the braces).
+- **`properties`** maps each property identifier to its definition:
+  - **`datatype`** (required): the **recommended** Homie 5 datatype (`integer`, `float`, `boolean`, `string`, `enum`, `color`, `datetime`, `duration`, `json`). A publisher may widen it (an open `string` in place of an `enum`, `json` in place of a scalar, per principle 10) and advertise the datatype it publishes in `$format`.
+  - **`req`**: the property's conformance from the catalog table (MAY by default). This is the spec's guidance, not a per-device requirement.
+  - **`unit`**: a numeric property's unit. Omitted for non-numeric properties and for a dimensionless numeric (a power factor has no unit).
+  - **`format`**: the **recommended core** value domain: for an `enum` a comma-separated token list (`OK,FAULT,UNKNOWN`), for a bounded numeric a `min:max` range. A publisher may extend or redefine the set and advertise its own in `$format` (open vocabularies, principle 8).
+  - **`settable`**: present and `true` only for settable properties.
+  - **`description`**: the prose from the table's Description column.
+  - **`name`**: a short human name, when the source table carries a Name column (catalog tables usually do not).
+- **`property_patterns`** holds per-conductor / per-phase families. The pattern key carries the suffix set inline in braces, matching the prose, and `expand` lists the tokens: `voltage-{a,b,c}` with `["a","b","c"]` expands to `voltage-a`, `voltage-b`, `voltage-c`.
 
 ## The `device-profile` file
 
-A device model defines a device tree: a parent device type and its child device types. A profile records the tree in `device_types` (which type publishes which capability, at what conformance) and, once per capability node, the model's property-level detail in `capabilities`.
+A light, advisory composition. It records which capabilities each device type in the model composes, and the model's capability-level Req guidance where it states one. It carries no property-level detail: the recommended way to publish each property is in the capability catalog, and what a device actually publishes is authoritative in its runtime `$description`.
 
 ```json
 {
@@ -95,88 +94,52 @@ A device model defines a device tree: a parent device type and its child device 
   "status": "DRAFT",
   "date": "2026-07-27",
   "device_types": {
-    "energy.ebus.device.bess":    { "role": "parent", "publishes": { "info": "MUST", "soc": "MUST", "meter": "MUST", "dispatch": "MAY", "status": "MUST" } },
-    "energy.ebus.device.battery": { "role": "child",  "publishes": { "info": "MUST", "soc": "MUST", "meter": "SHOULD", "status": "MAY" } },
-    "energy.ebus.device.mid":     { "role": "child",  "publishes": { "info": "MUST", "grid": "MUST", "status": "MAY" } }
-  },
-  "capabilities": {
-    "meter": {
-      "catalog": "energy.ebus.capability.meter", "catalog_version": "0.2",
-      "reference_direction": "positive-out",
-      "properties": { "active-power": { "req": "MUST" }, "imported-energy": { "req": "SHOULD" }, "exported-energy": { "req": "SHOULD" } }
-    },
-    "grid": {
-      "catalog": "energy.ebus.capability.grid", "catalog_version": "0.1",
-      "properties": { "islanding-state": { "req": "MUST" }, "grid-state": { "req": "SHOULD" } }
-    },
-    "info": {
-      "catalog": "energy.ebus.capability.info", "catalog_version": "0.1",
-      "added": {
-        "nameplate-capacity": { "datatype": "float", "unit": "kWh", "req": "SHOULD", "description": "Nameplate energy capacity (battery devices)" },
-        "nominal-power":       { "datatype": "float", "unit": "W", "req": "MAY", "description": "Nameplate maximum rated power output." }
+    "energy.ebus.device.bess": {
+      "role": "parent",
+      "capabilities": {
+        "info":   { "catalog": "energy.ebus.capability.info",   "catalog_version": "0.1", "req": "MUST" },
+        "soc":    { "catalog": "energy.ebus.capability.soc",    "catalog_version": "0.1", "req": "MUST" },
+        "meter":  { "catalog": "energy.ebus.capability.meter",  "catalog_version": "0.2", "req": "MUST" },
+        "status": { "catalog": "energy.ebus.capability.status", "catalog_version": "0.1", "req": "MUST" }
       }
     },
-    "status": {
-      "catalog": "energy.ebus.capability.status", "catalog_version": "0.1",
-      "properties": { "communication-state": { "req": "MUST" }, "fault-state": { "req": "SHOULD" } },
-      "added": {
-        "operational-state": { "datatype": "enum", "format": "IDLE,CHARGING,DISCHARGING,STANDBY,UNKNOWN", "req": "SHOULD", "description": "Battery operating state." }
+    "energy.ebus.device.mid": {
+      "role": "child",
+      "capabilities": {
+        "info": { "catalog": "energy.ebus.capability.info", "catalog_version": "0.1", "req": "MUST" },
+        "grid": { "catalog": "energy.ebus.capability.grid", "catalog_version": "0.1", "req": "MUST" }
       }
     }
   }
 }
 ```
 
-- **`device_types`** records the device tree. Each entry:
-  - **`role`** (string, optional): `parent` or `child` in the device hierarchy (omitted for a single-device model).
-  - **`publishes`** (object): capability node id to the device-level conformance (`MUST` / `SHOULD` / `MAY`) for that capability on this device type, from the model's `| Capability | Required |` (or `| Capability | ... | Req |`) table.
-- **`capabilities`** carries, once per capability node, the model's property-level detail. Each entry:
-  - **`catalog`** (string, required): the `energy.ebus.capability.*` type this node implements.
-  - **`catalog_version`** (string): the catalog version the profile was authored against (advisory; see below).
-  - **`reference_direction`** (string): the model's sign convention for this capability where it differs from the catalog default (a BESS meters `positive-out`).
-  - **`properties`**: per-property `req` overrides of catalog properties the model tightens, referenced by property id only. It never restates a catalog property's datatype or unit; those live in the catalog.
-  - **`added`** / **`added_patterns`**: device-model-specific properties (and per-conductor patterns) not present in the catalog, each with the full property fields (`datatype`, `unit`, `format`, `settable`, `req`, `description`). The generator classifies each property-table row as an override or an addition by testing catalog membership.
+- **`device_types`** maps each device type in the model to how it composes capabilities:
+  - **`role`** (optional): `parent` or `child` in the device hierarchy (omitted for a single-device model).
+  - **`capabilities`** maps a capability node id to a reference:
+    - **`catalog`** (required): the `energy.ebus.capability.*` type this node implements, whose catalog carries the property vocabulary.
+    - **`catalog_version`**: the catalog version the model was authored against.
+    - **`req`**: the model's capability-level conformance guidance for this device type, where it states one; absent means it does not (the default is MAY). A model that documents its capabilities in prose rather than a `| Capability | Required |` table simply omits `req`, which is expected: presence-without-Req is the permissive default, not an omission to fix.
 
-### Device-defining inline capabilities
+## Generated, checked, not enforced
 
-A small number of capabilities are intrinsically bound to a single device type and are defined inline in that device's model rather than in a standalone catalog (for example the `water-heater` capability's setpoint, tank-temperature, and operating-mode surface). These are allowlisted in [`../tools/check-capability-catalogs.py`](../tools/check-capability-catalogs.py). For such a capability the `capabilities` entry sets **`defines_capability`** to `true` and carries its full property set under `added`, which the verifier validates with the same catalog rules, reading the allowlist from `check-capability-catalogs.py` so the two tools agree on the exception set.
-
-## The conformance model: floor plus monotonic tightening
-
-Conformance is expressed in two layers that compose:
-
-1. **Catalog layer:** each property carries its own `req` from the catalog table (or, where a catalog prefers it, a `req_default` floor with per-property `req` marking only the exceptions).
-2. **Device layer:** a capability's `req` sets the device-level requirement; a selected property's `req` raises it further for that device.
-
-The effective requirement of a property on a device is the strictest of the applicable levels. Tightening is **monotonic**: a device may move a property `MAY` -> `SHOULD` -> `MUST`, but may never set it below the catalog floor. Loosening is a verification failure. This lets a catalog stay permissive (a capability that many device types share) while a specific device makes the properties it depends on mandatory.
-
-## Generated, and verified against the prose
-
-The JSON is produced and checked by [`../tools/check-property-catalogs.py`](../tools/README.md), which follows the same two-mode contract as `gen-spec-manifest.py`:
+The JSON is produced and verified by [`../tools/check-property-catalogs.py`](../tools/README.md), which follows the same two-mode contract as `gen-spec-manifest.py`:
 
 - default: regenerate each JSON from its prose and write it;
-- `--check`: regenerate in memory and diff against the committed JSON, exiting non-zero on any drift.
+- `--check`: regenerate in memory and fail if any committed JSON is stale or structurally invalid against the JSON Schemas.
 
-CI runs `--check`, so a prose edit that is not reflected in the JSON (or a hand-edit of the JSON) fails the build. The verifier additionally enforces:
-
-1. **Completeness.** Every property row in a prose table maps to exactly one JSON property. A property defined only in prose (as a sentence or bullet, not a table row) is a hard failure that forces the prose to tabulate it, so the generator can never silently drop a property and still pass.
-2. **Reference integrity.** Every property a device profile selects or overrides exists in the referenced catalog, with a matching datatype and unit.
-3. **Monotonic conformance.** No device profile loosens a property below its catalog floor.
-4. **Registered types.** Every capability `type` is registered in [`../registries/capability-types.md`](../registries/capability-types.md), reusing the existing registry invariant.
-5. **Well-formed properties.** Each datatype is in the Homie 5 set; a unit appears only on a numeric property (a non-numeric property carrying a unit is an error; a dimensionless numeric such as a power factor simply has no unit); an `enum` carries a `format`.
-
-The `catalog_version` a profile records is **advisory**. When it lags the catalog's current version the verifier emits a warning with a regenerate-then-review workflow, not a hard failure: a single widely-consumed catalog bump (metering is used by many device models) would otherwise cascade into a fleet-wide CI failure.
+CI runs `--check`, so a prose edit not reflected in the JSON, or a hand-edit of the JSON, fails the build. The tool **does not** force the prose to be exhaustively tabulated: illustrative prose examples (a capability's device-specific diagnostics, an enclosure's per-child notes) stay prose, consistent with the permissive model. Beyond generate-and-verify it emits only **advisory notes** (never fatal): an unregistered capability type, a unit on a non-numeric datatype, an `enum` with no recommended value set in prose. These flag likely inconsistencies in the recommended vocabulary; none constrains what a conformant publisher may do.
 
 ## JSON Schemas
 
-The structure of both families is defined by JSON Schemas (draft 2020-12) that the generator, a CI check, or a downstream consumer can validate against:
+The structure of both families is defined by JSON Schemas (draft 2020-12):
 
-- [`schemas/property-catalog.schema.json`](schemas/property-catalog.schema.json), published as `https://ebus.energy/schemas/property-catalog.json`, for `capability-catalog` files.
-- [`schemas/device-profile.schema.json`](schemas/device-profile.schema.json), published as `https://ebus.energy/schemas/device-profile.json`, for `device-profile` files.
+- [`schemas/property-catalog.schema.json`](schemas/property-catalog.schema.json), published as `https://ebus.energy/schemas/property-catalog.json`.
+- [`schemas/device-profile.schema.json`](schemas/device-profile.schema.json), published as `https://ebus.energy/schemas/device-profile.json`.
 
-Each JSON file names its schema in a `$schema` field. The schemas constrain **structure** only: field names, datatypes, identifier patterns, and the closed set of keys. The **semantic** invariants (a unit present if and only if the datatype is numeric, an `enum` carrying a `format`, every capability type registered, every device reference resolving to a catalog property, and monotonic conformance) are cross-field or cross-file checks a JSON Schema cannot express; `check-property-catalogs.py` enforces those, per the section above.
+Each JSON file names its schema in `$schema`. The schemas constrain the JSON's own structure (field names, datatypes, identifier patterns); they say nothing about what a device must publish.
 
 ## Relationship to the other conventions
 
-- [`spec-provenance.md`](spec-provenance.md) defines the `.ebus-spec.json` lockfile whose `implements` pins cover a property-JSON file through its prose artifact's version, and whose `supports` and `conventions/property-json` pin let a downstream declare which property-JSON shape it consumes.
+- [`spec-provenance.md`](spec-provenance.md) defines the `.ebus-spec.json` lockfile whose `implements` pins cover a property-JSON file through its prose artifact's version, and whose `conventions/property-json` pin lets a downstream declare which property-JSON shape it consumes.
 - [`../README.md`](../README.md#status) and `spec-manifest.json` list the current artifact versions; the JSON inherits those versions rather than adding to them.

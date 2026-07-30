@@ -7,179 +7,134 @@
   "status": "DRAFT",
   "date": "2026-07-27",
   "device_types": {
-    "energy.ebus.device.bess": {
-      "role": "parent",
-      "publishes": {
-        "info": "MUST",
-        "soc": "MUST",
-        "meter": "MUST",
-        "dispatch": "MAY",
-        "output-island": "MAY",
-        "power-flows": "MAY",
-        "status": "MUST"
-      }
-    },
     "energy.ebus.device.battery": {
       "role": "child",
-      "publishes": {
-        "info": "MUST",
-        "soc": "MUST",
-        "meter": "SHOULD",
-        "status": "MAY"
+      "capabilities": {
+        "info": {
+          "catalog": "energy.ebus.capability.info",
+          "catalog_version": "0.1",
+          "req": "MUST"
+        },
+        "meter": {
+          "catalog": "energy.ebus.capability.meter",
+          "catalog_version": "0.2",
+          "req": "SHOULD"
+        },
+        "soc": {
+          "catalog": "energy.ebus.capability.soc",
+          "catalog_version": "0.1",
+          "req": "MUST"
+        },
+        "status": {
+          "catalog": "energy.ebus.capability.status",
+          "catalog_version": "0.1",
+          "req": "MAY"
+        }
+      }
+    },
+    "energy.ebus.device.bess": {
+      "role": "parent",
+      "capabilities": {
+        "dispatch": {
+          "catalog": "energy.ebus.capability.dispatch",
+          "catalog_version": "0.1",
+          "req": "MAY"
+        },
+        "info": {
+          "catalog": "energy.ebus.capability.info",
+          "catalog_version": "0.1",
+          "req": "MUST"
+        },
+        "meter": {
+          "catalog": "energy.ebus.capability.meter",
+          "catalog_version": "0.2",
+          "req": "MUST"
+        },
+        "output-island": {
+          "catalog": "energy.ebus.capability.output-island",
+          "catalog_version": "0.1",
+          "req": "MAY"
+        },
+        "power-flows": {
+          "catalog": "energy.ebus.capability.power-flows",
+          "catalog_version": "0.1",
+          "req": "MAY"
+        },
+        "soc": {
+          "catalog": "energy.ebus.capability.soc",
+          "catalog_version": "0.1",
+          "req": "MUST"
+        },
+        "status": {
+          "catalog": "energy.ebus.capability.status",
+          "catalog_version": "0.1",
+          "req": "MUST"
+        }
       }
     },
     "energy.ebus.device.inverter": {
       "role": "child",
-      "publishes": {
-        "info": "MUST",
-        "meter": "SHOULD",
-        "status": "MAY",
-        "grid-forming": "MAY"
-      }
-    },
-    "energy.ebus.device.mid": {
-      "role": "child",
-      "publishes": {
-        "info": "MUST",
-        "grid": "MUST",
-        "status": "MAY"
+      "capabilities": {
+        "grid-forming": {
+          "catalog": "energy.ebus.capability.grid-forming",
+          "catalog_version": "0.1",
+          "req": "MAY"
+        },
+        "info": {
+          "catalog": "energy.ebus.capability.info",
+          "catalog_version": "0.1",
+          "req": "MUST"
+        },
+        "meter": {
+          "catalog": "energy.ebus.capability.meter",
+          "catalog_version": "0.2",
+          "req": "SHOULD"
+        },
+        "status": {
+          "catalog": "energy.ebus.capability.status",
+          "catalog_version": "0.1",
+          "req": "MAY"
+        }
       }
     },
     "energy.ebus.device.meter": {
       "role": "child",
-      "publishes": {
-        "info": "MUST",
-        "meter": "MUST"
-      }
-    }
-  },
-  "capabilities": {
-    "info": {
-      "catalog": "energy.ebus.capability.info",
-      "catalog_version": "0.1",
-      "added": {
-        "product-name": {
-          "datatype": "string",
-          "req": "SHOULD",
-          "description": "Product name (e.g., \"Powerwall 2 AC\")"
+      "capabilities": {
+        "info": {
+          "catalog": "energy.ebus.capability.info",
+          "catalog_version": "0.1",
+          "req": "MUST"
         },
-        "nameplate-capacity": {
-          "datatype": "float",
-          "unit": "kWh",
-          "req": "SHOULD",
-          "description": "Nameplate energy capacity (battery devices)"
-        },
-        "nominal-power": {
-          "datatype": "float",
-          "unit": "W",
-          "req": "MAY",
-          "description": "Nameplate maximum rated power output."
-        },
-        "proxied": {
-          "datatype": "boolean",
-          "req": "MAY",
-          "description": "Optional disambiguation when both a proxy publisher and a native publisher of the same physical device coexist. `true` = this representation is proxied (e.g., published by a third-party adapter); `false` = published natively (by the vendor's own implementation); absent = no explicit signal, and consumers fall back to inspecting the `root` device's `$description.type`. See §\"Disambiguating publishers\" below."
+        "meter": {
+          "catalog": "energy.ebus.capability.meter",
+          "catalog_version": "0.2",
+          "req": "MUST"
         }
       }
     },
-    "soc": {
-      "catalog": "energy.ebus.capability.soc",
-      "catalog_version": "0.1",
-      "properties": {
-        "soc": {
+    "energy.ebus.device.mid": {
+      "role": "child",
+      "capabilities": {
+        "grid": {
+          "catalog": "energy.ebus.capability.grid",
+          "catalog_version": "0.1",
           "req": "MUST"
         },
-        "soe": {
-          "req": "SHOULD"
-        }
-      }
-    },
-    "meter": {
-      "catalog": "energy.ebus.capability.meter",
-      "catalog_version": "0.2",
-      "reference_direction": "positive-out",
-      "properties": {
-        "active-power": {
+        "info": {
+          "catalog": "energy.ebus.capability.info",
+          "catalog_version": "0.1",
           "req": "MUST"
         },
-        "imported-energy": {
-          "req": "SHOULD"
-        },
-        "exported-energy": {
-          "req": "SHOULD"
-        },
-        "current": {
-          "req": "MAY"
-        },
-        "voltage": {
-          "req": "MAY"
-        },
-        "frequency": {
-          "req": "MAY"
-        },
-        "reactive-power": {
-          "req": "MAY"
-        },
-        "apparent-power": {
-          "req": "MAY"
-        },
-        "power-factor": {
-          "req": "MAY"
-        },
-        "apparent-energy-imported": {
-          "req": "MAY"
-        },
-        "apparent-energy-exported": {
+        "status": {
+          "catalog": "energy.ebus.capability.status",
+          "catalog_version": "0.1",
           "req": "MAY"
         }
       }
     },
-    "grid": {
-      "catalog": "energy.ebus.capability.grid",
-      "catalog_version": "0.1",
-      "properties": {
-        "islanding-state": {
-          "req": "MUST"
-        },
-        "grid-state": {
-          "req": "SHOULD"
-        },
-        "grid-forming-entity": {
-          "req": "SHOULD"
-        }
-      }
-    },
-    "status": {
-      "catalog": "energy.ebus.capability.status",
-      "catalog_version": "0.1",
-      "properties": {
-        "communication-state": {
-          "req": "MUST"
-        },
-        "fault-state": {
-          "req": "SHOULD"
-        }
-      },
-      "added": {
-        "operational-state": {
-          "datatype": "enum",
-          "format": "IDLE,CHARGING,DISCHARGING,STANDBY,UNKNOWN",
-          "req": "SHOULD",
-          "description": "Battery operating state: `IDLE`, `CHARGING`, `DISCHARGING`, `STANDBY`, `UNKNOWN`. Reflects the *result* of any active `dispatch`."
-        },
-        "authentication": {
-          "datatype": "enum",
-          "format": "OK,FAILED,EXPIRED,MISSING",
-          "req": "SHOULD",
-          "description": "Credential / auth status: `OK`, `FAILED`, `EXPIRED`, `MISSING`"
-        },
-        "discovery": {
-          "datatype": "enum",
-          "format": "OK,NOT_FOUND,SERIAL_MISMATCH",
-          "req": "SHOULD",
-          "description": "Device discovery status: `OK`, `NOT_FOUND`, `SERIAL_MISMATCH`"
-        }
-      }
+    "energy.ebus.device.outlet": {
+      "role": "child",
+      "capabilities": {}
     }
   }
 }
