@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.14
-**Date:** 2026-07-27
+**Date:** 2026-07-30
 **Authors:** Don Jackson
 
 ## Overview
@@ -230,12 +230,11 @@ System and device identification.
 
 **Node type:** `energy.ebus.capability.info`
 
-The shared identity properties (`vendor-name`, `serial-number`, `model`, `firmware-version`, `hardware-version`, `data-model-version`) are defined in [`capabilities/info.md`](../capabilities/info.md); a BESS publishes `data-model-version` on the parent device only. BESS-specific identity properties:
+The shared identity properties (`vendor-name`, `serial-number`, `model`, `part-number`, `firmware-version`, `hardware-version`, `data-model-version`, `nameplate-capacity`) are defined in [`capabilities/info.md`](../capabilities/info.md); a BESS publishes `data-model-version` on the parent device only, and SHOULD publish `nameplate-capacity` (its rated energy capacity, in kWh electrical). BESS-specific identity properties:
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
 | `product-name` | string | — | SHOULD | Product name (e.g., "Powerwall 2 AC") |
-| `nameplate-capacity` | float | kWh | SHOULD | Nameplate energy capacity (battery devices) |
 | `nominal-power` | float | W | MAY | Nameplate maximum rated power output. |
 | `proxied` | boolean | — | MAY | Optional disambiguation when both a proxy publisher and a native publisher of the same physical device coexist. `true` = this representation is proxied (e.g., published by a third-party adapter); `false` = published natively (by the vendor's own implementation); absent = no explicit signal, and consumers fall back to inspecting the `root` device's `$description.type`. See §"Disambiguating publishers" below. |
 

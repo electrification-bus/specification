@@ -32,7 +32,7 @@
     "devices": {
       "bess": {
         "version": "0.14",
-        "date": "2026-07-27",
+        "date": "2026-07-30",
         "status": "DRAFT",
         "path": "devices/bess.md"
       },
@@ -147,8 +147,8 @@
         "path": "capabilities/grid.md"
       },
       "info": {
-        "version": "0.1",
-        "date": "2026-07-05",
+        "version": "0.2",
+        "date": "2026-07-30",
         "status": "DRAFT",
         "path": "capabilities/info.md"
       },

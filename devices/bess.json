@@ -5,14 +5,14 @@
   "device": "energy.ebus.device.bess",
   "version": "0.14",
   "status": "DRAFT",
-  "date": "2026-07-27",
+  "date": "2026-07-30",
   "device_types": {
     "energy.ebus.device.battery": {
       "role": "child",
       "capabilities": {
         "info": {
           "catalog": "energy.ebus.capability.info",
-          "catalog_version": "0.1",
+          "catalog_version": "0.2",
           "req": "MUST"
         },
         "meter": {
@@ -42,7 +42,7 @@
         },
         "info": {
           "catalog": "energy.ebus.capability.info",
-          "catalog_version": "0.1",
+          "catalog_version": "0.2",
           "req": "MUST"
         },
         "meter": {
@@ -82,7 +82,7 @@
         },
         "info": {
           "catalog": "energy.ebus.capability.info",
-          "catalog_version": "0.1",
+          "catalog_version": "0.2",
           "req": "MUST"
         },
         "meter": {
@@ -102,7 +102,7 @@
       "capabilities": {
         "info": {
           "catalog": "energy.ebus.capability.info",
-          "catalog_version": "0.1",
+          "catalog_version": "0.2",
           "req": "MUST"
         },
         "meter": {
@@ -122,7 +122,7 @@
         },
         "info": {
           "catalog": "energy.ebus.capability.info",
-          "catalog_version": "0.1",
+          "catalog_version": "0.2",
           "req": "MUST"
         },
         "status": {

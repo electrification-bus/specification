@@ -15,7 +15,7 @@
         },
         "info": {
           "catalog": "energy.ebus.capability.info",
-          "catalog_version": "0.1"
+          "catalog_version": "0.2"
         },
         "meter": {
           "catalog": "energy.ebus.capability.meter",

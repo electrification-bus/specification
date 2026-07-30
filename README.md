@@ -39,7 +39,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | **Framework** | |
 | [`framework.md`](framework.md) | DRAFT v0.7 (2026-07-30) |
 | **Devices** | |
-| [`devices/bess.md`](devices/bess.md) | DRAFT v0.14 (2026-07-27) |
+| [`devices/bess.md`](devices/bess.md) | DRAFT v0.14 (2026-07-30) |
 | [`devices/circuit.md`](devices/circuit.md) | DRAFT v0.3 (2026-07-29) |
 | [`devices/distribution-enclosure.md`](devices/distribution-enclosure.md) | DRAFT v0.12 (2026-07-30) |
 | [`devices/outlet.md`](devices/outlet.md) | DRAFT v0.1 (2026-07-27) |
@@ -65,7 +65,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`capabilities/grid.md`](capabilities/grid.md) | DRAFT v0.1 (2026-07-11) |
 | [`capabilities/grid-event.md`](capabilities/grid-event.md) | DRAFT v0.1 (2026-07-10) |
 | [`capabilities/grid-forming.md`](capabilities/grid-forming.md) | DRAFT v0.1 (2026-07-11) |
-| [`capabilities/info.md`](capabilities/info.md) | DRAFT v0.1 (2026-07-05) |
+| [`capabilities/info.md`](capabilities/info.md) | DRAFT v0.2 (2026-07-30) |
 | [`capabilities/load-shed.md`](capabilities/load-shed.md) | DRAFT v0.3 (2026-07-30) |
 | [`capabilities/meter.md`](capabilities/meter.md) | DRAFT v0.2 (2026-07-27) |
 | [`capabilities/output-island.md`](capabilities/output-island.md) | DRAFT v0.1 (2026-07-11) |

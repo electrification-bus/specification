@@ -3,9 +3,9 @@
   "schema_version": "property-schema-v1",
   "kind": "capability-catalog",
   "capability": "energy.ebus.capability.info",
-  "version": "0.1",
+  "version": "0.2",
   "status": "DRAFT",
-  "date": "2026-07-05",
+  "date": "2026-07-30",
   "properties": {
     "vendor-name": {
       "datatype": "string",
@@ -22,6 +22,11 @@
       "req": "SHOULD",
       "description": "Vendor-defined model identifier. The valid set is publisher-defined and MAY be advertised via Homie `$format` on the property."
     },
+    "part-number": {
+      "datatype": "string",
+      "req": "MAY",
+      "description": "Manufacturer part or SKU number. MAY differ from `model`: distinct part numbers can designate the same model (packaging, regional, or minor-revision variants)."
+    },
     "hardware-version": {
       "datatype": "string",
       "req": "MAY",
@@ -36,6 +41,12 @@
       "datatype": "string",
       "req": "SHOULD",
       "description": "Version of the eBus data model this device publishes (e.g., `\"1.0\"`)."
+    },
+    "nameplate-capacity": {
+      "datatype": "float",
+      "unit": "energy",
+      "req": "MAY",
+      "description": "Rated nameplate energy capacity, a term of art for energy-storage devices, reported in the device's native energy unit (a BESS in kWh electrical, a storage water heater in Wh thermal) via `$unit`. It is the static manufacturer rating: `soc` is roughly `soe` / `nameplate-capacity`, while the precise, dynamic denominator is `soc`'s `total-energy-storage` (which diverges from the nameplate figure as the reservoir degrades). Energy-storage device types (BESS, thermal storage) SHOULD publish it; power-rated devices (PV, inverter, EVSE) publish rated power via `nominal-power` instead."
     }
   }
 }

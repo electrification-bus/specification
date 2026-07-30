@@ -1,8 +1,8 @@
 # Electrification Bus Capability: info
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-05
+**Version:** 0.2
+**Date:** 2026-07-30
 **Authors:** Don Jackson
 
 ## Identifier
@@ -17,21 +17,23 @@ This document is the canonical catalog for the **shared identity core** of the `
 
 `info` carries a device's identity and descriptive metadata. It is the one capability **present on every eBus device**. Its content divides into two parts:
 
-- a **shared identity core** — the nameplate properties defined here, common to any physical product;
-- **device-specific properties** — defined by each device model (a circuit's load-facing `name` / `tags`, a utility meter's metrology nameplate, an outlet's port descriptors, a BESS's `nameplate-capacity`, and so on).
+- a **shared identity core** — the nameplate and rating properties defined here: identity strings common to any physical product, plus an optional rated `nameplate-capacity` for energy-storage devices;
+- **device-specific properties** — defined by each device model (a circuit's load-facing `name` / `tags`, a utility meter's metrology nameplate, an outlet's port descriptors, a BESS's `nominal-power`, and so on).
 
 This catalog defines the shared identity core. Each device model references it and documents its own additional `info` properties.
 
 ## Identity properties (shared core)
 
-| Property ID | Datatype | Req | Description |
-|---|---|---|---|
-| `vendor-name` | string | SHOULD | Manufacturer name (e.g., "SPAN", "Tesla", "Rheem"). |
-| `serial-number` | string | SHOULD | Device serial number. |
-| `model` | string | SHOULD | Vendor-defined model identifier. The valid set is publisher-defined and MAY be advertised via Homie `$format` on the property. |
-| `hardware-version` | string | MAY | Hardware revision. |
-| `firmware-version` | string | SHOULD | Firmware version. Published when the device has firmware; a bare or surveyed device (e.g., a dumb load center) omits it. |
-| `data-model-version` | string | SHOULD | Version of the eBus data model this device publishes (e.g., `"1.0"`). |
+| Property ID | Datatype | Unit | Req | Description |
+|---|---|---|---|---|
+| `vendor-name` | string | - | SHOULD | Manufacturer name (e.g., "SPAN", "Tesla", "Rheem"). |
+| `serial-number` | string | - | SHOULD | Device serial number. |
+| `model` | string | - | SHOULD | Vendor-defined model identifier. The valid set is publisher-defined and MAY be advertised via Homie `$format` on the property. |
+| `part-number` | string | - | MAY | Manufacturer part or SKU number. MAY differ from `model`: distinct part numbers can designate the same model (packaging, regional, or minor-revision variants). |
+| `hardware-version` | string | - | MAY | Hardware revision. |
+| `firmware-version` | string | - | SHOULD | Firmware version. Published when the device has firmware; a bare or surveyed device (e.g., a dumb load center) omits it. |
+| `data-model-version` | string | - | SHOULD | Version of the eBus data model this device publishes (e.g., `"1.0"`). |
+| `nameplate-capacity` | float | energy | MAY | Rated nameplate energy capacity, a term of art for energy-storage devices, reported in the device's native energy unit (a BESS in kWh electrical, a storage water heater in Wh thermal) via `$unit`. It is the static manufacturer rating: `soc` is roughly `soe` / `nameplate-capacity`, while the precise, dynamic denominator is `soc`'s `total-energy-storage` (which diverges from the nameplate figure as the reservoir degrades). Energy-storage device types (BESS, thermal storage) SHOULD publish it; power-rated devices (PV, inverter, EVSE) publish rated power via `nominal-power` instead. |
 
 **No identity property is MUST.** A conformant device is identified by its `$description.type` discriminator and its Homie device ID, not by the population of any nameplate field. A proxied or surveyed device may know only some of these; publishers populate what they have and consumers tolerate absence. Publishers MAY add vendor-specific informational properties to `info` beyond those a device model defines.
 
