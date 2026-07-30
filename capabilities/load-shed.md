@@ -11,13 +11,13 @@
 
 **Node type:** `energy.ebus.capability.load-shed`
 
-This document is the canonical property catalog for the `load-shed` capability. Data-model documents that use it (today [`circuit.md`](../data-models/circuit.md)) reference this catalog.
+This document is the canonical property catalog for the `load-shed` capability. Data-model documents that use it (today [`circuit.md`](../devices/circuit.md)) reference this catalog.
 
 > Note: the node is `load-shed` (the topic is `load-shed/priority`). An earlier registry entry named this capability `priority` after its property and listed properties (`relay-controllable`, PCS metadata) that have since moved to `switch` and `pcs`; that entry is superseded by this catalog.
 
 ## Overview
 
-`load-shed` marks how a circuit participates when its host coordinates load-shedding, typically a distribution enclosure preserving backup runtime while off-grid. It is a **policy that acts on the circuit's relay**: it is meaningful only on a circuit that also publishes a controllable [`switch`](switch.md), and it corresponds to the `LOAD_SHED` value of `switch/relay-requester`. It is distinct from [`pcs`](../data-models/distribution-enclosure.md#pcs): a PCS controls circuits to keep site import/export within a binding limit, not to preserve backup runtime; a circuit may participate in one, both, or neither.
+`load-shed` marks how a circuit participates when its host coordinates load-shedding, typically a distribution enclosure preserving backup runtime while off-grid. It is a **policy that acts on the circuit's relay**: it is meaningful only on a circuit that also publishes a controllable [`switch`](switch.md), and it corresponds to the `LOAD_SHED` value of `switch/relay-requester`. It is distinct from [`pcs`](../devices/distribution-enclosure.md#pcs): a PCS controls circuits to keep site import/export within a binding limit, not to preserve backup runtime; a circuit may participate in one, both, or neither.
 
 ## Properties
 
@@ -33,7 +33,7 @@ The set of shed triggers a host supports is discoverable from the `$format` on t
 
 ## Host interaction
 
-The *interaction* of `load-shed/priority` with a host's enclosure-wide shed policy, the SOC threshold, the shed forecast, and the effective shed gate, is host-specific and is defined in the host's model (see [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)). This capability defines the per-circuit vocabulary; the host defines how it acts on it.
+The *interaction* of `load-shed/priority` with a host's enclosure-wide shed policy, the SOC threshold, the shed forecast, and the effective shed gate, is host-specific and is defined in the host's model (see [`distribution-enclosure.md`](../devices/distribution-enclosure.md)). This capability defines the per-circuit vocabulary; the host defines how it acts on it.
 
 ## Absence semantics
 
@@ -47,5 +47,5 @@ Any circuit whose host coordinates load-shedding: a load circuit or a feed circu
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `switch` capability](switch.md) — the relay this policy acts on.
-- [circuit](../data-models/circuit.md) data model — the current publisher; and [distribution-enclosure](../data-models/distribution-enclosure.md) for the host-side shed policy.
+- [circuit](../devices/circuit.md) data model — the current publisher; and [distribution-enclosure](../devices/distribution-enclosure.md) for the host-side shed policy.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

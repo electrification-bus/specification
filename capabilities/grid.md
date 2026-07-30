@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.grid`
 
-This document is the canonical property catalog for the `grid` capability. Data-model documents that use it (today [`bess.md`](../data-models/bess.md), [`distribution-enclosure.md`](../data-models/distribution-enclosure.md), and [`utility-meter.md`](../data-models/utility-meter.md)) reference this catalog and document only their device-specific role and property subset.
+This document is the canonical property catalog for the `grid` capability. Data-model documents that use it (today [`bess.md`](../devices/bess.md), [`distribution-enclosure.md`](../devices/distribution-enclosure.md), and [`utility-meter.md`](../devices/utility-meter.md)) reference this catalog and document only their device-specific role and property subset.
 
 ## Overview
 
@@ -66,6 +66,6 @@ Any device that authoritatively observes the grid boundary: today a MID (as a ch
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
-- [distribution-enclosure](../data-models/distribution-enclosure.md) and [bess](../data-models/bess.md) (MID publishers) and [utility-meter](../data-models/utility-meter.md) (supply-health publisher) data models.
+- [distribution-enclosure](../devices/distribution-enclosure.md) and [bess](../devices/bess.md) (MID publishers) and [utility-meter](../devices/utility-meter.md) (supply-health publisher) data models.
 - [Electrification Bus `grid-event` capability](grid-event.md) — discrete grid events, distinct from this standing state.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.soc`
 
-This document is the canonical property catalog for the `soc` capability. Data-model documents that use it (today [`bess.md`](../data-models/bess.md) and [`water-heater.md`](../data-models/water-heater.md)) reference this catalog and document only their device-specific role and any device-specific refinements.
+This document is the canonical property catalog for the `soc` capability. Data-model documents that use it (today [`bess.md`](../devices/bess.md) and [`water-heater.md`](../devices/water-heater.md)) reference this catalog and document only their device-specific role and any device-specific refinements.
 
 ## Overview
 
@@ -55,5 +55,5 @@ Any device that is an energy reservoir: today a BESS (electrical storage) and a 
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
-- [bess](../data-models/bess.md) (electrical reservoir) and [water-heater](../data-models/water-heater.md) (thermal reservoir) data models — publishers of this capability.
+- [bess](../devices/bess.md) (electrical reservoir) and [water-heater](../devices/water-heater.md) (thermal reservoir) data models — publishers of this capability.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

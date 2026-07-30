@@ -6,7 +6,7 @@
 
 ## Purpose
 
-The eBus distribution enclosure data model includes a per-circuit `info/external-ids` property on circuit child devices — a multi-valued, comma-separated list of opaque identifiers from external systems that reference the load(s) on a circuit. Each list item is of the form `<scheme>:<identifier>` where the scheme prefix names the foreign system that issued the identifier. See the [eBus distribution enclosure data model](../data-models/distribution-enclosure.md) for the property definition.
+The eBus distribution enclosure data model includes a per-circuit `info/external-ids` property on circuit child devices — a multi-valued, comma-separated list of opaque identifiers from external systems that reference the load(s) on a circuit. Each list item is of the form `<scheme>:<identifier>` where the scheme prefix names the foreign system that issued the identifier. See the [eBus distribution enclosure data model](../devices/distribution-enclosure.md) for the property definition.
 
 This document is the registry of currently-defined scheme prefixes. It is descriptive, not exhaustive: new schemes may be added here as integrators identify external systems that need representation, without requiring a schema change. Consumers MUST tolerate unknown scheme prefixes (e.g., persist the value, ignore for scheme-specific handling).
 

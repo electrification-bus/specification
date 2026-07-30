@@ -13,7 +13,7 @@ shape it publishes in `$format` (principles 8 and 10). So:
   vocabulary for a capability: for each property, how to publish it (datatype, unit,
   the core enum/range `format`, settable) IF you publish it. Datatypes are the
   recommended common case and enum formats are the core set; both are extensible.
-- data-models/<name>.json (kind: device-profile) is an ADVISORY composition: which
+- devices/<name>.json (kind: device-profile) is an ADVISORY composition: which
   capabilities each device type in the model typically publishes, and the spec's
   capability-level Req guidance where it states one. It is not an exhaustive or
   required property set; different device types and different OEMs legitimately
@@ -33,7 +33,7 @@ import io, json, os, re, sys, importlib.util
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CAP_DIR = os.path.join(REPO, "capabilities")
-DM_DIR = os.path.join(REPO, "data-models")
+DM_DIR = os.path.join(REPO, "devices")
 SCHEMA_DIR = os.path.join(REPO, "conventions", "schemas")
 SCHEMA_VERSION = "property-schema-v1"
 

@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.voltage-response`
 
-This document is the canonical property catalog for the `voltage-response` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)) reference this catalog and document only their device-specific role.
+This document is the canonical property catalog for the `voltage-response` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../devices/distribution-enclosure.md)) reference this catalog and document only their device-specific role.
 
 ## Overview
 
@@ -62,7 +62,7 @@ Points are ordered by descending `voltage`; the publisher interpolates between b
 
 ## Relationship to `pcs` enforcement
 
-`voltage-response` carries the **configuration** (how the publisher will respond); it does not itself carry the live limit. On a distribution enclosure, the current reduction it imposes is enforced through the enclosure's [`pcs`](../data-models/distribution-enclosure.md#pcs) arbitration: the enclosure reconciles the voltage-support threshold to a current reduction that feeds the `pcs` `min()`, and `pcs` reports `binding-constraint = VOLTAGE` when the voltage reduction is the binding limit. Reading `voltage-response` tells a subscriber *what the publisher will do*; reading `pcs/import-limit` and `pcs/binding-constraint` tells it *what is being enforced right now*.
+`voltage-response` carries the **configuration** (how the publisher will respond); it does not itself carry the live limit. On a distribution enclosure, the current reduction it imposes is enforced through the enclosure's [`pcs`](../devices/distribution-enclosure.md#pcs) arbitration: the enclosure reconciles the voltage-support threshold to a current reduction that feeds the `pcs` `min()`, and `pcs` reports `binding-constraint = VOLTAGE` when the voltage reduction is the binding limit. Reading `voltage-response` tells a subscriber *what the publisher will do*; reading `pcs/import-limit` and `pcs/binding-constraint` tells it *what is being enforced right now*.
 
 The interaction with the dynamic grid limit is complementary: a utility power envelope (`doe`, watts) converts to a *higher* current allowance as voltage falls (`I = P / (V·pf)`), while the voltage-support reduction pulls the effective `min()` back down when voltage is below the threshold. The two are independent constraints on the same actuator, reconciled by the `pcs`.
 
@@ -94,6 +94,6 @@ Any device that measures its connection-point voltage and can curtail in respons
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `doe` capability](doe.md) — the watts operating envelope the enclosure reconciles alongside this volts threshold.
-- [distribution-enclosure](../data-models/distribution-enclosure.md) data model, and [`pcs`](pcs.md) — the publisher and the arbitration / enforcement surface.
+- [distribution-enclosure](../devices/distribution-enclosure.md) data model, and [`pcs`](pcs.md) — the publisher and the arbitration / enforcement surface.
 - IEEE 2030.5 / CSIP Volt-Watt (`opModVoltWatt`); ANSI C84.1 service-voltage ranges.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

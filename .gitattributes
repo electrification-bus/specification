@@ -2,4 +2,4 @@
 # by tools/check-property-catalogs.py (see conventions/property-json.md). Mark
 # them generated so GitHub collapses them in diffs and directory listings.
 capabilities/*.json linguist-generated=true
-data-models/*.json linguist-generated=true
+devices/*.json linguist-generated=true

@@ -78,7 +78,7 @@ A downstream MAY validate its lockfile against this schema (the specification re
       "additionalProperties": false,
       "properties": {
         "capabilities": { "type": "object", "additionalProperties": { "type": "string" } },
-        "data-models": { "type": "object", "additionalProperties": { "type": "string" } },
+        "devices": { "type": "object", "additionalProperties": { "type": "string" } },
         "registries": { "type": "object", "additionalProperties": { "type": "string" } }
       }
     },
@@ -124,7 +124,7 @@ A publisher implements specific device types and capabilities, so it leans on `i
   "framework": "0.5",
   "implements": {
     "capabilities": { "info": "0.1", "meter": "0.1", "connection": "0.1", "flex": "0.1" },
-    "data-models": { "water-heater": "0.2" }
+    "devices": { "water-heater": "0.2" }
   },
   "notes": "CTA-2045 UCM -> eBus water-heater bridge. Only capabilities with a standalone versioned catalog are pinned here; the soc and status roles this device also publishes are covered transitively by water-heater 0.2 (no separate catalog version to pin)."
 }
@@ -139,7 +139,7 @@ Pin under `capabilities` only those with a standalone versioned catalog (a `capa
   "spec_repo": "https://github.com/electrification-bus/specification",
   "synced_commit": "1a90e4a",
   "synced_date": "2026-07-10",
-  "implements": { "capabilities": { "info": "0.1", "meter": "0.1" }, "data-models": { "utility-meter": "0.3" } }
+  "implements": { "capabilities": { "info": "0.1", "meter": "0.1" }, "devices": { "utility-meter": "0.3" } }
 }
 ```
 

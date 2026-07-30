@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.output-island`
 
-This document is the canonical property catalog for the `output-island` capability. Data-model documents that use it (today [`bess.md`](../data-models/bess.md)) reference this catalog.
+This document is the canonical property catalog for the `output-island` capability. Data-model documents that use it (today [`bess.md`](../devices/bess.md)) reference this catalog.
 
 ## Overview
 
@@ -43,5 +43,5 @@ A plug-in BESS or UPS that isolates its own outlets. The property contracts abov
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `grid` capability](grid.md) — the premises-wiring island scope this nests within.
-- [bess](../data-models/bess.md) data model — the current publisher.
+- [bess](../devices/bess.md) data model — the current publisher.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

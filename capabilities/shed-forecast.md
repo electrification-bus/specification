@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.shed-forecast`
 
-This document is the canonical property catalog for the `shed-forecast` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../data-models/distribution-enclosure.md), and a plug-in BESS for its own outlet loads) reference this catalog.
+This document is the canonical property catalog for the `shed-forecast` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../devices/distribution-enclosure.md), and a plug-in BESS for its own outlet loads) reference this catalog.
 
 ## Overview
 
@@ -42,5 +42,5 @@ A device that can compute the off-grid backup forecast for the loads it serves: 
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
-- [distribution-enclosure](../data-models/distribution-enclosure.md) and [bess](../data-models/bess.md) data models — the publishers.
+- [distribution-enclosure](../devices/distribution-enclosure.md) and [bess](../devices/bess.md) data models — the publishers.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

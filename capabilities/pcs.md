@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.pcs`
 
-This document is the canonical property catalog for the `pcs` capability. Data-model documents that use it ([`distribution-enclosure.md`](../data-models/distribution-enclosure.md), and the per-circuit participation in [`circuit.md`](../data-models/circuit.md)) reference this catalog.
+This document is the canonical property catalog for the `pcs` capability. Data-model documents that use it ([`distribution-enclosure.md`](../devices/distribution-enclosure.md), and the per-circuit participation in [`circuit.md`](../devices/circuit.md)) reference this catalog.
 
 ## Overview
 
@@ -120,5 +120,5 @@ Any device that runs a Power Control System (today the distribution enclosure) o
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `doe` capability](doe.md) (the watts grid envelope) and [`voltage-response`](voltage-response.md) (the volts baseline) — the native-unit constraints `pcs` reconciles and reports as `binding-constraint`.
 - [Electrification Bus `breaker` capability](breaker.md) — where the main-breaker rating lives.
-- [distribution-enclosure](../data-models/distribution-enclosure.md) and [circuit](../data-models/circuit.md) data models — the publishers.
+- [distribution-enclosure](../devices/distribution-enclosure.md) and [circuit](../devices/circuit.md) data models — the publishers.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

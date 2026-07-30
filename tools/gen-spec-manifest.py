@@ -18,15 +18,15 @@ import io, json, os, re, sys
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SPEC_REPO = "https://github.com/electrification-bus/specification"
 
-AREAS = ["data-models", "capabilities", "registries", "integration-guides",
+AREAS = ["devices", "capabilities", "registries", "integration-guides",
          "extensions", "conventions"]
-TABLE_SECTIONS = [("Framework", "framework"), ("Data Models", "data-models"),
+TABLE_SECTIONS = [("Framework", "framework"), ("Devices", "devices"),
                   ("Registries", "registries"), ("Capabilities", "capabilities"),
                   ("Integration Guides", "integration-guides"),
                   ("Extensions", "extensions"), ("Conventions", "conventions")]
 PLACEHOLDERS = {
-    "data-models": [("data-models/mid.md",
-        "Planned (see the standalone-MID note in [`data-models/bess.md`](data-models/bess.md) §Device Hierarchy)")],
+    "devices": [("devices/mid.md",
+        "Planned (see the standalone-MID note in [`devices/bess.md`](devices/bess.md) §Device Hierarchy)")],
 }
 BEGIN = "<!-- BEGIN generated status table (run: python3 tools/gen-spec-manifest.py) -->"
 END = "<!-- END generated status table -->"

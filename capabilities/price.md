@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.price`
 
-This document is the canonical property catalog for the `price` capability. Data-model documents that use it (for example [`utility-meter.md`](../data-models/utility-meter.md) and [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)) reference this catalog and document only their device-specific role.
+This document is the canonical property catalog for the `price` capability. Data-model documents that use it (for example [`utility-meter.md`](../devices/utility-meter.md) and [`distribution-enclosure.md`](../devices/distribution-enclosure.md)) reference this catalog and document only their device-specific role.
 
 ## Price versus tariff
 
@@ -105,5 +105,5 @@ Any device that authoritatively knows a price signal: today, the utility meter (
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `doe` capability](doe.md) — the operating-limit sibling signal.
-- [utility-meter](../data-models/utility-meter.md) and [distribution-enclosure](../data-models/distribution-enclosure.md) data models — publishers of this capability.
+- [utility-meter](../devices/utility-meter.md) and [distribution-enclosure](../devices/distribution-enclosure.md) data models — publishers of this capability.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.breaker`
 
-This document is the canonical property catalog for the `breaker` capability. Data-model documents that use it (for example [`circuit.md`](../data-models/circuit.md)) reference this catalog and document only their device-specific conformance, rather than restating the properties.
+This document is the canonical property catalog for the `breaker` capability. Data-model documents that use it (for example [`circuit.md`](../devices/circuit.md)) reference this catalog and document only their device-specific conformance, rather than restating the properties.
 
 ## Overview
 
@@ -50,11 +50,11 @@ A comparison to smart-breaker data models in other standards will be added here 
 
 ## Publishers
 
-Published by any device that is breaker-protected: the circuit device type ([`circuit.md`](../data-models/circuit.md)), including circuits published natively by a smart panel and circuits republished by a proxy fronting a smart breaker; and a distribution enclosure for its **main breaker** (`rating`, and its trip state where exposed).
+Published by any device that is breaker-protected: the circuit device type ([`circuit.md`](../devices/circuit.md)), including circuits published natively by a smart panel and circuits republished by a proxy fronting a smart breaker; and a distribution enclosure for its **main breaker** (`rating`, and its trip state where exposed).
 
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `switch` capability](switch.md) — the separate remote-control surface.
-- [Electrification Bus circuit data model](../data-models/circuit.md) — the primary publisher.
+- [Electrification Bus circuit data model](../devices/circuit.md) — the primary publisher.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

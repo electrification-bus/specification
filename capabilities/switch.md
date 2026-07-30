@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.switch`
 
-This document is the canonical property catalog for the `switch` capability. Data-model documents that use it (for example [`circuit.md`](../data-models/circuit.md)) reference this catalog and document only their device-specific conformance, rather than restating the properties.
+This document is the canonical property catalog for the `switch` capability. Data-model documents that use it (for example [`circuit.md`](../devices/circuit.md)) reference this catalog and document only their device-specific conformance, rather than restating the properties.
 
 ## Overview
 
@@ -48,11 +48,11 @@ The `switch/relay` state corresponds to Matter's **On/Off** cluster, a long-stan
 
 ## Publishers
 
-Published by any device with a controllable relay. Today that is the circuit device type ([`circuit.md`](../data-models/circuit.md)), including circuits published natively by a smart panel and circuits republished by a proxy fronting a smart breaker.
+Published by any device with a controllable relay. Today that is the circuit device type ([`circuit.md`](../devices/circuit.md)), including circuits published natively by a smart panel and circuits republished by a proxy fronting a smart breaker.
 
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `breaker` capability](breaker.md) — the separate protection surface.
-- [Electrification Bus circuit data model](../data-models/circuit.md) — the primary publisher.
+- [Electrification Bus circuit data model](../devices/circuit.md) — the primary publisher.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

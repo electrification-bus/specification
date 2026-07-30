@@ -45,7 +45,7 @@ def registered_capabilities():
 def used_capabilities():
     """Capability node types actually declared in the data models."""
     used = {}
-    d = os.path.join(REPO, "data-models")
+    d = os.path.join(REPO, "devices")
     for fn in sorted(os.listdir(d)):
         if not fn.endswith(".md"):
             continue

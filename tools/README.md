@@ -47,7 +47,7 @@ python3 tools/check-capability-catalogs.py   # non-zero if a capability is unreg
 
 ## `check-property-catalogs.py`
 
-Generates, and verifies, the machine-readable property-definition JSON siblings of the prose (see [`../conventions/property-json.md`](../conventions/property-json.md)): a `capabilities/<name>.json` for each capability catalog and a `data-models/<name>.json` for each supported device model. These are **descriptive**, not a conformance contract: a catalog is the recommended, extensible property vocabulary; a device profile is a light, advisory composition of the capabilities each device type publishes.
+Generates, and verifies, the machine-readable property-definition JSON siblings of the prose (see [`../conventions/property-json.md`](../conventions/property-json.md)): a `capabilities/<name>.json` for each capability catalog and a `devices/<name>.json` for each supported device model. These are **descriptive**, not a conformance contract: a catalog is the recommended, extensible property vocabulary; a device profile is a light, advisory composition of the capabilities each device type publishes.
 
 ```bash
 python3 tools/check-property-catalogs.py          # regenerate the JSON from the prose

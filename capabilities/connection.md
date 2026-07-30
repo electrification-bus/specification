@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.connection`
 
-This document is the canonical property catalog for the `connection` capability. Data-model documents that use it (for example [`circuit.md`](../data-models/circuit.md) and [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)) reference this catalog and document only their device-specific usage.
+This document is the canonical property catalog for the `connection` capability. Data-model documents that use it (for example [`circuit.md`](../devices/circuit.md) and [`distribution-enclosure.md`](../devices/distribution-enclosure.md)) reference this catalog and document only their device-specific usage.
 
 ## Overview
 
@@ -59,7 +59,7 @@ The `connection` capability records the wiring topology *local to one electrical
 
 **The backup boundary.** `backed-up` records which side of a microgrid interconnect device a downstream path is on. In a whole-home-backup install every downstream path is `BACKED_UP`; in a partial-backup install the feeders that bypass the island are `NOT_BACKED_UP`. It is the wiring fact a backup coordinator needs to know which loads survive an outage, and it is independent of whether any load-shed policy would later shed a backed-up load.
 
-**Un-modelled downstream nodes.** When the downstream of a connection is not published as its own eBus device — a dumb subpanel, an AC-coupled inverter, a generator, an uncommissioned load group, or nothing — `feeds-role` gives its coarse role. A downstream worth modelling in detail SHOULD instead be published as its own device (for example, a surveyed subpanel as a minimal [`distribution-enclosure`](../data-models/distribution-enclosure.md) with its child circuits); `feeds-role` is the lightweight fallback for nodes not modelled that way.
+**Un-modelled downstream nodes.** When the downstream of a connection is not published as its own eBus device — a dumb subpanel, an AC-coupled inverter, a generator, an uncommissioned load group, or nothing — `feeds-role` gives its coarse role. A downstream worth modelling in detail SHOULD instead be published as its own device (for example, a surveyed subpanel as a minimal [`distribution-enclosure`](../devices/distribution-enclosure.md) with its child circuits); `feeds-role` is the lightweight fallback for nodes not modelled that way.
 
 **One node behind many connection points; many units behind one.** More than one connection point MAY reference the same downstream device (for example a multi-unit BESS whose units land on separate circuits, each circuit's `feeds-device-id = {bess}`); a consumer sums the connection points that reference one device to obtain its total flow. This is distinct from `count`, which stands in for multiple physical units aggregated behind a *single* connection point.
 
@@ -81,5 +81,5 @@ Published by any device that is an electrical connection point: circuits, both l
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
-- [circuit](../data-models/circuit.md) and [distribution-enclosure](../data-models/distribution-enclosure.md) data models — publishers of this capability.
+- [circuit](../devices/circuit.md) and [distribution-enclosure](../devices/distribution-enclosure.md) data models — publishers of this capability.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

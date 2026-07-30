@@ -8,7 +8,7 @@
 
 ## Overview
 
-This integration guide is **informative**. It describes how two [Electrification Bus](https://ebus.energy) (eBus for short) data models — the [utility meter](../data-models/utility-meter.md) and the [distribution enclosure](../data-models/distribution-enclosure.md) — compose at runtime when both are present on the same eBus broker, so that a utility-signaled operating envelope reaches the panel's UL 3141-listed Power Control System (PCS) and constrains the panel's load management. The normative property contracts remain in the individual data-model documents; this guide composes them.
+This integration guide is **informative**. It describes how two [Electrification Bus](https://ebus.energy) (eBus for short) data models — the [utility meter](../devices/utility-meter.md) and the [distribution enclosure](../devices/distribution-enclosure.md) — compose at runtime when both are present on the same eBus broker, so that a utility-signaled operating envelope reaches the panel's UL 3141-listed Power Control System (PCS) and constrains the panel's load management. The normative property contracts remain in the individual data-model documents; this guide composes them.
 
 The mechanism described here is vendor-neutral. A utility meter publishes its operating envelope to an eBus broker; a distribution enclosure subscribed to that envelope adopts it as the envelope it is acting on (its own `doe`), and its `pcs` reconciles that envelope, together with the enclosure's amps-native limits, into the enforced import limit. The data-model surfaces involved (`doe` on both devices, `pcs` on the distribution enclosure) make no vendor-specific assumptions; any conformant publisher / subscriber pair can participate.
 
@@ -33,7 +33,7 @@ The guide covers:
 
 The guide does **not** cover:
 
-- Normative property definitions — those live in [`data-models/utility-meter.md`](../data-models/utility-meter.md) and [`data-models/distribution-enclosure.md`](../data-models/distribution-enclosure.md).
+- Normative property definitions — those live in [`devices/utility-meter.md`](../devices/utility-meter.md) and [`devices/distribution-enclosure.md`](../devices/distribution-enclosure.md).
 - The mechanism by which a utility configures the meter's envelope (AMI head-end, IEEE 2030.5 / CSIP backhaul, proprietary protocols) — out of scope.
 - Vendor-specific commissioning UIs and provisioning flows.
 
@@ -102,7 +102,7 @@ DOE values change infrequently relative to instantaneous measurements — typica
 
 ## How the meter's `doe` drives the enclosure's `doe` and `pcs`
 
-The enclosure consumes the meter's envelope and re-expresses it on two of its own surfaces. First, its own [`doe`](../data-models/distribution-enclosure.md#doe): the envelope it has obtained and is acting on, in **watts**, a read-only representation of its acting-on state (distinct from the meter's `doe`, which is the utility's signal at the service point). Second, its [`pcs`](../capabilities/pcs.md): the enclosure reconciles that watts envelope to a current limit and folds it into the `pcs` `min()`, publishing the effective `import-limit` (amps) and reporting `binding-constraint = DOE` when the envelope is the binding constraint. The envelope is never copied into an amps `pcs` slot; `pcs` publishes only the reconciled result.
+The enclosure consumes the meter's envelope and re-expresses it on two of its own surfaces. First, its own [`doe`](../devices/distribution-enclosure.md#doe): the envelope it has obtained and is acting on, in **watts**, a read-only representation of its acting-on state (distinct from the meter's `doe`, which is the utility's signal at the service point). Second, its [`pcs`](../capabilities/pcs.md): the enclosure reconciles that watts envelope to a current limit and folds it into the `pcs` `min()`, publishing the effective `import-limit` (amps) and reporting `binding-constraint = DOE` when the envelope is the binding constraint. The envelope is never copied into an amps `pcs` slot; `pcs` publishes only the reconciled result.
 
 When the enclosure receives a publish on the meter's `doe`, it updates its own surfaces:
 
@@ -120,7 +120,7 @@ When the enclosure receives a publish on the meter's `doe`, it updates its own s
 
 Even when the enclosure's acting-on envelope is driven by a meter subscription, the enclosure remains the authoritative publisher of its own `doe` (what it is acting on) and its `pcs` (what it is enforcing). Consumers reading the enclosure see its acting-on envelope and its effective import limit, which happen to derive from what the meter most recently signaled. The provenance is implicit and one-directional: the meter publishes its `doe` (the utility's signal), the enclosure publishes its `doe` (its acting-on state) and its `pcs` (its enforcement).
 
-This is the same authoritative-publisher principle as proxy-published representations (see [`data-models/proxy.md`](../data-models/proxy.md)): one device owns each published surface, even when the underlying value originates elsewhere. This flow is not proxying (both devices natively publish their own data models), but the principle is the same.
+This is the same authoritative-publisher principle as proxy-published representations (see [`devices/proxy.md`](../devices/proxy.md)): one device owns each published surface, even when the underlying value originates elsewhere. This flow is not proxying (both devices natively publish their own data models), but the principle is the same.
 
 ## Import-limit composition
 
@@ -180,7 +180,7 @@ A separate, defensive-monitoring concern is a publisher going unreachable around
 
 ## Export side
 
-The utility-meter data model defines an export-side envelope (`doe/export-limit`), the same schema as the import side. The enclosure's `pcs` covers import limits only: the import-limit `min()` composition does not enforce an export limit. The export envelope instead has a home on the enclosure's own `doe`: an enclosure that obtains and acts on an export envelope republishes it on **its `doe/export-limit`** (see [`distribution-enclosure.md` §doe](../data-models/distribution-enclosure.md#doe)). It lives on `doe` rather than `pcs` because enforcing an export limit is a DER-control concern (curtailing PV / BESS), not an import-limit slot.
+The utility-meter data model defines an export-side envelope (`doe/export-limit`), the same schema as the import side. The enclosure's `pcs` covers import limits only: the import-limit `min()` composition does not enforce an export limit. The export envelope instead has a home on the enclosure's own `doe`: an enclosure that obtains and acts on an export envelope republishes it on **its `doe/export-limit`** (see [`distribution-enclosure.md` §doe](../devices/distribution-enclosure.md#doe)). It lives on `doe` rather than `pcs` because enforcing an export limit is a DER-control concern (curtailing PV / BESS), not an import-limit slot.
 
 - A consumer reads the export envelope from the meter's `doe/export-limit` (the utility's signal) or the enclosure's `doe/export-limit` (what the enclosure is acting on), the same source-versus-acting-on distinction as the import side.
 - Export *enforcement* (how the enclosure curtails DERs to stay under the export limit) is out of scope for this guide and belongs to a `der-control` capability.
@@ -262,9 +262,9 @@ Throughout the trace the meter never wrote to a PCS property and the enclosure n
 
 ## References
 
-- [Utility-meter data model](../data-models/utility-meter.md) — defines `doe` (the publisher side).
-- [Distribution-enclosure data model](../data-models/distribution-enclosure.md) — defines the enclosure's `doe` and `pcs` (the subscriber side's acting-on envelope and enforcement).
+- [Utility-meter data model](../devices/utility-meter.md) — defines `doe` (the publisher side).
+- [Distribution-enclosure data model](../devices/distribution-enclosure.md) — defines the enclosure's `doe` and `pcs` (the subscriber side's acting-on envelope and enforcement).
 - [eBus capability-type registry](../registries/capability-types.md).
-- [Proxy model](../data-models/proxy.md) — for the general convention that a device is the authoritative publisher of its own published surface even when the underlying value is sourced from another device.
+- [Proxy model](../devices/proxy.md) — for the general convention that a device is the authoritative publisher of its own published surface even when the underlying value is sourced from another device.
 - [UL 3141](https://www.shopulstandards.com/ProductDetail.aspx?productId=UL3141) — Power Control Systems. The standard the enclosure's PCS is listed against.
 - IEEE 2030.5 / CSIP — origin of "dynamic operating envelope" terminology.

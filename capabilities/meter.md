@@ -72,7 +72,7 @@ Properties use the engineering-unit values listed (no scaling factor or `µ-` pr
 
 ## Forward compatibility
 
-The full 4-quadrant per-phase and system VA matrix (Q1-Q4 by delivered/received, fundamental-only or with-harmonics, arithmetic and vectorial flavors) is not defined here; it can be added additively later when a consumer needs it, without renaming existing properties. Meter-configuration and nameplate metadata (accuracy class, CT/PT ratio, calculation convention, register multiplier, neutral-connected) live on the metering device's `info`, not on `meter`; see [`utility-meter.md`](../data-models/utility-meter.md).
+The full 4-quadrant per-phase and system VA matrix (Q1-Q4 by delivered/received, fundamental-only or with-harmonics, arithmetic and vectorial flavors) is not defined here; it can be added additively later when a consumer needs it, without renaming existing properties. Meter-configuration and nameplate metadata (accuracy class, CT/PT ratio, calculation convention, register multiplier, neutral-connected) live on the metering device's `info`, not on `meter`; see [`utility-meter.md`](../devices/utility-meter.md).
 
 ## Publishers
 
@@ -81,5 +81,5 @@ Published by any device that reports electrical measurements: the distribution e
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
-- [circuit](../data-models/circuit.md), [distribution-enclosure](../data-models/distribution-enclosure.md), [utility-meter](../data-models/utility-meter.md), and [BESS](../data-models/bess.md) data models — publishers of this capability.
+- [circuit](../devices/circuit.md), [distribution-enclosure](../devices/distribution-enclosure.md), [utility-meter](../devices/utility-meter.md), and [BESS](../devices/bess.md) data models — publishers of this capability.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

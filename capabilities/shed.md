@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.shed`
 
-This document is the canonical property catalog for the `shed` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)) reference this catalog.
+This document is the canonical property catalog for the `shed` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../devices/distribution-enclosure.md)) reference this catalog.
 
 ## Overview
 
@@ -33,7 +33,7 @@ Two settable inputs feed that engine, which is why they are one capability rathe
 
 `asserted-islanding-state` is a **fallback**, not a routine control. A host decides whether to auto-shed from its *effective* islanding-state; normally that is what the host senses (`<mid>/grid/islanding-state`). But when the host loses communication with the device that senses islanding-state, it can no longer trust that value, and an outage is exactly when shedding matters most. This property lets a consumer assert the correct state for that window, so that a host whose sensed islanding-state has gone wrong or unreachable, and which cannot itself be reconfigured in time, can still be corrected by the consumer that acts on it.
 
-The assertion is **scoped**: it overrides the effective islanding-state of the host's *own* premises-segment island (the scope it participates in and normally senses), not any global "islanded?" flag. This is consistent with the islanding model, in which each scope carries its own state rather than a single reconciled bit (see [`grid`](grid.md) and the [distribution-enclosure](../data-models/distribution-enclosure.md) islanding model).
+The assertion is **scoped**: it overrides the effective islanding-state of the host's *own* premises-segment island (the scope it participates in and normally senses), not any global "islanded?" flag. This is consistent with the islanding model, in which each scope carries its own state rather than a single reconciled bit (see [`grid`](grid.md) and the [distribution-enclosure](../devices/distribution-enclosure.md) islanding model).
 
 A consumer asserts only `ON_GRID` or `OFF_GRID`; `NONE` is enclosure-authored (it is the default, and the value the host publishes when it clears an assertion on comm-restore). The Homie `$settable` attribute is statically `true`; the host enforces eligibility at write time.
 
@@ -78,5 +78,5 @@ A host that coordinates automatic load-shedding across the circuits it serves: t
 - [Electrification Bus framework specification](../framework.md) — design principle #10 (scalars by default; `json` as the escape hatch).
 - [Electrification Bus `shed-forecast` capability](shed-forecast.md) — the read-only sibling.
 - [Electrification Bus `load-shed` capability](load-shed.md) — the per-circuit shed class the policy acts on.
-- [distribution-enclosure](../data-models/distribution-enclosure.md) data model — the current publisher and its islanding model.
+- [distribution-enclosure](../devices/distribution-enclosure.md) data model — the current publisher and its islanding model.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

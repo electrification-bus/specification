@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.door`
 
-This document is the canonical property catalog for the `door` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)) reference this catalog.
+This document is the canonical property catalog for the `door` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../devices/distribution-enclosure.md)) reference this catalog.
 
 ## Overview
 
@@ -34,5 +34,5 @@ Any enclosure or cabinet with a monitored access door: today the distribution en
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
-- [distribution-enclosure](../data-models/distribution-enclosure.md) data model — the current publisher.
+- [distribution-enclosure](../devices/distribution-enclosure.md) data model — the current publisher.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

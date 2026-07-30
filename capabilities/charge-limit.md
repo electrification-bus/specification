@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.charge-limit`
 
-This document is the canonical property catalog for the `charge-limit` capability. Data-model documents that use it (today the EVSE child in [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)) reference this catalog.
+This document is the canonical property catalog for the `charge-limit` capability. Data-model documents that use it (today the EVSE child in [`distribution-enclosure.md`](../devices/distribution-enclosure.md)) reference this catalog.
 
 ## Overview
 
@@ -45,5 +45,5 @@ An EVSE whose charge current can be limited. The property contracts above apply 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `meter` capability](meter.md) — where the effective `advertised-current` is published.
 - [Electrification Bus `flex` capability](flex.md) — the richer shed/load-up surface for devices that can also increase or reverse (a future V2G EVSE, a water heater).
-- [distribution-enclosure](../data-models/distribution-enclosure.md) data model — the current publisher (the proxied EVSE child).
+- [distribution-enclosure](../devices/distribution-enclosure.md) data model — the current publisher (the proxied EVSE child).
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

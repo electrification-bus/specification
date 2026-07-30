@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.grid-event`
 
-This document is the canonical property catalog for the `grid-event` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)) reference this catalog and document only their device-specific role.
+This document is the canonical property catalog for the `grid-event` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../devices/distribution-enclosure.md)) reference this catalog and document only their device-specific role.
 
 ## Overview
 
@@ -115,6 +115,6 @@ Any device that authoritatively receives grid events: today the distribution enc
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `price` capability](price.md) and [`doe` capability](doe.md) — the continuous-signal siblings.
-- [water-heater](../data-models/water-heater.md) data model — defines the device-level `flex` control + feedback surface that acts on these events.
-- [distribution-enclosure](../data-models/distribution-enclosure.md) data model — the primary publisher of this capability.
+- [water-heater](../devices/water-heater.md) data model — defines the device-level `flex` control + feedback surface that acts on these events.
+- [distribution-enclosure](../devices/distribution-enclosure.md) data model — the primary publisher of this capability.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

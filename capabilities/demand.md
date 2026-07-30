@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.demand`
 
-This document is the canonical property catalog for the `demand` capability. Data-model documents that use it (today [`utility-meter.md`](../data-models/utility-meter.md)) reference this catalog.
+This document is the canonical property catalog for the `demand` capability. Data-model documents that use it (today [`utility-meter.md`](../devices/utility-meter.md)) reference this catalog.
 
 ## Overview
 
@@ -41,5 +41,5 @@ A meter that computes interval demand: today the utility meter. The property con
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
-- [utility-meter](../data-models/utility-meter.md) data model — the current publisher.
+- [utility-meter](../devices/utility-meter.md) data model — the current publisher.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

@@ -29,54 +29,54 @@
         "path": "framework.md"
       }
     },
-    "data-models": {
+    "devices": {
       "bess": {
         "version": "0.14",
         "date": "2026-07-27",
         "status": "DRAFT",
-        "path": "data-models/bess.md"
+        "path": "devices/bess.md"
       },
       "circuit": {
         "version": "0.3",
         "date": "2026-07-29",
         "status": "DRAFT",
-        "path": "data-models/circuit.md"
+        "path": "devices/circuit.md"
       },
       "distribution-enclosure": {
         "version": "0.12",
         "date": "2026-07-27",
         "status": "DRAFT",
-        "path": "data-models/distribution-enclosure.md"
+        "path": "devices/distribution-enclosure.md"
       },
       "outlet": {
         "version": "0.1",
         "date": "2026-07-27",
         "status": "DRAFT",
-        "path": "data-models/outlet.md"
+        "path": "devices/outlet.md"
       },
       "pdu": {
         "version": "0.1",
         "date": "2026-07-27",
         "status": "DRAFT",
-        "path": "data-models/pdu.md"
+        "path": "devices/pdu.md"
       },
       "proxy": {
         "version": "0.1",
         "date": "2026-05-22",
         "status": "DRAFT",
-        "path": "data-models/proxy.md"
+        "path": "devices/proxy.md"
       },
       "utility-meter": {
         "version": "0.6",
         "date": "2026-07-11",
         "status": "DRAFT",
-        "path": "data-models/utility-meter.md"
+        "path": "devices/utility-meter.md"
       },
       "water-heater": {
         "version": "0.3",
         "date": "2026-07-11",
         "status": "DRAFT",
-        "path": "data-models/water-heater.md"
+        "path": "devices/water-heater.md"
       }
     },
     "capabilities": {

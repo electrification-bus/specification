@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.grid-forming`
 
-This document is the canonical property catalog for the `grid-forming` capability. Data-model documents that use it (today the inverter children in [`bess.md`](../data-models/bess.md)) reference this catalog.
+This document is the canonical property catalog for the `grid-forming` capability. Data-model documents that use it (today the inverter children in [`bess.md`](../devices/bess.md)) reference this catalog.
 
 ## Overview
 
@@ -40,5 +40,5 @@ Inverter child devices whose vendor exposes per-inverter grid-forming state (tod
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `grid` capability](grid.md) — the site-level grid-forming-entity this refines.
-- [bess](../data-models/bess.md) data model — the current publisher.
+- [bess](../devices/bess.md) data model — the current publisher.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

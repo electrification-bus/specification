@@ -6,7 +6,7 @@ Relationship to the other areas:
 
 - **`registries/capability-types.md`** is the *index*: the flat list of registered `energy.ebus.capability.*` identifiers, each with a one-line description and a pointer to its canonical catalog.
 - **`capabilities/`** (this area) holds the *catalogs*: the full property tables, value domains, crosswalks, and grounding for each capability.
-- **`data-models/`** documents *device types*: which capabilities a device publishes and its device-specific conformance (which properties are SHOULD versus MAY on that device, and examples), referencing the catalogs here for property detail.
+- **`devices/`** documents *device types*: which capabilities a device publishes and its device-specific conformance (which properties are SHOULD versus MAY on that device, and examples), referencing the catalogs here for property detail.
 
 ## Every capability has a catalog
 

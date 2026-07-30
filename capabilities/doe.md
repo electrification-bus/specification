@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.doe`
 
-This document is the canonical property catalog for the `doe` capability. Data-model documents that use it (for example [`utility-meter.md`](../data-models/utility-meter.md) and [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)) reference this catalog and document only their device-specific role.
+This document is the canonical property catalog for the `doe` capability. Data-model documents that use it (for example [`utility-meter.md`](../devices/utility-meter.md) and [`distribution-enclosure.md`](../devices/distribution-enclosure.md)) reference this catalog and document only their device-specific role.
 
 ## Overview
 
@@ -78,7 +78,7 @@ An operating envelope is neither a measurement (`meter` is for what a device mea
 
 ## Relationship to enforcement
 
-Knowing an envelope and enforcing it are separate. A device that enforces one publishes its enforcement apart from the envelope it knows: on a distribution enclosure, `doe` carries the envelope (the full schedule, both directions) in **watts**, while enforcement is the `pcs`'s job: the enclosure reconciles the envelope to amps and enforces it as part of the `pcs` `min()`, which reports `binding-constraint = DOE` when the envelope is the binding limit. Export limiting is a DER-control concern (curtailing PV / BESS), separate from the import-limit composition; `doe/export-limit` carries the export *signal*. See [`distribution-enclosure.md`](../data-models/distribution-enclosure.md).
+Knowing an envelope and enforcing it are separate. A device that enforces one publishes its enforcement apart from the envelope it knows: on a distribution enclosure, `doe` carries the envelope (the full schedule, both directions) in **watts**, while enforcement is the `pcs`'s job: the enclosure reconciles the envelope to amps and enforces it as part of the `pcs` `min()`, which reports `binding-constraint = DOE` when the envelope is the binding limit. Export limiting is a DER-control concern (curtailing PV / BESS), separate from the import-limit composition; `doe/export-limit` carries the export *signal*. See [`distribution-enclosure.md`](../devices/distribution-enclosure.md).
 
 ## Publishers
 
@@ -87,6 +87,6 @@ Any device that authoritatively knows an operating envelope: today, the utility 
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
-- [utility-meter](../data-models/utility-meter.md) and [distribution-enclosure](../data-models/distribution-enclosure.md) data models — publishers of this capability.
-- [Electrification Bus `pcs`](../data-models/distribution-enclosure.md#pcs) — the enclosure's enforcement surface.
+- [utility-meter](../devices/utility-meter.md) and [distribution-enclosure](../devices/distribution-enclosure.md) data models — publishers of this capability.
+- [Electrification Bus `pcs`](../devices/distribution-enclosure.md#pcs) — the enclosure's enforcement surface.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

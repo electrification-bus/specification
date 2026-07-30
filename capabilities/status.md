@@ -60,5 +60,5 @@ Any device that reports operational health: today the distribution enclosure, BE
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
-- [bess](../data-models/bess.md), [water-heater](../data-models/water-heater.md), [distribution-enclosure](../data-models/distribution-enclosure.md), [utility-meter](../data-models/utility-meter.md), [pdu](../data-models/pdu.md) data models — publishers of this capability.
+- [bess](../devices/bess.md), [water-heater](../devices/water-heater.md), [distribution-enclosure](../devices/distribution-enclosure.md), [utility-meter](../devices/utility-meter.md), [pdu](../devices/pdu.md) data models — publishers of this capability.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

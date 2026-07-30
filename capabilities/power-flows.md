@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.power-flows`
 
-This document is the canonical property catalog for the `power-flows` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../data-models/distribution-enclosure.md)) reference this catalog.
+This document is the canonical property catalog for the `power-flows` capability. Data-model documents that use it (today [`distribution-enclosure.md`](../devices/distribution-enclosure.md)) reference this catalog.
 
 ## Overview
 
@@ -38,5 +38,5 @@ A site coordinator that computes aggregate flows: today the distribution enclosu
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `meter` capability](meter.md) — single-point measurement, distinct from this site-level roll-up.
-- [distribution-enclosure](../data-models/distribution-enclosure.md) data model — the current publisher.
+- [distribution-enclosure](../devices/distribution-enclosure.md) data model — the current publisher.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).

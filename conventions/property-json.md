@@ -22,7 +22,7 @@ A device's runtime Homie 5 `$description` is the authority for what it actually 
 ## Two families, mirroring the two prose families
 
 - A **capability catalog** (`capabilities/<name>.md`) gets a **`capability-catalog`** JSON: the recommended, extensible property vocabulary for that capability, defined once and reused across device types.
-- A **device model** (`data-models/<name>.md`) gets a **`device-profile`** JSON: a light, advisory composition of which capabilities each device type in the model typically publishes, and the spec's capability-level Req guidance where it states one. It carries no property-level detail; how to publish each property lives in the capability catalog it references.
+- A **device model** (`devices/<name>.md`) gets a **`device-profile`** JSON: a light, advisory composition of which capabilities each device type in the model typically publishes, and the spec's capability-level Req guidance where it states one. It carries no property-level detail; how to publish each property lives in the capability catalog it references.
 
 ## File layout and naming
 
@@ -31,8 +31,8 @@ The JSON sibling sits next to its prose file and shares its basename:
 ```
 capabilities/meter.md      capabilities/meter.json      (kind: capability-catalog)
 capabilities/status.md     capabilities/status.json
-data-models/bess.md        data-models/bess.json        (kind: device-profile)
-data-models/circuit.md     data-models/circuit.json
+devices/bess.md        devices/bess.json        (kind: device-profile)
+devices/circuit.md     devices/circuit.json
 ```
 
 The parent directory tells you the family, and the `kind` field states it explicitly. These JSON files are **generated**: do not hand-edit them, edit the prose table and regenerate. They are marked `linguist-generated=true` in `.gitattributes` so GitHub collapses them in diffs.

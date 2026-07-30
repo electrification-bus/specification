@@ -28,10 +28,10 @@ A **capability catalog** (`capabilities/<name>.json`) is the recommended, extens
 }
 ```
 
-A **device profile** (`data-models/<name>.json`) is a light, advisory composition: which capabilities each device type in the model typically publishes.
+A **device profile** (`devices/<name>.json`) is a light, advisory composition: which capabilities each device type in the model typically publishes.
 
 ```json
-// data-models/bess.json (excerpt)
+// devices/bess.json (excerpt)
 "device_types": {
   "energy.ebus.device.bess": {
     "role": "parent",
@@ -50,7 +50,7 @@ A **device profile** (`data-models/<name>.json`) is a light, advisory compositio
 Use the profile and catalogs to scaffold the Homie structure, then wire each property to your device's internal data. An eBus SDK for your language reads the JSON and does the scaffolding; you fill in the back end.
 
 ```text
-profile = load("data-models/bess.json")
+profile = load("devices/bess.json")
 for device_type, dt in profile.device_types:
     for cap_id, use in dt.capabilities:
         catalog = load("capabilities/" + cap_id + ".json")
@@ -121,4 +121,4 @@ This keeps the boundary clean: vendor-neutral vocabulary and composition upstrea
 - [`framework.md`](framework.md) and its [Conformance Latitude](framework.md#conformance-latitude) and [Design Principles](framework.md#design-principles).
 - [`conventions/property-json.md`](conventions/property-json.md): the structure, generation, and versioning of the machine-readable JSON.
 - [`conventions/spec-provenance.md`](conventions/spec-provenance.md): the `.ebus-spec.json` version lockfile.
-- The capability catalogs in [`capabilities/`](capabilities/) and the data models in [`data-models/`](data-models/), each with its `.json` sibling.
+- The capability catalogs in [`capabilities/`](capabilities/) and the data models in [`devices/`](devices/), each with its `.json` sibling.

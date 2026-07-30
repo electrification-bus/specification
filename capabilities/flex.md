@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.flex`
 
-This document is the canonical property catalog for the `flex` capability. Data-model documents that use it (today [`water-heater.md`](../data-models/water-heater.md)) reference this catalog and document only their device-specific role.
+This document is the canonical property catalog for the `flex` capability. Data-model documents that use it (today [`water-heater.md`](../devices/water-heater.md)) reference this catalog and document only their device-specific role.
 
 ## Overview
 
@@ -109,12 +109,12 @@ A flexibility request is neither a relay toggle (`switch`), a hardware power lim
 
 ## Publishers
 
-Any controllable flexible load: today the water heater ([`water-heater.md`](../data-models/water-heater.md)), and by design any HVAC system, EV charger, pool pump, or similar dispatchable load. Whether published natively or by a proxy (for example a CTA-2045 UCM bridge), the property contracts above apply unchanged.
+Any controllable flexible load: today the water heater ([`water-heater.md`](../devices/water-heater.md)), and by design any HVAC system, EV charger, pool pump, or similar dispatchable load. Whether published natively or by a proxy (for example a CTA-2045 UCM bridge), the property contracts above apply unchanged.
 
 ## References
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `grid-event` capability](grid-event.md) — the site-level ask this capability responds to.
-- [water-heater](../data-models/water-heater.md) data model — the first publisher, and where the water-heater-specific `request` refinements are documented.
+- [water-heater](../devices/water-heater.md) data model — the first publisher, and where the water-heater-specific `request` refinements are documented.
 - ANSI/CTA-2045-B; Matter Device Energy Management (`0x0098`) and Water Heater Management (`0x0094`) clusters.
 - [Electrification Bus capability-type registry](../registries/capability-types.md) — the index this catalog is referenced from.

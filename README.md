@@ -8,10 +8,10 @@
 
 - **[`framework.md`](framework.md)** — the framework spec. Defines how devices participate in the bus: network architecture, discovery (mDNS), messaging (MQTT/Homie), broker hosting, credentials and TLS (including mTLS client authentication), proxy publishers, design principles, and the device-and-node-type taxonomy that data-model documents build on.
 - **[`USING-THE-SPECIFICATION.md`](USING-THE-SPECIFICATION.md)**: an informative developer guide to using the specification, especially its machine-readable property definitions, to build publishers, simulators, and drift tooling.
-- **`data-models/`** — vendor-neutral data models for specific device categories. Each data-model document defines the canonical Homie device structure (parent device + child devices, capabilities, properties) for that category. Data-model documents reference the framework but stand on their own — vendors implementing a specific device category will read the relevant data-model document directly.
+- **`devices/`** — vendor-neutral data models for specific device categories. Each data-model document defines the canonical Homie device structure (parent device + child devices, capabilities, properties) for that category. Data-model documents reference the framework but stand on their own — vendors implementing a specific device category will read the relevant data-model document directly.
 - **`registries/`** — canonical registries for device-type identifiers (`energy.ebus.device.*`) and capability-type identifiers (`energy.ebus.capability.*`) used across all data models. Registries grow as new device categories are added.
 - **`capabilities/`** — canonical property-catalog documents for cross-cutting `energy.ebus.capability.*` capabilities (metering, overcurrent protection, remote relay control, and similar). Each capability is defined once and referenced by the data models that use it, rather than restated in each; the capability-type registry indexes them.
-- **Machine-readable property definitions**: each capability catalog and data-model document has a co-located `.json` sibling (`capabilities/<name>.json`, `data-models/<name>.json`), generated from the prose, carrying the property vocabulary and the device's capability composition as data that tools can read: SDKs hydrating language-native structures, simulators, and drift checks. They are a descriptive reference, not a conformance contract. See [`conventions/property-json.md`](conventions/property-json.md).
+- **Machine-readable property definitions**: each capability catalog and data-model document has a co-located `.json` sibling (`capabilities/<name>.json`, `devices/<name>.json`), generated from the prose, carrying the property vocabulary and the device's capability composition as data that tools can read: SDKs hydrating language-native structures, simulators, and drift checks. They are a descriptive reference, not a conformance contract. See [`conventions/property-json.md`](conventions/property-json.md).
 - **`integration-guides/`** — informative guides describing how two or more data-model surfaces compose at runtime. Integration guides reference the relevant data-model documents but do not redefine their normative contracts; they describe the end-to-end flow (subscription topology, value transformations, commissioning, failure handling) when both sides of an integration are present together.
 - **`examples/`** — reference snippets, reference implementations, and integration examples. *Currently empty; content will be added as the framework and data-model specifications stabilize.*
 - **[`CHANGELOG.md`](CHANGELOG.md)** — a dated, artifact-tagged log of notable specification changes. The project is in rapid development and does not yet cut formal releases, so changes are grouped by date rather than by release tag.
@@ -20,8 +20,8 @@
 
 ## Where to start
 
-- **Implementing eBus on your own HEI device** → read [`framework.md`](framework.md) first, then the relevant data-model document (e.g., [`data-models/bess.md`](data-models/bess.md) for BESS vendors, [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) for panel vendors, [`data-models/utility-meter.md`](data-models/utility-meter.md) for meter vendors).
-- **Building a proxy publisher** that bridges a non-eBus device into eBus (e.g., a Python service that polls a vendor cloud API and republishes as eBus) → [`framework.md`](framework.md) → [`data-models/proxy.md`](data-models/proxy.md) → the data-model for the device class you're proxying.
+- **Implementing eBus on your own HEI device** → read [`framework.md`](framework.md) first, then the relevant data-model document (e.g., [`devices/bess.md`](devices/bess.md) for BESS vendors, [`devices/distribution-enclosure.md`](devices/distribution-enclosure.md) for panel vendors, [`devices/utility-meter.md`](devices/utility-meter.md) for meter vendors).
+- **Building a proxy publisher** that bridges a non-eBus device into eBus (e.g., a Python service that polls a vendor cloud API and republishes as eBus) → [`framework.md`](framework.md) → [`devices/proxy.md`](devices/proxy.md) → the data-model for the device class you're proxying.
 - **Building a controller, dashboard, or energy-management app** that consumes eBus data → [`framework.md`](framework.md) → the data-model documents for the device classes you'll consume → the integration guides in [`integration-guides/`](integration-guides/) for any cross-device flows you need.
 - **Reviewing the spec** (standards committee, prospective adopter, curious reader) → start with [`framework.md`](framework.md); the data-models illustrate the framework applied to concrete device classes.
 - **Using the machine-readable definitions** (building a publisher, a simulator, or drift tooling) → [`USING-THE-SPECIFICATION.md`](USING-THE-SPECIFICATION.md).
@@ -38,16 +38,16 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 |---|---|
 | **Framework** | |
 | [`framework.md`](framework.md) | DRAFT v0.7 (2026-07-30) |
-| **Data Models** | |
-| [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.14 (2026-07-27) |
-| [`data-models/circuit.md`](data-models/circuit.md) | DRAFT v0.3 (2026-07-29) |
-| [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.12 (2026-07-27) |
-| [`data-models/outlet.md`](data-models/outlet.md) | DRAFT v0.1 (2026-07-27) |
-| [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-07-27) |
-| [`data-models/proxy.md`](data-models/proxy.md) | DRAFT v0.1 (2026-05-22) |
-| [`data-models/utility-meter.md`](data-models/utility-meter.md) | DRAFT v0.6 (2026-07-11) |
-| [`data-models/water-heater.md`](data-models/water-heater.md) | DRAFT v0.3 (2026-07-11) |
-| `data-models/mid.md` | Planned (see the standalone-MID note in [`data-models/bess.md`](data-models/bess.md) §Device Hierarchy) |
+| **Devices** | |
+| [`devices/bess.md`](devices/bess.md) | DRAFT v0.14 (2026-07-27) |
+| [`devices/circuit.md`](devices/circuit.md) | DRAFT v0.3 (2026-07-29) |
+| [`devices/distribution-enclosure.md`](devices/distribution-enclosure.md) | DRAFT v0.12 (2026-07-27) |
+| [`devices/outlet.md`](devices/outlet.md) | DRAFT v0.1 (2026-07-27) |
+| [`devices/pdu.md`](devices/pdu.md) | DRAFT v0.1 (2026-07-27) |
+| [`devices/proxy.md`](devices/proxy.md) | DRAFT v0.1 (2026-05-22) |
+| [`devices/utility-meter.md`](devices/utility-meter.md) | DRAFT v0.6 (2026-07-11) |
+| [`devices/water-heater.md`](devices/water-heater.md) | DRAFT v0.3 (2026-07-11) |
+| `devices/mid.md` | Planned (see the standalone-MID note in [`devices/bess.md`](devices/bess.md) §Device Hierarchy) |
 | **Registries** | |
 | [`registries/capability-types.md`](registries/capability-types.md) | DRAFT v0.19 (2026-07-12) |
 | [`registries/circuit-tags.md`](registries/circuit-tags.md) | DRAFT v0.1 (2026-05-23) |

@@ -11,7 +11,7 @@
 
 **Node type:** `energy.ebus.capability.dispatch`
 
-This document is the canonical property catalog for the `dispatch` capability. Data-model documents that use it (today [`bess.md`](../data-models/bess.md)) reference this catalog.
+This document is the canonical property catalog for the `dispatch` capability. Data-model documents that use it (today [`bess.md`](../devices/bess.md)) reference this catalog.
 
 ## Overview
 
@@ -69,5 +69,5 @@ Any storage resource that exposes an external dispatch surface: today the BESS. 
 
 - [Electrification Bus framework specification](../framework.md)
 - [Electrification Bus `soc` capability](soc.md) — the reservoir state dispatch acts on; and [`status`](status.md) for `operational-state`.
-- [bess](../data-models/bess.md) data model — the current publisher.
+- [bess](../devices/bess.md) data model — the current publisher.
 - [Electrification Bus capability-type registry](../registries/capability-types.md).
