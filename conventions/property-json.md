@@ -172,6 +172,15 @@ CI runs `--check`, so a prose edit that is not reflected in the JSON (or a hand-
 
 The `catalog_version` a profile records is **advisory**. When it lags the catalog's current version the verifier emits a warning with a regenerate-then-review workflow, not a hard failure: a single widely-consumed catalog bump (metering is used by many device models) would otherwise cascade into a fleet-wide CI failure.
 
+## JSON Schemas
+
+The structure of both families is defined by JSON Schemas (draft 2020-12) that the generator, a CI check, or a downstream consumer can validate against:
+
+- [`schemas/property-catalog.schema.json`](schemas/property-catalog.schema.json), published as `https://ebus.energy/schemas/property-catalog.json`, for `capability-catalog` files.
+- [`schemas/device-profile.schema.json`](schemas/device-profile.schema.json), published as `https://ebus.energy/schemas/device-profile.json`, for `device-profile` files.
+
+Each JSON file names its schema in a `$schema` field. The schemas constrain **structure** only: field names, datatypes, identifier patterns, and the closed set of keys. The **semantic** invariants (a unit present if and only if the datatype is numeric, an `enum` carrying a `format`, every capability type registered, every device reference resolving to a catalog property, and monotonic conformance) are cross-field or cross-file checks a JSON Schema cannot express; `check-property-catalogs.py` enforces those, per the section above.
+
 ## Relationship to the other conventions
 
 - [`spec-provenance.md`](spec-provenance.md) defines the `.ebus-spec.json` lockfile whose `implements` pins cover a property-JSON file through its prose artifact's version, and whose `supports` and `conventions/property-json` pin let a downstream declare which property-JSON shape it consumes.
