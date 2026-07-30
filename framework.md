@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.7
-**Date:** 2026-07-12
+**Date:** 2026-07-30
 
 ---
 
@@ -25,6 +25,12 @@ Electrification Bus composes existing, well-known protocols — **mDNS**, **MQTT
 ### Conformance Language
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" are to be interpreted as described in [RFC 2119][rfc2119].
+
+### Conformance Latitude
+
+The specification is deliberately permissive: it describes what a device **can** and **should** publish, and **how**, rather than a fixed set every device must publish. A publisher publishes the subset of capabilities and properties it supports and omits the rest (design principle 3). It **MAY** publish properties this specification does not define, and it **MAY** publish a property with a wider or differently-partitioned datatype or value set than a capability catalog recommends (for example an open `string` where the catalog suggests an `enum`, per design principle 10). The one standing condition is self-description: a publisher advertises the shape it actually publishes in its Homie 5 `$description` and `$format`, so any consumer can interpret it.
+
+So the keywords above govern **how** a property is published once a device chooses to publish it (so publishers and consumers interoperate), not **whether** a device publishes it. A device's runtime `$description` is the authority for what it actually publishes; this specification is the shared, vendor-neutral vocabulary and guidance a device is published against. The capability catalogs and data-model documents, and their machine-readable [property-JSON](conventions/property-json.md) siblings, are a recommendation and a reference, not a checklist a conformant device must match.
 
 ---
 
