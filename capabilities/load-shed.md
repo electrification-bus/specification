@@ -1,8 +1,8 @@
 # Electrification Bus Capability: load-shed
 
 **Status:** DRAFT
-**Version:** 0.2
-**Date:** 2026-07-12
+**Version:** 0.3
+**Date:** 2026-07-30
 **Authors:** Don Jackson
 
 ## Identifier
@@ -21,9 +21,11 @@ This document is the canonical property catalog for the `load-shed` capability. 
 
 ## Properties
 
-| Property ID | Datatype | Req | Description |
-|---|---|---|---|
-| `priority` | enum | SHOULD | The circuit's shedding class. Baseline (every host): `UNKNOWN`, `NEVER`, `OFF_GRID`. Optional additional triggers are advertised in the property's `$format`: `SOC_THRESHOLD` and future spec- or vendor-defined values. |
+| Property ID | Datatype | Req | Settable | Description |
+|---|---|---|---|---|
+| `priority` | enum | SHOULD | yes | The circuit's shedding class. Baseline (every host): `UNKNOWN`, `NEVER`, `OFF_GRID`. Optional additional triggers are advertised in the property's `$format`: `SOC_THRESHOLD` and future spec- or vendor-defined values. |
+
+`priority` is **settable**: a consumer or host controller MAY set a circuit's shed class over the bus (for example, an installer or energy-management application assigning which circuits shed first, or marking a critical circuit `NEVER`). A publisher that cannot accept writes to `priority`, for internal implementation reasons, advertises it read-only (`$settable: false`) in its runtime `$description`; declining to be writable is a permitted deviation under the framework's [conformance latitude](../framework.md) (a publisher publishes the subset of the contract it supports, and the RFC 2119 keywords govern *how* a property is published, not *whether* it must be writable). A consumer treats write-acceptance as best-effort and confirms the outcome from the published value.
 
 ## Shed triggers and extensibility
 

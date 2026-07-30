@@ -153,8 +153,8 @@
         "path": "capabilities/info.md"
       },
       "load-shed": {
-        "version": "0.2",
-        "date": "2026-07-12",
+        "version": "0.3",
+        "date": "2026-07-30",
         "status": "DRAFT",
         "path": "capabilities/load-shed.md"
       },
