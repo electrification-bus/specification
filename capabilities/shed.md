@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.2
-**Date:** 2026-07-27
+**Date:** 2026-07-30
 **Authors:** Don Jackson
 
 ## Identifier
@@ -26,7 +26,7 @@ Two settable inputs feed that engine, which is why they are one capability rathe
 
 | Property ID | Datatype | Req | Settable | Description |
 |---|---|---|---|---|
-| `asserted-islanding-state` | enum | MAY | yes | Consumer-asserted islanding-state for the host's own island scope, consulted only while the host has lost or degraded communication with the device that senses that state (its MID / BESS). `$format = "NONE,ON_GRID,OFF_GRID"`; default `NONE`. See "Asserted islanding-state" below. |
+| `asserted-islanding-state` | enum | MAY | yes | Consumer-asserted islanding-state for the host's own island scope, consulted only while the host has lost or degraded communication with the device that senses that state (its MID / BESS). Advertised in `$format` as `NONE`, `ON_GRID`, `OFF_GRID` (default `NONE`). See "Asserted islanding-state" below. |
 | `policy` | json | MAY | SHOULD, when the host exposes runtime tuning | The host's shedding algorithm and its parameters: `{ "algorithm": <id>, "parameters": { … } }`. The parameter object's shape is advertised as a JSON Schema in the property's `$format`. See "Shed policy" below. |
 
 ## Asserted islanding-state

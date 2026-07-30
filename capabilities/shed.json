@@ -5,14 +5,14 @@
   "capability": "energy.ebus.capability.shed",
   "version": "0.2",
   "status": "DRAFT",
-  "date": "2026-07-27",
+  "date": "2026-07-30",
   "properties": {
     "asserted-islanding-state": {
       "datatype": "enum",
-      "format": "NONE",
+      "format": "NONE,ON_GRID,OFF_GRID",
       "settable": true,
       "req": "MAY",
-      "description": "Consumer-asserted islanding-state for the host's own island scope, consulted only while the host has lost or degraded communication with the device that senses that state (its MID / BESS). `$format = \"NONE,ON_GRID,OFF_GRID\"`; default `NONE`. See \"Asserted islanding-state\" below."
+      "description": "Consumer-asserted islanding-state for the host's own island scope, consulted only while the host has lost or degraded communication with the device that senses that state (its MID / BESS). Advertised in `$format` as `NONE`, `ON_GRID`, `OFF_GRID` (default `NONE`). See \"Asserted islanding-state\" below."
     },
     "policy": {
       "datatype": "json",

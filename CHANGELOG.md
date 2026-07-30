@@ -23,6 +23,7 @@ Entries are tagged with the affected artifact and a category (Added / Changed / 
 ### Fixed
 
 - **data-model/distribution-enclosure**: the generated device profile (`devices/distribution-enclosure.json`) now composes the `breaker` capability for the enclosure's main breaker. The prose already declared it (the node tree, the conformance-latitude list, and the `pcs` section all reference the main-breaker rating published on `breaker/rating`), but the machine-readable profile omitted it because the section lacked a `Node type:` anchor. Added the anchoring `#### breaker` section so the profile matches the documented capability set. In-place DRAFT correction: the artifact version stays 0.12 and no downstream re-pin is required; only the document Date header moved.
+- **capability/shed**: the generated catalog (`capabilities/shed.json`) now records the full `asserted-islanding-state` value set `NONE,ON_GRID,OFF_GRID`; it previously carried only `NONE`. The prose always declared the full set, but the generator's enum extractor reads only individually-backticked tokens, and this one row uniquely wrote its set as a single backticked `$format = "..."` string, so only the trailing `default` `NONE` was captured. Reworded the row to list the tokens as individually-backticked values so the extractor captures all three. In-place DRAFT correction: the artifact version stays 0.2 and no downstream re-pin is required; only the document Date header moved.
 
 ## 2026-07-29
 
