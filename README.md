@@ -36,7 +36,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | [`framework.md`](framework.md) | DRAFT v0.7 (2026-07-12) |
 | **Data Models** | |
 | [`data-models/bess.md`](data-models/bess.md) | DRAFT v0.14 (2026-07-27) |
-| [`data-models/circuit.md`](data-models/circuit.md) | DRAFT v0.3 (2026-07-27) |
+| [`data-models/circuit.md`](data-models/circuit.md) | DRAFT v0.3 (2026-07-29) |
 | [`data-models/distribution-enclosure.md`](data-models/distribution-enclosure.md) | DRAFT v0.12 (2026-07-27) |
 | [`data-models/outlet.md`](data-models/outlet.md) | DRAFT v0.1 (2026-07-27) |
 | [`data-models/pdu.md`](data-models/pdu.md) | DRAFT v0.1 (2026-07-27) |
@@ -81,6 +81,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | **Extensions** | |
 | [`extensions/imported.md`](extensions/imported.md) | STABLE v1.0.0 (2026-07-04) |
 | **Conventions** | |
+| [`conventions/property-json.md`](conventions/property-json.md) | DRAFT v0.1 (2026-07-29) |
 | [`conventions/spec-provenance.md`](conventions/spec-provenance.md) | DRAFT v0.1 (2026-07-10) |
 | [`conventions/version-single-source.md`](conventions/version-single-source.md) | DRAFT v0.1 (2026-07-11) |
 <!-- END generated status table -->

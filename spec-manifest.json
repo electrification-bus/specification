@@ -38,7 +38,7 @@
       },
       "circuit": {
         "version": "0.3",
-        "date": "2026-07-27",
+        "date": "2026-07-29",
         "status": "DRAFT",
         "path": "data-models/circuit.md"
       },
@@ -280,6 +280,12 @@
       }
     },
     "conventions": {
+      "property-json": {
+        "version": "0.1",
+        "date": "2026-07-29",
+        "status": "DRAFT",
+        "path": "conventions/property-json.md"
+      },
       "spec-provenance": {
         "version": "0.1",
         "date": "2026-07-10",
