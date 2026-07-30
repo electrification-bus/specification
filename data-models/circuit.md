@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.3
-**Date:** 2026-07-27
+**Date:** 2026-07-29
 **Authors:** Don Jackson
 
 ## Overview
@@ -58,6 +58,18 @@ ebus/5/<circuit-id>/                   energy.ebus.device.circuit
 
 Only `info` and the device type are always present. `connection` SHOULD be published when topology is known (its absence means "topology unknown", per the framework absence rule). `meter`, `switch`, `breaker`, `load-shed`, and `pcs` are each published when the circuit has the corresponding function.
 
+The table below is the normative, machine-readable statement of that capability-level conformance; the parenthetical annotations in the tree above are illustrative.
+
+| Capability | Node type | Req | Published |
+|---|---|---|---|
+| `info` | `energy.ebus.capability.info` | MUST | always |
+| `connection` | `energy.ebus.capability.connection` | SHOULD | when topology is known |
+| `meter` | `energy.ebus.capability.meter` | MAY | when instrumented |
+| `switch` | `energy.ebus.capability.switch` | MAY | when switchable |
+| `breaker` | `energy.ebus.capability.breaker` | MAY | when breaker-protected |
+| `load-shed` | `energy.ebus.capability.load-shed` | MAY | when the host sheds load |
+| `pcs` | `energy.ebus.capability.pcs` | MAY | when the host runs a PCS |
+
 ### Device ID
 
 The device ID is publisher-defined and opaque to consumers (a UUID, the breaker serial, or a proxier-scoped `{proxier-id}-{proxied-id}` identifier for a proxied circuit). The data model places no constraint on its form.
@@ -93,7 +105,15 @@ The circuit's topological position: what is wired downstream of it (`feeds-*`) a
 
 ### meter
 
-Electrical measurements at the circuit. Published when the circuit is instrumented; omitted otherwise. The full property catalog and the `-a` / `-b` / `-c` / `-n` per-conductor convention are defined in [`capabilities/meter.md`](../capabilities/meter.md). On a circuit, `active-power` SHOULD be published and uses the default reference direction (positive = flowing to the load, i.e. imported).
+Electrical measurements at the circuit. Published when the circuit is instrumented; omitted otherwise. The full property catalog and the `-a` / `-b` / `-c` / `-n` per-conductor convention are defined in [`capabilities/meter.md`](../capabilities/meter.md).
+
+**Node type:** `energy.ebus.capability.meter`
+
+The `meter` catalog is published at its catalog-default conformance (MAY), with one property tightened on a circuit:
+
+| Property ID | Req | Notes |
+|---|---|---|
+| `active-power` | SHOULD | Uses the default reference direction (positive = flowing to the load, i.e. imported). |
 
 The full per-phase / reactive / apparent / 4-quadrant matrix (as exposed by, for example, the Eaton SBLCP telemetry) is added additively as consumers require it.
 

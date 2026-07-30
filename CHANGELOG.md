@@ -6,6 +6,16 @@ All notable changes to the Electrification Bus specification: the data models, c
 
 Entries are tagged with the affected artifact and a category (Added / Changed / Renamed / Deprecated / Removed / Fixed). The commit hash in parentheses links each entry to git history. Formal releases and version tags will begin once the specification stabilizes.
 
+## 2026-07-29
+
+### Added
+
+- **convention/property-json** 0.1: a new convention defining machine-readable property definitions. Each versioned capability catalog and data-model document gains a co-located JSON sibling (`capabilities/<name>.json`, `data-models/<name>.json`) generated from and verified against the normative prose. The JSON is capability-canonical plus device-projection (a `capability-catalog` carries the full normalized property vocabulary with its conformance floor; a `device-profile` composes catalogs, records per-device conformance, and adds device-specific properties by reference), inherits its prose file's `Version:` (so an existing artifact pin covers both files and no new pin key is introduced), and stamps a `schema_version` token whose contract is this convention. See [`conventions/property-json.md`](conventions/property-json.md).
+
+### Changed
+
+- **data-model/circuit**: relocated the circuit's per-capability conformance and the `meter/active-power` requirement from prose into tables, so they are machine-readable (a prerequisite for the co-located property-definition JSON above). No conformance value changed: `info` remains MUST (always present), `connection` SHOULD, and `meter` / `switch` / `breaker` / `load-shed` / `pcs` remain optional (MAY, each published when the circuit has that function); `meter/active-power` remains SHOULD. Added a capability-level conformance table to the Circuit Device section and a per-property Req table to the `meter` section; the `info` and `pcs` property tables already carried a Req column. In-place DRAFT restatement: the artifact version stays 0.3 and no downstream lockfile re-pin is required; only the document Date header moved.
+
 ## 2026-07-15
 
 ### Changed

@@ -11,6 +11,7 @@ Process and engineering conventions shared across the Electrification Bus reposi
 | Convention | Document | Status |
 |---|---|---|
 | Specification provenance (`.ebus-spec.json` lockfile) | [`spec-provenance.md`](spec-provenance.md) | DRAFT v0.1 (2026-07-10) |
+| Machine-readable property definitions (property-JSON) | [`property-json.md`](property-json.md) | DRAFT v0.1 (2026-07-29) |
 | Version single source of truth (Python packaging + release) | [`version-single-source.md`](version-single-source.md) | DRAFT v0.1 (2026-07-11) |
 
 ## Related
