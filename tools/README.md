@@ -1,6 +1,6 @@
 # Tools
 
-Small, dependency-free Python utilities (standard library only) for maintaining the specification and for downstream implementations to check their currency against it.
+Small Python utilities for maintaining the specification and for downstream implementations to check their currency against it. Most are standard-library only; `check-property-catalogs.py` needs `jsonschema` (see [`requirements.txt`](requirements.txt)). The maintenance checks run in CI (see [`../.github/workflows/spec-checks.yml`](../.github/workflows/spec-checks.yml)).
 
 ## `gen-spec-manifest.py`
 
@@ -36,3 +36,26 @@ python3 tools/drift-report.py --config ~/my-ebus-fleet.txt
 ```
 
 Exit code is non-zero when any downstream is behind, so it can gate a fleet-wide check.
+
+## `check-capability-catalogs.py`
+
+Enforces two capability-registry invariants: every capability actually used (declared as a `**Node type:**` in a data model) is registered in `registries/capability-types.md`, and every registered capability has a standalone versioned catalog under `capabilities/` (except the allowlisted device-defining capabilities). Its output is the remaining canonicalization backlog.
+
+```bash
+python3 tools/check-capability-catalogs.py   # non-zero if a capability is unregistered or uncatalogued
+```
+
+## `check-property-catalogs.py`
+
+Generates, and verifies, the machine-readable property-definition JSON siblings of the prose (see [`../conventions/property-json.md`](../conventions/property-json.md)): a `capabilities/<name>.json` for each capability catalog and a `data-models/<name>.json` for each supported device model. These are **descriptive**, not a conformance contract: a catalog is the recommended, extensible property vocabulary; a device profile is a light, advisory composition of the capabilities each device type publishes.
+
+```bash
+python3 tools/check-property-catalogs.py          # regenerate the JSON from the prose
+python3 tools/check-property-catalogs.py --check  # non-zero if any JSON is stale or structurally invalid
+```
+
+Needs `jsonschema` (validates the generated JSON against `conventions/schemas/`). The Markdown is the single source of truth; do not hand-edit the generated JSON. `--check` never forces intentionally-illustrative prose into tables; it only fails on stale or malformed JSON, and otherwise emits advisory notes.
+
+## Continuous integration
+
+[`../.github/workflows/spec-checks.yml`](../.github/workflows/spec-checks.yml) runs `gen-spec-manifest.py --check`, `check-capability-catalogs.py`, and `check-property-catalogs.py --check` on every push to `main` and every pull request, so the manifest, the registry invariants, and the property JSON stay consistent with the prose. `drift-report.py` is not in CI: it checks downstream repositories, which live outside this repo.

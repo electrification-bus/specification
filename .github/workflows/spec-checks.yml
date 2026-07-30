@@ -1,0 +1,35 @@
+name: spec checks
+
+# Keep the generated artifacts consistent with the prose that is their single
+# source of truth: the manifest + README status table, the capability-registry
+# invariants, and the machine-readable property-definition JSON.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tool dependencies
+        run: pip install -r tools/requirements.txt
+
+      - name: Manifest and README status table are current
+        run: python3 tools/gen-spec-manifest.py --check
+
+      - name: Capability registry invariants hold
+        run: python3 tools/check-capability-catalogs.py
+
+      - name: Property-definition JSON is current and valid
+        run: python3 tools/check-property-catalogs.py --check

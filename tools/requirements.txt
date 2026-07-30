@@ -1,0 +1,4 @@
+# Python dependencies for the specification's maintenance tools.
+# Only check-property-catalogs.py needs a third-party package; the others are
+# standard-library only.
+jsonschema>=4
