@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.12
-**Date:** 2026-07-30
+**Date:** 2026-07-31
 **Authors:** Don Jackson
 
 ## Overview
@@ -216,6 +216,12 @@ On this enclosure the `shed/policy` algorithm is `soc-priority.v1`: circuits wit
 Each circuit breaker in the enclosure is an `energy.ebus.device.circuit` child device. The number of circuits depends on the enclosure model. **Device ID:** the circuit UUID (32-char hex), e.g., `12fc9179f236422183e1640fa3eaba59`.
 
 A smart panel typically publishes each circuit with the full capability set (metered, a remotely-controllable `switch`, `breaker` protection, and `load-shed` / `pcs` policy participation); a simpler load center publishes fewer, per the conformance-latitude and capability-presence principles in [`circuit.md`](circuit.md).
+
+#### Enclosure-specific: meter reference direction
+
+A circuit hosted in a distribution enclosure is metered at the enclosure's branch terminal, and its `meter` uses the **enclosure's reference direction**, not the [`meter.md`](../capabilities/meter.md) capability-level default. Positive `active-power` is power flowing from the circuit *into the enclosure busbar* (a backfeed, for example a PV inverter or a discharging BESS on that breaker); a consuming load reads **negative** `active-power` and accumulates `exported-energy` (enclosure-to-circuit delivery), while a backfeeding circuit reads **positive** `active-power` and accumulates `imported-energy` (circuit-to-enclosure).
+
+This is the single enclosure frame: at every enclosure terminal, positive `active-power` is power flowing *into* the enclosure. At the service `lugs` and the enclosure aggregate `meter` that is grid import (positive = imported, per §"meter" above); at a hosted circuit it is a backfeed. So lugs and circuits live in one signed frame, with no per-terminal sign flip: a consuming circuit (negative) and a backfeed (positive) combine directly with the feed. Because every terminal reports power *into* the enclosure, the enclosure's power balance closes as a signed sum to zero (in a single-feed panel the hosted circuits' `active-power` sums to the negative of the service-feed reading). This is why the reference implementer publishes the branch fields verbatim, applying no sign transformation. For a consuming load this is the inverse of the capability-level default (positive = consumption into the device); a standalone or instrument circuit, which has no enclosure busbar to reference, keeps that default (see [`circuit.md`](circuit.md)).
 
 #### Enclosure-specific: physical position
 
@@ -741,7 +747,7 @@ ebus/5/<circuit-5-id>/                          energy.ebus.device.circuit
   breaker/poles                                 2
   breaker/rating                                60
   info/tags                                     "EVSE"
-  meter/active-power                            5350.0
+  meter/active-power                            -5350.0
   switch/relay                                  CLOSED
   load-shed/priority                        SOC_THRESHOLD
   switch/relay-controllable                     true
@@ -754,7 +760,7 @@ ebus/5/<circuit-1-id>/                          energy.ebus.device.circuit
   info/spaces                               "1"
   breaker/poles                                 1
   breaker/rating                                20
-  meter/active-power                            245.3
+  meter/active-power                            -245.3
   switch/relay                                  CLOSED
   load-shed/priority                        NEVER
   switch/relay-controllable                     true
@@ -786,6 +792,8 @@ ebus/5/ab-1234-c5d67-SD123456789/                energy.ebus.device.evse  (proxi
 ```
 
 Consumer derivation: a scan of enclosure-side connection records finds `<circuit-7-id>/connection/feeds-device-type == energy.ebus.device.bess` → the BESS is IN_PANEL on circuit 7. Same scan finds `<circuit-5-id>/connection/feeds-device-type == energy.ebus.device.evse` → the EVSE is IN_PANEL on circuit 5. Wiring relationships are recorded once, on the connection-owner that physically owns the wiring; no per-DER-class "feed" or "relative-position" property is needed on the DER children.
+
+Note the two sign frames in play (see §"Enclosure-specific: meter reference direction"): each hosted circuit's `meter/active-power` is in the enclosure frame (a consuming load is negative, so the EV Charger circuit reads `-5350.0` and the Kitchen circuit `-245.3`), while the proxied EVSE child's own `meter/active-power` uses the EVSE device frame (positive = charging power delivered into the EV, `5350.0`). The two describe the same physical draw from each device's reference direction.
 
 ---
 

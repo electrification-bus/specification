@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.2
-**Date:** 2026-07-27
+**Date:** 2026-07-31
 **Authors:** Don Jackson
 
 ## Identifier
@@ -38,8 +38,8 @@ In US residential split-phase wiring the two hot legs are commonly labelled **L1
 | `frequency` | float | Hz | MAY | Line frequency. |
 | `voltage` | float | V | MAY | RMS voltage at a single-point meter (one measured conductor, e.g. a branch circuit or a device's single AC boundary). A split-phase or three-phase meter uses the per-conductor `voltage-{a,b,c}` instead. |
 | `current` | float | A | MAY | RMS current at a single-point meter (one measured conductor). A split-phase or three-phase meter uses the per-conductor `current-{a,b,c,n}` instead. |
-| `imported-energy` | float | Wh | MAY | Cumulative active energy imported (into the metered device / consumed). Monotonically non-decreasing. |
-| `exported-energy` | float | Wh | MAY | Cumulative active energy exported (out of the metered device / produced or backfed). Monotonically non-decreasing. |
+| `imported-energy` | float | Wh | MAY | Cumulative active energy imported: the energy counterpart of positive `active-power` (into the metered device / consumption in the default frame; which register accrues follows the reference-direction rule below). Monotonically non-decreasing. |
+| `exported-energy` | float | Wh | MAY | Cumulative active energy exported: the energy counterpart of negative `active-power` (out of the metered device / production or backfeed in the default frame; which register accrues follows the reference-direction rule below). Monotonically non-decreasing. |
 | `imported-reactive-energy` | float | varh | MAY | Cumulative reactive energy imported. |
 | `exported-reactive-energy` | float | varh | MAY | Cumulative reactive energy exported. |
 | `apparent-energy-imported` | float | VAh | MAY | Cumulative apparent energy imported. |
@@ -62,7 +62,9 @@ In US residential split-phase wiring the two hot legs are commonly labelled **L1
 
 ## Sign convention (reference direction)
 
-The default reference direction is **positive = imported**: `active-power` and `imported-energy` are positive when power flows *into* the metered device or load (consumption, or import from the grid); `exported-energy`, and negative `active-power`, are the reverse. This matches the utility meter, circuits, feed lugs, EVSE, and water heaters.
+The default reference direction is **positive = imported**: `active-power` and `imported-energy` are positive when power flows *into* the metered device or load (consumption, or import from the grid); `exported-energy`, and negative `active-power`, are the reverse. This matches the utility meter, feed lugs, EVSE, and water heaters.
+
+A **circuit**'s reference direction is set by its host, not fixed here. A circuit **hosted in a distribution enclosure** is metered at the enclosure's branch terminal and uses the enclosure's reference direction: positive `active-power` is power flowing from the circuit *into the enclosure busbar*, so a consuming load reads negative `active-power` and accumulates `exported-energy` (enclosure-to-circuit delivery), while a backfeeding circuit (for example a PV inverter on that breaker) reads positive `active-power` and accumulates `imported-energy`; see [`devices/distribution-enclosure.md`](../devices/distribution-enclosure.md). A **standalone or instrument** circuit (a self-publishing smart breaker, a proxied submeter, an eGauge/EKM point) has no enclosure busbar to reference and uses the default above (positive = consumption into the conductor).
 
 Device models whose natural reference is power flowing *out* invert the default and state so explicitly: a **BESS** publishes `active-power` positive when discharging (out of the device), a **PV** proxy positive when producing, and an **outlet** or **PDU** output positive when delivering to the connected load. A consumer reads the device's model to know the reference direction; the sign is never ambiguous within a given device type.
 

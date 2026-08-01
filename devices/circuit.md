@@ -2,7 +2,7 @@
 
 **Status:** DRAFT
 **Version:** 0.3
-**Date:** 2026-07-29
+**Date:** 2026-07-31
 **Authors:** Don Jackson
 
 ## Overview
@@ -113,7 +113,9 @@ The `meter` catalog is published at its catalog-default conformance (MAY), with 
 
 | Property ID | Req | Notes |
 |---|---|---|
-| `active-power` | SHOULD | Uses the default reference direction (positive = flowing to the load, i.e. imported). |
+| `active-power` | SHOULD | Reference direction is host-dependent; see the note below. |
+
+The **reference direction** of `active-power` is set by the circuit's host, so it is not fixed here. A circuit **hosted in a distribution enclosure** follows the enclosure frame: positive is power into the enclosure busbar, so a consuming load reads negative `active-power` and accumulates `exported-energy`, while a backfeeding circuit reads positive and accumulates `imported-energy` (see [`distribution-enclosure.md`](distribution-enclosure.md)). A **standalone or instrument** circuit (a self-publishing smart breaker, a proxied submeter, an eGauge/EKM point) has no enclosure busbar to reference and follows the [`meter.md`](../capabilities/meter.md) default (positive = consumption into the conductor). This keeps the circuit model container-neutral: the host sets the frame, per the Container-neutral principle above.
 
 The full per-phase / reactive / apparent / 4-quadrant matrix (as exposed by, for example, the Eaton SBLCP telemetry) is added additively as consumers require it.
 
@@ -185,8 +187,8 @@ ebus/5/<enc>-c17/$description.type   = energy.ebus.device.circuit
 .../info/name                         = "Water Heater"
 .../info/tags                         = "WATER_HEATER"
 .../connection/feeds-device-type      = energy.ebus.device.water-heater
-.../meter/active-power                = 3120.0
-.../meter/imported-energy             = 812345.0
+.../meter/active-power                = -3120.0     # enclosure frame (hosted): a consuming load is negative
+.../meter/exported-energy             = 812345.0    # enclosure-to-circuit delivery accrues as exported
 .../switch/relay                      = CLOSED
 .../switch/relay-controllable         = true
 .../breaker/rating                    = 30
@@ -212,17 +214,17 @@ ebus/5/<enc>-c04/$description.type   = energy.ebus.device.circuit
 ebus/5/<egauge>-pv/$description.type = energy.ebus.device.circuit
 .../info/name                         = "PV"
 .../connection/feeds-device-type      = energy.ebus.device.pv
-.../meter/active-power                = -4210.0
+.../meter/active-power                = -4210.0     # default frame (instrument): PV production is negative
 ```
 
-No `breaker` / `switch`: the eGauge only measures a conductor.
+No `breaker` / `switch`: the eGauge only measures a conductor. As a standalone instrument it uses the `meter.md` default reference direction (positive = into the conductor), so PV production reads negative, the reverse sign of the same PV on an enclosure breaker (which would read positive as a backfeed).
 
 ### Standalone smart breaker, proxied (protection + control + metering, no enclosure parent)
 
 ```
 ebus/5/<proxier>-<serial>/$description.type = energy.ebus.device.circuit
 .../info/name                         = "ADU Range"
-.../meter/active-power                = 1840.0
+.../meter/active-power                = 1840.0      # default frame (no enclosure parent): a consuming load is positive
 .../switch/relay                      = CLOSED
 .../switch/relay-controllable         = true
 .../breaker/rating                    = 20
@@ -244,7 +246,7 @@ A tandem puts two 120 V loads in one position: one meter, one relay, two breaker
 ```
 # Feed circuit: aggregate meter + shared relay, no breaker
 ebus/5/<enc>-c31/$description.type   = energy.ebus.device.circuit
-.../meter/active-power                = 1450.0
+.../meter/active-power                = -1450.0     # enclosure frame (hosted): aggregate consuming load is negative
 .../switch/relay                      = CLOSED
 .../switch/relay-controllable         = true
 

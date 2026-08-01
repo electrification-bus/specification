@@ -5,7 +5,7 @@
   "device": "energy.ebus.device.distribution-enclosure",
   "version": "0.12",
   "status": "DRAFT",
-  "date": "2026-07-30",
+  "date": "2026-07-31",
   "device_types": {
     "energy.ebus.device.circuit": {
       "role": "child",

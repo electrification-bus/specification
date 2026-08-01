@@ -5,7 +5,7 @@
   "capability": "energy.ebus.capability.meter",
   "version": "0.2",
   "status": "DRAFT",
-  "date": "2026-07-27",
+  "date": "2026-07-31",
   "properties": {
     "active-power": {
       "datatype": "float",
@@ -53,13 +53,13 @@
       "datatype": "float",
       "unit": "Wh",
       "req": "MAY",
-      "description": "Cumulative active energy imported (into the metered device / consumed). Monotonically non-decreasing."
+      "description": "Cumulative active energy imported: the energy counterpart of positive `active-power` (into the metered device / consumption in the default frame; which register accrues follows the reference-direction rule below). Monotonically non-decreasing."
     },
     "exported-energy": {
       "datatype": "float",
       "unit": "Wh",
       "req": "MAY",
-      "description": "Cumulative active energy exported (out of the metered device / produced or backfed). Monotonically non-decreasing."
+      "description": "Cumulative active energy exported: the energy counterpart of negative `active-power` (out of the metered device / production or backfeed in the default frame; which register accrues follows the reference-direction rule below). Monotonically non-decreasing."
     },
     "imported-reactive-energy": {
       "datatype": "float",

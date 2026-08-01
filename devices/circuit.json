@@ -5,7 +5,7 @@
   "device": "energy.ebus.device.circuit",
   "version": "0.3",
   "status": "DRAFT",
-  "date": "2026-07-29",
+  "date": "2026-07-31",
   "device_types": {
     "energy.ebus.device.circuit": {
       "capabilities": {

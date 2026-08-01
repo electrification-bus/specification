@@ -6,6 +6,12 @@ All notable changes to the Electrification Bus specification: the data models, c
 
 Entries are tagged with the affected artifact and a category (Added / Changed / Renamed / Deprecated / Removed / Fixed). The commit hash in parentheses links each entry to git history. Formal releases and version tags will begin once the specification stabilizes.
 
+## 2026-07-31
+
+### Fixed
+
+- **capability/meter**, **data-model/distribution-enclosure**, **data-model/circuit**: specified the reference direction of a circuit's `meter` as **host-dependent**, resolving a disagreement between `meter.md` (which listed circuits under the default positive-is-imported direction), `distribution-enclosure.md` (silent on it), and the reference simulators. A circuit **hosted in a distribution enclosure** uses the **enclosure frame**: positive `active-power` is power into the enclosure busbar, so a consuming load reads negative `active-power` and accumulates `exported-energy`, while a backfeeding circuit reads positive and accumulates `imported-energy` (the same enclosure frame as the feed lugs and service entrance, so the enclosure's power balance closes: with positive = into the enclosure at every terminal, the signed powers sum to zero). A **standalone or instrument** circuit keeps the `meter.md` default (positive = consumption into the conductor). `meter.md` drops `circuits` from its default-direction list and adds the host-dependent clause; `distribution-enclosure.md` adds an explicit hosted-circuit reference-direction subsection, and its Example 2 load circuits now read negative; `circuit.md` adds a host-dependent note to its `meter` section and shows both frames in its examples. This aligns the spec to the reference implementer (SPAN), which already publishes the enclosure frame (its adapter maps the panel's branch fields through verbatim, sign preserved). The sign convention is prose, not encoded in the property catalogs, so no property, datatype, unit, or the `meter` default rule changed. In-place DRAFT clarification: the artifact versions are unchanged (`meter` 0.2, `distribution-enclosure` 0.12, `circuit` 0.3) and no downstream lockfile re-pin is required; only the document Date headers moved (manifest, README status table, and property JSON regenerated). A consumer that had read hosted-circuit signs under the default frame should verify against the enclosure frame.
+
 ## 2026-07-30
 
 ### Added
