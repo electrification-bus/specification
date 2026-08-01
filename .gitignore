@@ -2,3 +2,7 @@
 *.swp
 *.swo
 *~
+
+# Python bytecode cache (from tools/)
+__pycache__/
+*.py[cod]
