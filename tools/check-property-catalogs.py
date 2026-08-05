@@ -42,6 +42,28 @@ NUMERIC = {"integer", "float"}
 REQ = {"MUST", "SHOULD", "MAY"}
 NO_UNIT = {"", "-", "—", "–", "n/a", "none"}  # em/en dashes read as "no unit"
 
+# Abstract unit tokens name a DIMENSION rather than a unit, for properties whose
+# unit legitimately varies by device (a reservoir's stored energy is electrical
+# kWh in a BESS, thermal Wh in a water heater). A publisher substitutes a
+# concrete unit in its runtime $description; the token is never published.
+# Documented in conventions/property-json.md; adding one is a spec change.
+ABSTRACT_UNITS = {"energy"}
+
+# Concrete units the catalogs use, plus the obvious SI siblings a new property
+# would reach for. Used only to advise on a unit that is neither concrete nor a
+# declared abstract token (a typo such as 'enrgy', or a genuinely new unit that
+# belongs here). Extend it when a real unit is missing; the note is advisory, so
+# a missing entry is a nudge, never a build failure.
+CONCRETE_UNITS = {
+    "W", "kW", "MW", "VA", "kVA", "var", "kvar",           # power
+    "Wh", "kWh", "MWh", "VAh", "kVAh", "varh", "kvarh",    # energy
+    "A", "mA", "kA", "Ah", "kAh",                          # current, charge
+    "V", "mV", "kV",                                       # voltage
+    "Hz", "°C", "°F", "K",                                 # frequency, temperature
+    "ms", "s", "min", "h", "d",                            # time
+    "°", "%", "pu",                                        # angle, ratio, per-unit
+}
+
 VERSION_RE = re.compile(r"^\*\*Version:\*\*\s*(\S+)", re.M)
 STATUS_RE = re.compile(r"^\*\*Status:\*\*\s*(\w+)", re.M)
 DATE_RE = re.compile(r"^\*\*Date:\*\*\s*(\S+)", re.M)
@@ -320,6 +342,13 @@ def semantic_warnings_catalog(obj):
             warns.append(f"{pid}: datatype '{dt}' is not a Homie 5 datatype")
         if "unit" in p and dt not in NUMERIC:
             warns.append(f"{pid}: unit '{p['unit']}' on non-numeric datatype '{dt}'")
+        unit = p.get("unit")
+        if unit and unit not in CONCRETE_UNITS and unit not in ABSTRACT_UNITS:
+            warns.append(
+                f"{pid}: unit '{unit}' is neither a known concrete unit nor a declared abstract "
+                f"token ({', '.join(sorted(ABSTRACT_UNITS))}) - typo, or add it to "
+                f"CONCRETE_UNITS/ABSTRACT_UNITS in tools/check-property-catalogs.py"
+            )
         if dt == "enum" and "format" not in p:
             warns.append(f"{pid}: enum has no recommended value set in prose (a publisher advertises its own in $format)")
     return warns

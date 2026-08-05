@@ -85,7 +85,7 @@ Electrification Bus builds on three well-known protocols — MQTT (with the [Hom
 | **Extensions** | |
 | [`extensions/imported.md`](extensions/imported.md) | STABLE v1.0.0 (2026-07-04) |
 | **Conventions** | |
-| [`conventions/property-json.md`](conventions/property-json.md) | DRAFT v0.1 (2026-07-30) |
+| [`conventions/property-json.md`](conventions/property-json.md) | DRAFT v0.2 (2026-08-05) |
 | [`conventions/spec-provenance.md`](conventions/spec-provenance.md) | DRAFT v0.1 (2026-07-10) |
 | [`conventions/version-single-source.md`](conventions/version-single-source.md) | DRAFT v0.1 (2026-07-11) |
 <!-- END generated status table -->

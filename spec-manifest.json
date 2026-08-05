@@ -281,8 +281,8 @@
     },
     "conventions": {
       "property-json": {
-        "version": "0.1",
-        "date": "2026-07-30",
+        "version": "0.2",
+        "date": "2026-08-05",
         "status": "DRAFT",
         "path": "conventions/property-json.md"
       },

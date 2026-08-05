@@ -1,8 +1,8 @@
 # Machine-Readable Property Definitions: the property-JSON convention
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-30
+**Version:** 0.2
+**Date:** 2026-08-05
 **Authors:** Don Jackson
 
 ## Purpose
@@ -73,12 +73,29 @@ The recommended, complete property vocabulary of one capability. Every property 
 - **`properties`** maps each property identifier to its definition:
   - **`datatype`** (required): the **recommended** Homie 5 datatype (`integer`, `float`, `boolean`, `string`, `enum`, `color`, `datetime`, `duration`, `json`). A publisher may widen it (an open `string` in place of an `enum`, `json` in place of a scalar, per principle 10) and advertise the datatype it publishes in `$format`.
   - **`req`**: the property's conformance from the catalog table (MAY by default). This is the spec's guidance, not a per-device requirement.
-  - **`unit`**: a numeric property's unit. Omitted for non-numeric properties and for a dimensionless numeric (a power factor has no unit).
+  - **`unit`**: a numeric property's unit. Omitted for non-numeric properties and for a dimensionless numeric (a power factor has no unit). Usually a concrete unit (`W`, `kWh`, `A`, `%`, `°C`). A few properties instead carry an **abstract unit token**, which names a *dimension* rather than a unit: see below.
   - **`format`**: the **recommended core** value domain: for an `enum` a comma-separated token list (`OK,FAULT,UNKNOWN`), for a bounded numeric a `min:max` range. A publisher may extend or redefine the set and advertise its own in `$format` (open vocabularies, principle 8).
   - **`settable`**: present and `true` only for settable properties.
   - **`description`**: the prose from the table's Description column.
   - **`name`**: a short human name, when the source table carries a Name column (catalog tables usually do not).
 - **`property_patterns`** holds per-conductor / per-phase families. The pattern key carries the suffix set inline in braces, matching the prose, and `expand` lists the tokens: `voltage-{a,b,c}` with `["a","b","c"]` expands to `voltage-a`, `voltage-b`, `voltage-c`.
+
+### Abstract unit tokens
+
+A property whose unit legitimately varies by device carries an **abstract unit token** in place of a concrete unit. The token names the dimension; the publisher chooses the unit.
+
+| Token | Dimension | Why it is not concrete |
+|---|---|---|
+| `energy` | Energy | A reservoir's stored-energy magnitudes are reported in the device's native energy unit: a BESS in electrical `kWh`, a water heater in thermal `Wh`. They are neither the same unit nor summable across reservoir kinds, so the catalog cannot name one. |
+
+The token appears on `soc`'s `soe`, `total-energy-storage` and `loadup-headroom`, and on `info`'s `nameplate-capacity`.
+
+Two rules follow, and they matter to anyone reading these files as data:
+
+- **A publisher MUST substitute a concrete unit** in the property's runtime `$unit` / `$description`. `energy` is never published on the wire.
+- **A consumer MUST read the unit from the runtime `$description`, never from the catalog**, for any property carrying an abstract token. A consumer that maps units to presentation metadata (a Home Assistant bridge deriving `unit_of_measurement`, a dashboard axis label) would otherwise render the literal string `energy`. Reading the runtime unit is the correct habit for *every* property, since a publisher may report in any unit of the right dimension; an abstract token merely makes it unavoidable.
+
+Abstract tokens are deliberately rare. Adding one is a spec change: it belongs in the table above, and in `ABSTRACT_UNITS` in [`tools/check-property-catalogs.py`](../tools/check-property-catalogs.py), which advises on any unit that is neither a known concrete unit nor a declared token (so a typo such as `enrgy` surfaces rather than passing silently as an opaque string).
 
 ## The `device-profile` file
 
