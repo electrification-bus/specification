@@ -1,7 +1,7 @@
 # Electrification Bus Device Type Registry
 
-**Status:** DRAFT v0.4
-**Date:** 2026-06-27
+**Status:** DRAFT v0.5
+**Date:** 2026-08-05
 **Authors:** Don Jackson
 
 ## Purpose
@@ -36,6 +36,10 @@ The **Source** column references the data-model document where the identifier cu
 | `energy.ebus.device.pdu` | Parent device for a Power Distribution Unit: distributes power to switchable, metered `outlet` children. No storage and no generation. | [`devices/pdu.md`](../devices/pdu.md) |
 | `energy.ebus.device.outlet` | One switchable, metered output port (an AC receptacle, or a USB / DC port). Used as a child of a host (PDU, plug-in BESS / UPS) or standalone (a smart plug / smart receptacle). | [`devices/outlet.md`](../devices/outlet.md) |
 | `energy.ebus.device.water-heater` | A storage water heater (heat-pump, electric-resistance, gas, or hybrid) modeled as a controllable, grid-flexible load and dispatchable thermal-storage resource. May be published natively or proxied (e.g., as the child of a CTA-2045 UCM bridge). | [`devices/water-heater.md`](../devices/water-heater.md) |
+| `energy.ebus.device.utility-meter` | The revenue-grade metering device installed by an electric utility at a customer's service entrance, between the utility's distribution system and the premises wiring. The site's primary point of measurement for energy billing and its most authoritative observer of the utility supply. May be published natively or by a proxy publisher with access to the underlying values. | [`devices/utility-meter.md`](../devices/utility-meter.md) |
+| `energy.ebus.device.battery` | Individual battery pack. Child of a BESS. | [`devices/bess.md`](../devices/bess.md) |
+| `energy.ebus.device.inverter` | DC-AC inverter. May handle both battery and solar (e.g., Powerwall 3). Child of a BESS. | [`devices/bess.md`](../devices/bess.md) |
+| `energy.ebus.device.meter` | Metering point within a larger system, used for site, load, or solar metering. Child of a BESS. Distinct from `utility-meter`, which is the utility's revenue meter at the service entrance. | [`devices/bess.md`](../devices/bess.md) |
 
 ## Adding new device types
 

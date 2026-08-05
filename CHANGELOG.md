@@ -6,6 +6,12 @@ All notable changes to the Electrification Bus specification: the data models, c
 
 Entries are tagged with the affected artifact and a category (Added / Changed / Renamed / Deprecated / Removed / Fixed). The commit hash in parentheses links each entry to git history. Formal releases and version tags will begin once the specification stabilizes.
 
+## 2026-08-05
+
+### Fixed
+
+- **registry/device-types** (0.4 -> 0.5): registered four device-type identifiers that data-model documents already declare but the registry had never listed: `energy.ebus.device.utility-meter` (declared by `devices/utility-meter.md`, and the type the reference publisher in the Python SDK emits) plus the three BESS child roles `energy.ebus.device.battery`, `energy.ebus.device.inverter` and `energy.ebus.device.meter` (declared by `devices/bess.md`). The registry is descriptive rather than exhaustive and consumers must tolerate unknown `$type` values, so nothing was broken by the omission, but a registry that omits types its own data models declare cannot be used to check conformance, and a reader looking up a type a device actually publishes found nothing. The `meter` row notes its distinction from `utility-meter` (an internal metering point within a system, versus the utility's revenue meter at the service entrance), the two being easy to confuse. No data model changed: this is the registry catching up to them. Found while auditing a downstream implementation's capability table against the catalogs, via [python-sdk#27](https://github.com/electrification-bus/python-sdk/issues/27).
+
 ## 2026-07-31
 
 ### Fixed

@@ -245,8 +245,8 @@
         "path": "registries/circuit-tags.md"
       },
       "device-types": {
-        "version": "0.4",
-        "date": "2026-06-27",
+        "version": "0.5",
+        "date": "2026-08-05",
         "status": "DRAFT",
         "path": "registries/device-types.md"
       },
