@@ -33,7 +33,7 @@ This area is still being populated: [`tools/check-capability-catalogs.py`](../to
 | `energy.ebus.capability.grid-forming` | [`grid-forming.md`](grid-forming.md) | DRAFT v0.2 (2026-08-20) |
 | `energy.ebus.capability.info` | [`info.md`](info.md) | DRAFT v0.3 (2026-08-20) |
 | `energy.ebus.capability.load-shed` | [`load-shed.md`](load-shed.md) | DRAFT v0.3 (2026-07-30) |
-| `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.3 (2026-08-20) |
+| `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.4 (2026-08-20) |
 | `energy.ebus.capability.output-island` | [`output-island.md`](output-island.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.pcs` | [`pcs.md`](pcs.md) | DRAFT v0.3 (2026-07-14) |
 | `energy.ebus.capability.power-flows` | [`power-flows.md`](power-flows.md) | DRAFT v0.2 (2026-08-20) |
@@ -42,5 +42,5 @@ This area is still being populated: [`tools/check-capability-catalogs.py`](../to
 | `energy.ebus.capability.shed-forecast` | [`shed-forecast.md`](shed-forecast.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.soc` | [`soc.md`](soc.md) | DRAFT v0.2 (2026-08-20) |
 | `energy.ebus.capability.status` | [`status.md`](status.md) | DRAFT v0.1 (2026-07-11) |
-| `energy.ebus.capability.switch` | [`switch.md`](switch.md) | DRAFT v0.2 (2026-08-20) |
+| `energy.ebus.capability.switch` | [`switch.md`](switch.md) | DRAFT v0.3 (2026-08-20) |
 | `energy.ebus.capability.voltage-response` | [`voltage-response.md`](voltage-response.md) | DRAFT v0.1 (2026-07-11) |

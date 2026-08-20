@@ -3,7 +3,7 @@
   "schema_version": "property-schema-v1",
   "kind": "capability-catalog",
   "capability": "energy.ebus.capability.switch",
-  "version": "0.2",
+  "version": "0.3",
   "status": "DRAFT",
   "date": "2026-08-20",
   "properties": {
@@ -24,6 +24,11 @@
       "format": "USER,LOAD_SHED,PCS,CONFIGURATION,FAULT,NONE,UNKNOWN",
       "req": "SHOULD",
       "description": "Source attribution for the last relay change: `USER`, `LOAD_SHED`, `PCS`, `CONFIGURATION`, `FAULT`, `NONE`, `UNKNOWN`. Publishers MAY extend via `$format`."
+    },
+    "shared-with-device-ids": {
+      "datatype": "string",
+      "req": "MAY",
+      "description": "Comma-separated Homie device IDs of the other devices this relay also switches. Omitted when it switches only this device. See §\"Shared switching hardware\"."
     }
   }
 }

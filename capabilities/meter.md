@@ -1,7 +1,7 @@
 # Electrification Bus Capability: meter
 
 **Status:** DRAFT
-**Version:** 0.3
+**Version:** 0.4
 **Date:** 2026-08-20
 **Authors:** Don Jackson
 
@@ -44,6 +44,7 @@ In US residential split-phase wiring the two hot legs are commonly labelled **L1
 | `exported-reactive-energy` | float | varh | MAY | Cumulative reactive energy exported. |
 | `apparent-energy-imported` | float | VAh | MAY | Cumulative apparent energy imported. |
 | `apparent-energy-exported` | float | VAh | MAY | Cumulative apparent energy exported. |
+| `shared-with-device-ids` | string | — | MAY | Comma-separated Homie device IDs of the other devices this meter's hardware also measures. Omitted when it measures only this device. See §"Shared metering hardware". |
 
 ### Per-conductor (suffix `-a` / `-b` / `-c`, and `-n` for the neutral where present)
 
@@ -67,6 +68,14 @@ The default reference direction is **positive = imported**: `active-power` and `
 A **circuit**'s reference direction is set by its host, not fixed here. A circuit **hosted in a distribution enclosure** is metered at the enclosure's branch terminal and uses the enclosure's reference direction: positive `active-power` is power flowing from the circuit *into the enclosure busbar*, so a consuming load reads negative `active-power` and accumulates `exported-energy` (enclosure-to-circuit delivery), while a backfeeding circuit (for example a PV inverter on that breaker) reads positive `active-power` and accumulates `imported-energy`; see [`devices/distribution-enclosure.md`](../devices/distribution-enclosure.md). A **standalone or instrument** circuit (a self-publishing smart breaker, a proxied submeter, an eGauge/EKM point) has no enclosure busbar to reference and uses the default above (positive = consumption into the conductor).
 
 Device models whose natural reference is power flowing *out* invert the default and state so explicitly: a **BESS** publishes `active-power` positive when discharging (out of the device), a **PV** proxy positive when producing, and an **outlet** or **PDU** output positive when delivering to the connected load. A consumer reads the device's model to know the reference direction; the sign is never ambiguous within a given device type.
+
+## Shared metering hardware
+
+One current transformer can measure several devices at once: a multi-circuit breaker occupies a single position and protects several branch circuits through one sensor. The reading is real, but it covers the group rather than any one member, and attachment alone cannot say so (see [`framework.md`](../framework.md#capability-coverage-and-shared-hardware) for the declaration and its symmetry requirement).
+
+A publisher in that position MAY omit `meter` on the affected devices, which is truthful and self-describing. A publisher that instead publishes the reading on each member MUST declare the group with `shared-with-device-ids`.
+
+**The values then describe the whole group, not each member's share, so a consumer MUST NOT aggregate them across members of that group.** Summing `active-power` over three circuits behind one sensor reports three times the real load. The same applies to the energy registers: they accumulate the group's flow once, not once per member. A consumer totalling a site counts each shared group a single time.
 
 ## Encoding notes
 

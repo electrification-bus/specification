@@ -23,7 +23,7 @@
   "artifacts": {
     "framework": {
       "framework": {
-        "version": "0.8",
+        "version": "0.9",
         "date": "2026-08-20",
         "status": "DRAFT",
         "path": "framework.md"
@@ -159,7 +159,7 @@
         "path": "capabilities/load-shed.md"
       },
       "meter": {
-        "version": "0.3",
+        "version": "0.4",
         "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/meter.md"
@@ -219,7 +219,7 @@
         "path": "capabilities/status.md"
       },
       "switch": {
-        "version": "0.2",
+        "version": "0.3",
         "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/switch.md"

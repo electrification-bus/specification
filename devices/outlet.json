@@ -16,12 +16,12 @@
         },
         "meter": {
           "catalog": "energy.ebus.capability.meter",
-          "catalog_version": "0.3",
+          "catalog_version": "0.4",
           "req": "MAY"
         },
         "switch": {
           "catalog": "energy.ebus.capability.switch",
-          "catalog_version": "0.2",
+          "catalog_version": "0.3",
           "req": "SHOULD"
         }
       }

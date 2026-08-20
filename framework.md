@@ -1,7 +1,7 @@
 # Electrification Bus Specification
 
 **Status:** DRAFT
-**Version:** 0.8
+**Version:** 0.9
 **Date:** 2026-08-20
 
 ---
@@ -167,6 +167,19 @@ The following principles guide the structure of every eBus data model and the fr
 9. **Multi-instance from the outset.** Identifying attributes and inter-device relationships are recorded per-device rather than enumerated as class-level properties on a containing parent, so N instances of any class can coexist without model changes (for example, multiple BESSs, PV inverters, or EVSEs in a single distribution enclosure).
 10. **Scalars by default; `json` as the escape hatch.** Homie 5 is scalar-first by design, and eBus follows suit: property values use scalar datatypes (`float`, `integer`, `enum`, `datetime`, and so on) wherever the value can be modelled as one, because scalars are directly readable, chartable, and validatable by generic Homie tooling. The `json` datatype is the deliberate escape hatch, the right tool for the specific job when a value cannot be represented as a scalar, for one of two reasons. **Atomicity:** the value is a compound whose parts must be read or applied as a single unit; splitting it across separately-retained scalar topics would let a consumer observe a torn state (parts from different updates, with no way to tell which belong together, or when each was published). Current atomic-compound uses include the `flex` request, the `doe` / `price` per-direction schedules, the `grid-event` array, and the `voltage-response` curve. **Expressiveness:** the value is an open-ended or structured scheme that no fixed scalar or enum can capture and that different implementations will populate differently; here a `json` property whose shape is advertised as a JSON Schema in `$format` (a forward-compatibility mechanism, principle #8) lets a simple implementation stay on a scalar or enum while a richer one opts into structure with no spec change. Current expressiveness uses include the `shed` policy and the escape-hatch form of `load-shed/priority`. In both cases a `json` value SHOULD carry a JSON Schema `$format` so it remains self-describing.
 
+### Capability coverage and shared hardware
+
+A capability's coverage is defined by **attachment**: a `meter` on a device meters that device, a `switch` on a device switches that device. That is complete and unambiguous wherever the underlying hardware serves one device, which is the ordinary case, and it is why no coverage property exists.
+
+Some hardware serves several devices at once. One current transformer can measure a group of branch circuits; one relay can switch a group of them. The reading and the relay state are then real, but they cover the host device **and others**, which is the one thing attachment cannot express. A publisher facing this may always omit the capability, which stays truthful and self-describing under principle 3. A publisher that would rather publish the value declares the exception instead:
+
+- **`shared-with-device-ids`**, `string`, MAY, on any capability whose catalog defines it. A comma-separated list of the Homie device IDs of the **other** devices the same physical hardware also covers. Omitted when the capability covers only its host device, which is the common case.
+
+The relation is **symmetric and has no owner**: every member of a shared group names all the others, and no member is nominated as the holder of the value. Nominating one would reintroduce the arbitrary choice the declaration exists to remove, and a publisher that names peers asymmetrically has published a defect rather than a shape a consumer must reconcile.
+
+What sharing *means* for the values is capability-specific and each catalog states it, because it genuinely differs: values that describe a whole group must not be aggregated across its members, whereas a state that is independently true of every member can be read per-device as usual. A consumer that encounters `shared-with-device-ids` reads the owning catalog rather than assuming either.
+
+This is a declaration about hardware, not about topology. Which device feeds which is [`connection`](capabilities/connection.md); this says only that one sensor or one actuator stands behind several devices.
 
 ---
 

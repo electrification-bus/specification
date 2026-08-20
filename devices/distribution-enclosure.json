@@ -36,7 +36,7 @@
         },
         "meter": {
           "catalog": "energy.ebus.capability.meter",
-          "catalog_version": "0.3"
+          "catalog_version": "0.4"
         },
         "pcs": {
           "catalog": "energy.ebus.capability.pcs",
@@ -81,7 +81,7 @@
         },
         "meter": {
           "catalog": "energy.ebus.capability.meter",
-          "catalog_version": "0.3"
+          "catalog_version": "0.4"
         },
         "status": {
           "catalog": "energy.ebus.capability.status",
@@ -89,7 +89,7 @@
         },
         "switch": {
           "catalog": "energy.ebus.capability.switch",
-          "catalog_version": "0.2"
+          "catalog_version": "0.3"
         }
       }
     },
@@ -106,7 +106,7 @@
         },
         "meter": {
           "catalog": "energy.ebus.capability.meter",
-          "catalog_version": "0.3"
+          "catalog_version": "0.4"
         }
       }
     },
@@ -132,7 +132,7 @@
         },
         "meter": {
           "catalog": "energy.ebus.capability.meter",
-          "catalog_version": "0.3"
+          "catalog_version": "0.4"
         }
       }
     }
