@@ -1,8 +1,8 @@
 # Electrification Bus Circuit Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.3
-**Date:** 2026-07-31
+**Version:** 0.4
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Overview
@@ -58,7 +58,7 @@ ebus/5/<circuit-id>/                   energy.ebus.device.circuit
 
 Only `info` and the device type are always present. `connection` SHOULD be published when topology is known (its absence means "topology unknown", per the framework absence rule). `meter`, `switch`, `breaker`, `load-shed`, and `pcs` are each published when the circuit has the corresponding function.
 
-The table below is the normative, machine-readable statement of that capability-level conformance; the parenthetical annotations in the tree above are illustrative.
+The table below is the machine-readable statement of that capability-level guidance; the parenthetical annotations in the tree above are illustrative. Per [Conformance Latitude](../framework.md#conformance-latitude), the levels say which capabilities a conformant circuit typically composes, not which functions a circuit must have.
 
 | Capability | Node type | Req | Published |
 |---|---|---|---|
@@ -109,7 +109,7 @@ Electrical measurements at the circuit. Published when the circuit is instrument
 
 **Node type:** `energy.ebus.capability.meter`
 
-The `meter` catalog is published at its catalog-default conformance (MAY), with one property tightened on a circuit:
+All `meter` properties are MAY on a circuit, as in the catalog. One is worth calling out:
 
 | Property ID | Req | Notes |
 |---|---|---|

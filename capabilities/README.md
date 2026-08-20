@@ -6,7 +6,7 @@ Relationship to the other areas:
 
 - **`registries/capability-types.md`** is the *index*: the flat list of registered `energy.ebus.capability.*` identifiers, each with a one-line description and a pointer to its canonical catalog.
 - **`capabilities/`** (this area) holds the *catalogs*: the full property tables, value domains, crosswalks, and grounding for each capability.
-- **`devices/`** documents *device types*: which capabilities a device publishes and its device-specific conformance (which properties are SHOULD versus MAY on that device, and examples), referencing the catalogs here for property detail.
+- **`devices/`** documents *device types*: which capabilities a device typically publishes and what is device-specific about them (the subset worth publishing, reference directions, examples), referencing the catalogs here for property detail. A device model recommends; the requirement levels that bind a node once it is published live in the catalogs here (see [Conformance Latitude](../framework.md#conformance-latitude)).
 
 ## Every capability has a catalog
 
@@ -20,27 +20,27 @@ This area is still being populated: [`tools/check-capability-catalogs.py`](../to
 
 | Capability | Document | Status |
 |---|---|---|
-| `energy.ebus.capability.breaker` | [`breaker.md`](breaker.md) | DRAFT v0.1 (2026-07-05) |
+| `energy.ebus.capability.breaker` | [`breaker.md`](breaker.md) | DRAFT v0.2 (2026-08-20) |
 | `energy.ebus.capability.charge-limit` | [`charge-limit.md`](charge-limit.md) | DRAFT v0.1 (2026-07-11) |
-| `energy.ebus.capability.connection` | [`connection.md`](connection.md) | DRAFT v0.1 (2026-07-05) |
+| `energy.ebus.capability.connection` | [`connection.md`](connection.md) | DRAFT v0.2 (2026-08-20) |
 | `energy.ebus.capability.demand` | [`demand.md`](demand.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.dispatch` | [`dispatch.md`](dispatch.md) | DRAFT v0.1 (2026-07-11) |
-| `energy.ebus.capability.doe` | [`doe.md`](doe.md) | DRAFT v0.1 (2026-07-09) |
+| `energy.ebus.capability.doe` | [`doe.md`](doe.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.door` | [`door.md`](door.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.flex` | [`flex.md`](flex.md) | DRAFT v0.1 (2026-07-10) |
-| `energy.ebus.capability.grid` | [`grid.md`](grid.md) | DRAFT v0.1 (2026-07-11) |
+| `energy.ebus.capability.grid` | [`grid.md`](grid.md) | DRAFT v0.2 (2026-08-20) |
 | `energy.ebus.capability.grid-event` | [`grid-event.md`](grid-event.md) | DRAFT v0.1 (2026-07-10) |
-| `energy.ebus.capability.grid-forming` | [`grid-forming.md`](grid-forming.md) | DRAFT v0.1 (2026-07-11) |
-| `energy.ebus.capability.info` | [`info.md`](info.md) | DRAFT v0.1 (2026-07-05) |
-| `energy.ebus.capability.load-shed` | [`load-shed.md`](load-shed.md) | DRAFT v0.1 (2026-07-11) |
-| `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.1 (2026-07-05) |
+| `energy.ebus.capability.grid-forming` | [`grid-forming.md`](grid-forming.md) | DRAFT v0.2 (2026-08-20) |
+| `energy.ebus.capability.info` | [`info.md`](info.md) | DRAFT v0.3 (2026-08-20) |
+| `energy.ebus.capability.load-shed` | [`load-shed.md`](load-shed.md) | DRAFT v0.3 (2026-07-30) |
+| `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.3 (2026-08-20) |
 | `energy.ebus.capability.output-island` | [`output-island.md`](output-island.md) | DRAFT v0.1 (2026-07-11) |
-| `energy.ebus.capability.pcs` | [`pcs.md`](pcs.md) | DRAFT v0.1 (2026-07-11) |
+| `energy.ebus.capability.pcs` | [`pcs.md`](pcs.md) | DRAFT v0.3 (2026-07-14) |
 | `energy.ebus.capability.power-flows` | [`power-flows.md`](power-flows.md) | DRAFT v0.2 (2026-08-20) |
 | `energy.ebus.capability.power-quality` | [`power-quality.md`](power-quality.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.price` | [`price.md`](price.md) | DRAFT v0.1 (2026-07-10) |
 | `energy.ebus.capability.shed-forecast` | [`shed-forecast.md`](shed-forecast.md) | DRAFT v0.1 (2026-07-11) |
-| `energy.ebus.capability.soc` | [`soc.md`](soc.md) | DRAFT v0.1 (2026-07-11) |
+| `energy.ebus.capability.soc` | [`soc.md`](soc.md) | DRAFT v0.2 (2026-08-20) |
 | `energy.ebus.capability.status` | [`status.md`](status.md) | DRAFT v0.1 (2026-07-11) |
-| `energy.ebus.capability.switch` | [`switch.md`](switch.md) | DRAFT v0.1 (2026-07-05) |
-| `energy.ebus.capability.voltage-response` | [`voltage-response.md`](voltage-response.md) | DRAFT v0.1 (2026-07-10) |
+| `energy.ebus.capability.switch` | [`switch.md`](switch.md) | DRAFT v0.2 (2026-08-20) |
+| `energy.ebus.capability.voltage-response` | [`voltage-response.md`](voltage-response.md) | DRAFT v0.1 (2026-07-11) |

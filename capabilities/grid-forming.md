@@ -1,8 +1,8 @@
 # Electrification Bus Capability: grid-forming
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-11
+**Version:** 0.2
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -21,8 +21,8 @@ This document is the canonical property catalog for the `grid-forming` capabilit
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `capable` | boolean | MUST (when the capability is published) | Static hardware capability: does this inverter support grid-forming operation at all? |
-| `active` | boolean | SHOULD (when `capable = true`) | Current state: is this inverter actively grid-forming right now? When `false` and the inverter is energized, it is grid-following. |
+| `capable` | boolean | MUST | Static hardware capability: does this inverter support grid-forming operation at all? A publisher that does not know it does not publish this node; see §"Absence semantics". |
+| `active` | boolean | SHOULD | Current state: is this inverter actively grid-forming right now? When `false` and the inverter is energized, it is grid-following. Meaningful only when `capable = true`. |
 
 ## Relationship to `grid/grid-forming-entity`
 

@@ -1,8 +1,8 @@
 # Electrification Bus Capability: connection
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-05
+**Version:** 0.2
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -62,6 +62,10 @@ The `connection` capability records the wiring topology *local to one electrical
 **Un-modelled downstream nodes.** When the downstream of a connection is not published as its own eBus device — a dumb subpanel, an AC-coupled inverter, a generator, an uncommissioned load group, or nothing — `feeds-role` gives its coarse role. A downstream worth modelling in detail SHOULD instead be published as its own device (for example, a surveyed subpanel as a minimal [`distribution-enclosure`](../devices/distribution-enclosure.md) with its child circuits); `feeds-role` is the lightweight fallback for nodes not modelled that way.
 
 **One node behind many connection points; many units behind one.** More than one connection point MAY reference the same downstream device (for example a multi-unit BESS whose units land on separate circuits, each circuit's `feeds-device-id = {bess}`); a consumer sums the connection points that reference one device to obtain its total flow. This is distinct from `count`, which stands in for multiple physical units aggregated behind a *single* connection point.
+
+## Absence semantics
+
+Absence of the `connection` node means the publisher does not record wiring topology at this point, not that nothing is connected. `feeds-role = UNUSED` remains the way to positively record "surveyed, nothing connected". Absence of an individual property is covered under §Semantics above.
 
 ## Assembling the site topology
 

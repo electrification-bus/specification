@@ -1,8 +1,8 @@
 # Electrification Bus Capability: grid
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-11
+**Version:** 0.2
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -32,7 +32,7 @@ The same node type serves both because they publish the same conceptual signal, 
 | `last-outage-time` | datetime | MAY | Timestamp (ISO-8601 UTC) of the most recent transition from `UP` / `DEGRADED` to `DOWN` observed. |
 | `last-restoration-time` | datetime | MAY | Timestamp (ISO-8601 UTC) of the most recent transition from `DOWN` to `UP` / `DEGRADED` observed. |
 
-All are MAY at the catalog level; a device model sets the requirement level for the subset it publishes (a MID makes `islanding-state` MUST).
+All are MAY at the catalog level, because two kinds of device publish this same node and each is qualified for a different subset (see §"Publisher qualification" below): no one property is constitutive of `grid` for both. `islanding-state` *is* constitutive for a **MID**, and the catalog cannot say so without binding utility meters that are not qualified to report it, so the MID's device model states it instead ([`bess.md`](../devices/bess.md), [`distribution-enclosure.md`](../devices/distribution-enclosure.md)). That role-scoped exception is the only reason a device model states a level here; it is not a general license to raise catalog levels (see [Conformance Latitude](../framework.md#conformance-latitude)).
 
 ## Publisher qualification
 

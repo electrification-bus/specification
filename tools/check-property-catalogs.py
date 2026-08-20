@@ -22,12 +22,15 @@ shape it publishes in `$format` (principles 8 and 10). So:
 The Markdown is the single source of truth. The JSON is generated FROM it and
 inherits the document's **Version:**. `--check` regenerates in memory and fails if
 any committed JSON is stale or structurally invalid (against the JSON Schemas), so
-the JSON never silently drifts from the prose. It does NOT force the prose to be
+the JSON never silently drifts from the prose. Both modes also enforce one authoring
+invariant that is not about the JSON at all: a capability catalog that sets any
+property to MUST must carry an `## Absence semantics` section, because the node's
+absence is what licenses a constitutive MUST (see framework.md, Conformance Latitude). It does NOT force the prose to be
 exhaustively tabulated: illustrative prose examples stay prose.
 
 Usage:
     python3 tools/check-property-catalogs.py            # write the JSON from the prose
-    python3 tools/check-property-catalogs.py --check    # exit 1 if any JSON is stale or invalid
+    python3 tools/check-property-catalogs.py --check    # exit 1 if any JSON is stale, invalid, or a MUST is unhatched
 """
 import io, json, os, re, sys, importlib.util
 
@@ -354,6 +357,38 @@ def semantic_warnings_catalog(obj):
     return warns
 
 
+def absence_hatch_errors(path, obj):
+    """Fatal: a catalog that sets any property to MUST must also carry an
+    `## Absence semantics` section.
+
+    Per framework.md "What a requirement level means, and where", a catalog MUST is
+    legitimate only for a CONSTITUTIVE property, one the capability exists to carry.
+    What licenses it is that a publisher which cannot supply the value omits the whole
+    node instead. That escape hatch only exists if the catalog says what absence of the
+    node means, so the two have to travel together: a MUST without the section reads as
+    unconditional, and an unconditional MUST on a value an OEM may not expose leaves a
+    publisher nothing to do but fabricate it.
+
+    Scoped deliberately to the Req column. Value-constraint MUSTs in prose or Notes
+    cells ("MUST be <= installer-max") govern HOW a value is published, not whether,
+    and are none of this check's business.
+    """
+    musts = sorted(
+        pid for pid, prop in list(obj.get("properties", {}).items())
+        + list(obj.get("property_patterns", {}).items())
+        if (prop.get("req") or "").upper() == "MUST"
+    )
+    if not musts:
+        return []
+    if re.search(r"^#{2,3} Absence semantics\s*$", io.open(path, encoding="utf-8").read(), re.M):
+        return []
+    return [
+        f"sets {', '.join('`%s`' % m for m in musts)} to MUST but has no "
+        f"'## Absence semantics' section. A constitutive MUST is licensed by the node's "
+        f"absence being a conformant option; say what absence of this node means, or "
+        f"relax the property (see framework.md, Conformance Latitude)."
+    ]
+
 # ---------------------------------------------------------------- device profiles (light, advisory)
 
 _CATALOG_VERSIONS = {}
@@ -500,13 +535,16 @@ def main():
     check = "--check" in sys.argv
     validators = {"catalog": _validator("property-catalog.schema.json"),
                   "profile": _validator("device-profile.schema.json")}
-    stale, invalid, counts, warn_count = [], [], {"catalog": 0, "profile": 0}, 0
+    stale, invalid, unhatched, counts, warn_count = [], [], [], {"catalog": 0, "profile": 0}, 0
 
     def process(path, kind, parse, warn):
         nonlocal warn_count
         out_path = path[:-3] + ".json"
         rel_json = os.path.relpath(out_path, REPO)
         obj = parse(path)
+        if kind == "catalog":
+            for e in absence_hatch_errors(path, obj):
+                unhatched.append((os.path.relpath(path, REPO), e))
         schema_errs = [f"schema: {e.message} (at {list(e.path)})" for e in validators[kind].iter_errors(obj)]
         for w in warn(obj):
             warn_count += 1
@@ -528,6 +566,10 @@ def main():
     for path in profile_paths():
         process(path, "profile", parse_profile, semantic_warnings_profile)
 
+    if unhatched:
+        print("\nUNHATCHED MUST (a catalog MUST needs an '## Absence semantics' section):")
+        for rel_md, err in unhatched:
+            print(f"  {rel_md}: {err}")
     if invalid:
         print("\nINVALID (structurally malformed against the schema):")
         for rel_json, errs in invalid:
@@ -538,11 +580,11 @@ def main():
     if check:
         if stale:
             print("\nSTALE (run tools/check-property-catalogs.py): " + ", ".join(stale))
-        if stale or invalid:
+        if stale or invalid or unhatched:
             sys.exit(1)
         print(f"{summary} up to date and valid; {warn_count} advisory note(s).")
     else:
-        if invalid:
+        if invalid or unhatched:
             sys.exit(1)
         print(f"wrote {summary}; {warn_count} advisory note(s).")
 

@@ -1,8 +1,8 @@
 # Electrification Bus Capability: meter
 
 **Status:** DRAFT
-**Version:** 0.2
-**Date:** 2026-07-31
+**Version:** 0.3
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -11,13 +11,13 @@
 
 **Node type:** `energy.ebus.capability.meter`
 
-This document is the canonical property catalog for the `meter` capability. Data-model documents that use it reference this catalog and document only their device-specific conformance (which properties are MUST or SHOULD on that device, the reference direction of `active-power`, and any device-specific notes), rather than restating the properties.
+This document is the canonical property catalog for the `meter` capability. Data-model documents that use it reference this catalog and document only what is device-specific (the reference direction of `active-power`, which subset the device type typically publishes, and any device-specific notes), rather than restating the properties.
 
 ## Overview
 
 The `meter` capability carries electrical measurements at a point in the system: instantaneous power (active, reactive, apparent), voltage, current, frequency, power factor, and cumulative energy. It is the most widely reused capability in eBus. The same node type appears on the distribution enclosure (service-entrance aggregate), on circuits and feed lugs (branch and feed metering), on the utility meter (revenue metering), on a BESS (its external AC boundary), on PV and EVSE proxies, on a water heater (its own draw), and on behind-the-meter sub-meters (published on their host circuit or lugs device). What differs between devices is the *subset* published and the *reference direction* of `active-power`, not the vocabulary.
 
-All properties are MAY at the capability level; a device model tightens specific properties to SHOULD or MUST (for example a utility meter's `imported-energy`, an enclosure's `active-power`). Publishers populate what they measure and omit the rest; consumers tolerate sparse publication and read the device's `$description` for the authoritative property set.
+Every property in this catalog is MAY. None is constitutive of `meter`: a metering point is worth publishing even when a single register is all a publisher has. Publishers populate what they measure and omit the rest; consumers tolerate sparse publication and read the device's `$description` for the authoritative property set. A device model documents the reference direction of `active-power`, which subset is worth publishing on that device type, and any device-specific notes; it does not raise these levels to MUST (see [Conformance Latitude](../framework.md#conformance-latitude)).
 
 ## Per-conductor representation
 
@@ -75,6 +75,10 @@ Properties use the engineering-unit values listed (no scaling factor or `µ-` pr
 ## Forward compatibility
 
 The full 4-quadrant per-phase and system VA matrix (Q1-Q4 by delivered/received, fundamental-only or with-harmonics, arithmetic and vectorial flavors) is not defined here; it can be added additively later when a consumer needs it, without renaming existing properties. Meter-configuration and nameplate metadata (accuracy class, CT/PT ratio, calculation convention, register multiplier, neutral-connected) live on the metering device's `info`, not on `meter`; see [`utility-meter.md`](../devices/utility-meter.md).
+
+## Absence semantics
+
+Absence of the `meter` node means the device is not metered at that point, or the publisher does not expose measurements. Absence of an individual property is the usual "not measured / not reported"; publishers populate the registers they have.
 
 ## Publishers
 

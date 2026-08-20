@@ -1,8 +1,8 @@
 # Machine-Readable Property Definitions: the property-JSON convention
 
 **Status:** DRAFT
-**Version:** 0.2
-**Date:** 2026-08-05
+**Version:** 0.3
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Purpose
@@ -72,7 +72,7 @@ The recommended, complete property vocabulary of one capability. Every property 
 
 - **`properties`** maps each property identifier to its definition:
   - **`datatype`** (required): the **recommended** Homie 5 datatype (`integer`, `float`, `boolean`, `string`, `enum`, `color`, `datetime`, `duration`, `json`). A publisher may widen it (an open `string` in place of an `enum`, `json` in place of a scalar, per principle 10) and advertise the datatype it publishes in `$format`.
-  - **`req`**: the property's conformance from the catalog table (MAY by default). This is the spec's guidance, not a per-device requirement.
+  - **`req`**: the property's requirement level from the catalog table (MAY by default), scoped to a node that is present: it says how to publish this property *if* the capability is published, never that the capability must be published. `MUST` marks a property constitutive of the capability, one whose absence would leave the node an empty shell; a publisher that cannot supply it omits the whole node (see that catalog's `## Absence semantics`).
   - **`unit`**: a numeric property's unit. Omitted for non-numeric properties and for a dimensionless numeric (a power factor has no unit). Usually a concrete unit (`W`, `kWh`, `A`, `%`, `°C`). A few properties instead carry an **abstract unit token**, which names a *dimension* rather than a unit: see below.
   - **`format`**: the **recommended core** value domain: for an `enum` a comma-separated token list (`OK,FAULT,UNKNOWN`), for a bounded numeric a `min:max` range. A publisher may extend or redefine the set and advertise its own in `$format` (open vocabularies, principle 8).
   - **`settable`**: present and `true` only for settable properties.
@@ -136,7 +136,7 @@ A light, advisory composition. It records which capabilities each device type in
   - **`capabilities`** maps a capability node id to a reference:
     - **`catalog`** (required): the `energy.ebus.capability.*` type this node implements, whose catalog carries the property vocabulary.
     - **`catalog_version`**: the catalog version the model was authored against.
-    - **`req`**: the model's capability-level conformance guidance for this device type, where it states one; absent means it does not (the default is MAY). A model that documents its capabilities in prose rather than a `| Capability | Required |` table simply omits `req`, which is expected: presence-without-Req is the permissive default, not an omission to fix.
+    - **`req`**: the model's capability-level guidance for this device type, where it states one; absent means it does not (the default is MAY). `SHOULD` means the device type typically publishes this capability. `MUST` is reserved for a capability every conformant publisher of the type can supply, either because the capability has no mandatory contents (`info`) or because the host device is itself omittable; it never means the device must have the underlying function (see [Conformance Latitude](../framework.md#conformance-latitude)). A model that documents its capabilities in prose rather than a `| Capability | Required |` table simply omits `req`, which is expected: presence-without-Req is the permissive default, not an omission to fix.
 
 ## Generated, checked, not enforced
 

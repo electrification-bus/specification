@@ -1,8 +1,8 @@
 # Electrification Bus Capability: switch
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-05
+**Version:** 0.2
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -32,6 +32,10 @@ Because capabilities are optional and their presence is a signal, publishing `sw
 Enum-valued properties are advertised through the Homie `$format` attribute so a consumer can read the value domain a publisher supports.
 
 **Implementation note.** Some remote-relay mechanisms use a fail-safe timeout (for example the Eaton SBLCP remote handle requires a command refresh within 10 seconds, failing safe otherwise). That is a publisher concern, not a property of this capability.
+
+## Absence semantics
+
+Absence of the `switch` node means the device has no controllable relay, or the publisher does not expose control. A publisher that cannot report relay state does not publish `switch`; publishing it is the claim that a relay is there, which is what licenses `relay` at MUST above.
 
 ## Relationship to load-shed and PCS
 

@@ -1,7 +1,7 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.13
+**Version:** 0.14
 **Date:** 2026-08-20
 **Authors:** Don Jackson
 
@@ -269,7 +269,14 @@ Physical lug connection point. Each enclosure has upstream lugs (grid connection
 
 The wiring relationship between a lugs device and what is wired to it is expressed as a structured `feeds-device-id` / `fed-by-device-id` reference on `connection`, which scales to N DERs and distinguishes downstream-feed from upstream-feed. See §"Connection Capability" below.
 
-**meter:** property definitions are in [`capabilities/meter.md`](../capabilities/meter.md). On a lugs device: `active-power`, `imported-energy`, `exported-energy` are MUST; `current-{a,b}` SHOULD.
+**meter:** property definitions are in [`capabilities/meter.md`](../capabilities/meter.md). Published when the lugs are metered; a lugs device whose position is known but whose flow is not measured omits the node. On a lugs device that meters:
+
+| Property | Req | Notes |
+|---|---|---|
+| `active-power` | SHOULD | Power through this lug set. |
+| `imported-energy` | SHOULD | Cumulative energy imported. |
+| `exported-energy` | SHOULD | Cumulative energy exported. |
+| `current-{a,b}` | SHOULD | Per-leg current. |
 
 **connection:**
 
@@ -295,7 +302,7 @@ The shared identity properties (`vendor-name`, `serial-number`, `model`, `firmwa
 
 **grid:**
 
-Grid connection state, islanding state, and grid-forming-entity identity, published on the enclosure-integrated MID (the enclosure device itself does not publish them). The property catalog (the three properties and their semantics) is defined in [`capabilities/grid.md`](../capabilities/grid.md); the MID makes `islanding-state` MUST.
+Grid connection state, islanding state, and grid-forming-entity identity, published on the enclosure-integrated MID (the enclosure device itself does not publish them). The property catalog (the three properties and their semantics) is defined in [`capabilities/grid.md`](../capabilities/grid.md). `islanding-state` is MUST here because it is what a MID exists to report, and an enclosure-integrated MID is itself optional (:290, :292); the catalog holds it at MAY only because a utility meter publishes the same node and is not qualified for it.
 
 **Node type:** `energy.ebus.capability.grid`
 
