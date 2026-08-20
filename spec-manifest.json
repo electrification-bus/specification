@@ -23,27 +23,27 @@
   "artifacts": {
     "framework": {
       "framework": {
-        "version": "0.7",
-        "date": "2026-07-30",
+        "version": "0.9",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "framework.md"
       }
     },
     "devices": {
       "bess": {
-        "version": "0.14",
-        "date": "2026-07-30",
+        "version": "0.15",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "devices/bess.md"
       },
       "circuit": {
-        "version": "0.3",
-        "date": "2026-07-31",
+        "version": "0.4",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "devices/circuit.md"
       },
       "distribution-enclosure": {
-        "version": "0.13",
+        "version": "0.14",
         "date": "2026-08-20",
         "status": "DRAFT",
         "path": "devices/distribution-enclosure.md"
@@ -81,8 +81,8 @@
     },
     "capabilities": {
       "breaker": {
-        "version": "0.1",
-        "date": "2026-07-11",
+        "version": "0.2",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/breaker.md"
       },
@@ -93,8 +93,8 @@
         "path": "capabilities/charge-limit.md"
       },
       "connection": {
-        "version": "0.1",
-        "date": "2026-07-05",
+        "version": "0.2",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/connection.md"
       },
@@ -135,20 +135,20 @@
         "path": "capabilities/grid-event.md"
       },
       "grid-forming": {
-        "version": "0.1",
-        "date": "2026-07-11",
+        "version": "0.2",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/grid-forming.md"
       },
       "grid": {
-        "version": "0.1",
-        "date": "2026-07-11",
+        "version": "0.2",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/grid.md"
       },
       "info": {
-        "version": "0.2",
-        "date": "2026-07-30",
+        "version": "0.3",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/info.md"
       },
@@ -159,8 +159,8 @@
         "path": "capabilities/load-shed.md"
       },
       "meter": {
-        "version": "0.2",
-        "date": "2026-07-31",
+        "version": "0.4",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/meter.md"
       },
@@ -207,8 +207,8 @@
         "path": "capabilities/shed.md"
       },
       "soc": {
-        "version": "0.1",
-        "date": "2026-07-11",
+        "version": "0.2",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/soc.md"
       },
@@ -219,8 +219,8 @@
         "path": "capabilities/status.md"
       },
       "switch": {
-        "version": "0.1",
-        "date": "2026-07-05",
+        "version": "0.3",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "capabilities/switch.md"
       },
@@ -281,8 +281,8 @@
     },
     "conventions": {
       "property-json": {
-        "version": "0.2",
-        "date": "2026-08-05",
+        "version": "0.3",
+        "date": "2026-08-20",
         "status": "DRAFT",
         "path": "conventions/property-json.md"
       },

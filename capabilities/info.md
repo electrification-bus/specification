@@ -1,8 +1,8 @@
 # Electrification Bus Capability: info
 
 **Status:** DRAFT
-**Version:** 0.2
-**Date:** 2026-07-30
+**Version:** 0.3
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -44,6 +44,10 @@ Most device types are physical products whose `info` identity core *is* their na
 When a circuit is **realized by a distinct physical instrument** — for example a proxied standalone sub-meter (an EKM or eGauge measuring one conductor) — that instrument has its own nameplate, and it has no other home. Such a circuit MAY carry the identity properties above **in addition to** its load-facing properties: `info/name` names the conductor ("Solar Feed"), while `info/vendor-name` / `serial-number` / `model` / `firmware-version` name the measuring instrument. Presence of the identity properties on a circuit signals that the circuit is realized by a distinct instrument; absence means it is a bare conductor. The two facets do not collide, because they are distinct property names. The instrument serial MAY additionally appear in the circuit's `info/external-ids` (e.g. `ekm:<serial>`) as a cross-system reference, complementary to the nameplate `serial-number`. See [`circuit.md`](../devices/circuit.md).
 
 This resolves where instrument identity lives without promoting the host to a `utility-meter` (a customer-owned sub-meter is not a utility meter) and without a new device type: the shared identity core is simply available on the host that is realized by the instrument.
+
+## Absence semantics
+
+Absence of an individual identity property is the usual "not known to the publisher". Absence of the `info` node itself means the publisher exposes no identity beyond the device's Homie ID and `$description.type`, which remain the identity of record either way. Because no property here is MUST, an `info` node with nothing populated is conformant, which is why a device model may list `info` as MUST without forcing any publisher to fabricate anything.
 
 ## Publishers
 

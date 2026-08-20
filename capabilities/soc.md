@@ -1,8 +1,8 @@
 # Electrification Bus Capability: soc
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-11
+**Version:** 0.2
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -28,13 +28,15 @@ The `soc` ratio is a dimensionless fraction and is **directly comparable across 
 | `total-energy-storage` | float | energy | MAY | The reservoir's total energy capacity (empty to full), in the same unit as `soe`. |
 | `loadup-headroom` | float | energy | MAY | The energy the reservoir can absorb **now** (the charge side), approximately `total-energy-storage − soe`. The dispatchable charge a load-up / charge action can take on. |
 
+**At least one** of `soc` / `soe` MUST be present; a reservoir view with neither is meaningless. A publisher with a percentage figure carries `soc`; one with only an absolute magnitude carries `soe` in its native energy unit; both may be present.
+
 **Two opposite quantities.** `soc` and `soe` describe how much is **stored and available to draw** (discharge); `loadup-headroom` describes how much can still be **absorbed** (charge). They are complementary: `soe + loadup-headroom ≈ total-energy-storage`.
 
 **Device-specific refinements.** A publisher MAY add reservoir refinements specific to its physics, advertised on its device and documented by that device model; for example a water heater adds a volumetric `available-volume` (L) and a `heat-required` (thermal Wh to reach setpoint). The catalog defines the reservoir core above; a device narrows or extends it.
 
-## Conformance is per-device
+## Subset and units are per-device
 
-Which properties are published, at what requirement level and in what unit, is a device-model decision. A **BESS** publishes `soc` (its headline figure) and `soe` in kWh (electrical). A **water heater** publishes the thermal view in Wh, all optional, plus its volumetric and heat-required refinements. See each device model for its subset.
+Which properties a device publishes, and in what unit, is a device-model decision; the requirement level is not. The four properties are MAY here and a device model does not raise them to MUST (see [Conformance Latitude](../framework.md#conformance-latitude)). A **BESS** publishes `soc` (its headline figure) and `soe` in kWh (electrical). A **water heater** publishes the thermal view in Wh, plus its volumetric and heat-required refinements. See each device model for its subset.
 
 ## Aggregation
 

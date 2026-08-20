@@ -1,8 +1,8 @@
 # Electrification Bus Battery Energy Storage System Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.14
-**Date:** 2026-07-30
+**Version:** 0.15
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Overview
@@ -23,13 +23,13 @@ The spec defines a **device hierarchy** (parent BESS device with child devices f
 
 ### Conventions
 
-- **MUST**, **SHOULD**, **MAY** follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) definitions
+- **MUST**, **SHOULD**, **MAY** follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) definitions, scoped as the framework scopes them: they govern *how* a capability or property is published once this publisher publishes it, not *whether* it does. See [Conformance Latitude](../framework.md#conformance-latitude).
 - All properties use SI base units via the Homie `unit` attribute — no units in property IDs
 - Power and energy follow the IEC 62053 metering convention:
   - `active-power` (W) — signed; positive = power flowing out of the device
   - `imported-energy` (Wh) — always positive, cumulative
   - `exported-energy` (Wh) — always positive, cumulative
-- If a device cannot provide a property, it MUST omit it from `$description` rather than publishing sentinel values
+- If a device cannot provide a property, it MUST omit it from `$description` rather than publishing sentinel values. A member of the property's own declared value set is a value, not a sentinel: where an enum offers `UNKNOWN`, a publisher that cannot determine the value publishes `UNKNOWN` rather than omitting the property. That distinction is what lets an enum property be MUST where a bare numeric could not be, and it is why `islanding-state` is MUST on a MID while `soc` is not on a BESS (see [Conformance Latitude](../framework.md#conformance-latitude))
 - Property IDs use kebab-case (e.g., `active-power`, `serial-number`)
 
 ---
@@ -42,7 +42,7 @@ A BESS is represented as a **parent Homie device** with **child devices** for it
 energy.ebus.device.bess (parent device)
   ├── energy.ebus.device.battery    (child, one per battery pack)
   ├── energy.ebus.device.inverter   (child, if applicable)
-  ├── energy.ebus.device.mid        (child, REQUIRED for premises-wiring grid-forming BESS)
+  ├── energy.ebus.device.mid        (child, MUST for a premises-wiring grid-forming BESS)
   ├── energy.ebus.device.outlet     (child, one per output port; plug-in BESS / UPS)
   └── energy.ebus.device.meter      (child, per metering point: site, load, solar)
 ```
@@ -88,6 +88,8 @@ This data model follows the Electrification Bus design principles — the Homie 
 - *Publish what you have, omit what you don't* — not every BESS has all components. A simple system might be just the parent BESS device with one battery child and one MID child; a complex system might have 6 battery children, an inverter, a MID, and 3 meter children. The spec accommodates both (framework principle #3).
 - *Parent aggregates children* — the parent BESS device provides aggregated values (total SOC, total battery power) so consumers don't need to discover and sum children (framework principle #4).
 - *Proxying is first-class* — a vendor implementing eBus directly in their BESS firmware and a third-party proxy publisher translating from the vendor's proprietary API both produce the same device shape. The consumer-facing surface is identical; the source of the data is transparent to consumers. This is fundamental to eBus's adoption strategy — proxies bridge the gap between today's reality (most BESS vendors do not yet speak eBus) and the future where they do (framework principle #6).
+
+**Conformance latitude.** Only the parent `bess` device and its `info` node are intrinsic to a BESS. Every other capability, and every child device, is published when the publisher has it: a proxy fronting a vendor API that exposes only power flow publishes `info` and `meter` and is a conformant `energy.ebus.device.bess`. Capability presence is itself a signal, the same stance as [`circuit.md`](circuit.md) and [`distribution-enclosure.md`](distribution-enclosure.md): the `$description.type` discriminator, not the population of any capability, identifies the device as a BESS. The one shape requirement is the MID child, and it binds only a publisher that islands premises wiring (see §"BESS topologies and the two islanding scopes").
 
 ### Device Types
 
@@ -141,13 +143,13 @@ The parent device represents the BESS system as a whole. It provides aggregated 
 
 | Capability | Required | Notes |
 |---|---|---|
-| `info` | MUST | Includes `data-model-version` |
-| `soc` | MUST | Aggregated across all battery children |
-| `meter` | MUST | Aggregated power/energy at the BESS's external boundary (i.e., what the BESS exchanges with the rest of the system); `active-power` MUST be published. The external boundary may be a single connection point or, for a multi-unit system that lands on separate enclosure circuits, several; the parent `meter` aggregates across them. See §"Multi-unit systems and connection to the enclosure". |
+| `info` | MUST | Identity. No `info` property is itself MUST (see [`capabilities/info.md`](../capabilities/info.md)); `data-model-version` is SHOULD, per §"Versioning". |
+| `soc` | SHOULD | Aggregated across all battery children. Omitted when the publisher has no state-of-charge view of the system. |
+| `meter` | SHOULD | Aggregated power/energy at the BESS's external boundary (i.e., what the BESS exchanges with the rest of the system). The external boundary may be a single connection point or, for a multi-unit system that lands on separate enclosure circuits, several; the parent `meter` aggregates across them. See §"Multi-unit systems and connection to the enclosure". |
 | `dispatch` | MAY | External-dispatch controls (charge-rate setpoint, SOC ceilings, etc.). See §"dispatch" below. |
 | `output-island` | MAY | Device-output island (UPS) state and control, for a plug-in BESS / UPS. See §"output-island" below. |
 | `power-flows` | MAY | Aggregate grid / battery / solar / load flows reported on the device, for an all-in-one (plug-in) unit. Reused from [`distribution-enclosure.md`](distribution-enclosure.md). |
-| `status` | MUST | System-level fault status |
+| `status` | SHOULD | System-level fault status. Every property in the [`status`](../capabilities/status.md) catalog is MAY, so a publisher with no health view omits the node rather than publishing an empty one. |
 
 Premises-wiring grid connection and islanding state live on the MID child device (`grid`) when the BESS forms a premises-wiring (segment) island. A plug-in BESS / UPS instead exposes the `output-island` capability and `outlet` children; a grid-following BESS with no backup exposes neither. See §"BESS topologies and the two islanding scopes". Outlet children are defined in [`outlet.md`](outlet.md).
 
@@ -161,8 +163,8 @@ Represents an individual battery pack. A BESS may have one or many.
 
 | Capability | Required | Notes |
 |---|---|---|
-| `info` | MUST | Per-pack serial, capacity |
-| `soc` | MUST | This pack's SOC/SOE |
+| `info` | MUST | Identity. Per-pack serial and capacity where the publisher has them; no `info` property is itself MUST. |
+| `soc` | SHOULD | This pack's SOC/SOE, when the publisher has per-pack visibility. Many vendor APIs expose only the system aggregate, which the parent carries. |
 | `meter` | SHOULD | This pack's power/energy |
 | `status` | MAY | Per-pack fault status |
 
@@ -191,14 +193,14 @@ Represents the DC-AC inverter. May handle both battery and solar conversion (e.g
 
 **Type:** `energy.ebus.device.mid`
 
-Represents the Microgrid Interconnect Device (MID). Manages grid connection and islanding. A **grid-forming-capable** BESS publisher MUST include a MID child device. A grid-following-only BESS publisher MAY omit it — see §"Grid-forming-capable vs grid-following-only BESS".
+Represents the Microgrid Interconnect Device (MID). Manages grid connection and islanding. A **premises-wiring grid-forming** BESS publisher MUST include a MID child device; a plug-in BESS / UPS and a grid-following-only BESS publisher MAY omit it. See §"BESS topologies and the two islanding scopes".
 
 **Capabilities:**
 
 | Capability | Required | Notes |
 |---|---|---|
 | `info` | MUST | |
-| `grid` | MUST | `islanding-state` MUST, `grid-state` SHOULD, `grid-forming-entity` SHOULD |
+| `grid` | MUST | The MID's defining signal; a MID that publishes no `grid` node is an empty shell. Property levels are in §"grid" below. |
 | `status` | MAY | |
 
 ### Meter Device
@@ -245,7 +247,7 @@ Battery state of charge and energy. The property catalog (`soc`, `soe`, `total-e
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `soc` | float | % | MUST | State of charge (0-100%) |
+| `soc` | float | % | SHOULD | State of charge (0-100%) |
 | `soe` | float | kWh | SHOULD | State of energy: available energy remaining |
 
 On the parent BESS device, these values are aggregated across all battery children.
@@ -258,7 +260,7 @@ Power and energy metering. The property catalog is in [`capabilities/meter.md`](
 
 | Property ID | Datatype | Unit | Req | Description |
 |---|---|---|---|---|
-| `active-power` | float | W | MUST | Instantaneous active power. Positive = power flowing out of device. |
+| `active-power` | float | W | SHOULD | Instantaneous active power. Positive = power flowing out of device. |
 | `imported-energy` | float | Wh | SHOULD | Cumulative energy imported (consumed) by the device. Always positive. |
 | `exported-energy` | float | Wh | SHOULD | Cumulative energy exported (produced) by the device. Always positive. |
 | `current` | float | A | MAY | RMS current |
@@ -272,7 +274,7 @@ Power and energy metering. The property catalog is in [`capabilities/meter.md`](
 
 ### grid
 
-Grid connection and islanding state, always published on a MID device (the parent BESS device does not publish it). The property catalog (`islanding-state`, `grid-state`, `grid-forming-entity`, and the islanding-versus-grid-state semantics) is defined in [`capabilities/grid.md`](../capabilities/grid.md); a MID makes `islanding-state` MUST.
+Grid connection and islanding state, always published on a MID device (the parent BESS device does not publish it). The property catalog (`islanding-state`, `grid-state`, `grid-forming-entity`, and the islanding-versus-grid-state semantics) is defined in [`capabilities/grid.md`](../capabilities/grid.md). `islanding-state` is MUST here because it is what a MID exists to report, and the MID child is itself omittable; the catalog holds it at MAY only because a utility meter publishes the same node and is not qualified for it.
 
 **Node type:** `energy.ebus.capability.grid`
 
@@ -310,7 +312,7 @@ Operational status and fault reporting. The core (`fault-state` / `communication
 
 | Property ID | Datatype | Req | Description |
 |---|---|---|---|
-| `communication-state` | enum | MUST | Adapter-to-BESS communication: `OK`, `DEGRADED`, `LOST`, `UNKNOWN` |
+| `communication-state` | enum | SHOULD | The publisher's view of its own link health: to the BESS it represents (for a proxy) or to its backhaul (for a native publisher): `OK`, `DEGRADED`, `LOST`, `UNKNOWN` |
 | `fault-state` | enum | SHOULD | BESS-reported fault: `OK`, `FAULT`, `UNKNOWN` |
 | `operational-state` | enum | SHOULD | Battery operating state: `IDLE`, `CHARGING`, `DISCHARGING`, `STANDBY`, `UNKNOWN`. Reflects the *result* of any active `dispatch`. |
 | `authentication` | enum | SHOULD | Credential / auth status: `OK`, `FAILED`, `EXPIRED`, `MISSING` |

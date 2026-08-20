@@ -1,8 +1,8 @@
 # Electrification Bus Capability: breaker
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-11
+**Version:** 0.2
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -36,6 +36,10 @@ Because capabilities are optional and their presence is a signal, publishing `br
 Optional further properties, adopted as consumers require them: `gfci-class`, `max-voltage`, `end-of-life` (relevant for solid-state breakers), `service-entrance-rated`.
 
 Enum-valued properties are advertised through the Homie `$format` attribute so a consumer can read the value domain a publisher supports; publishers MAY extend the enums additively.
+
+## Absence semantics
+
+Absence of the `breaker` node means the device is not breaker-protected, or the publisher does not expose the detail.
 
 ## Existing product capabilities considered
 

@@ -1,8 +1,8 @@
 # Electrification Bus Capability: switch
 
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-05
+**Version:** 0.3
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -28,10 +28,21 @@ Because capabilities are optional and their presence is a signal, publishing `sw
 | `relay` | enum | — | MUST | when `relay-controllable` | Relay state: `OPEN`, `CLOSED`, `UNKNOWN`. Settable when `relay-controllable = true`. |
 | `relay-controllable` | boolean | — | SHOULD | no | True = the relay can be opened and closed by command or automatic shed. False = locked (for example a circuit commissioned as permanently on). |
 | `relay-requester` | enum | — | SHOULD | no | Source attribution for the last relay change: `USER`, `LOAD_SHED`, `PCS`, `CONFIGURATION`, `FAULT`, `NONE`, `UNKNOWN`. Publishers MAY extend via `$format`. |
+| `shared-with-device-ids` | string | — | MAY | no | Comma-separated Homie device IDs of the other devices this relay also switches. Omitted when it switches only this device. See §"Shared switching hardware". |
 
 Enum-valued properties are advertised through the Homie `$format` attribute so a consumer can read the value domain a publisher supports.
 
 **Implementation note.** Some remote-relay mechanisms use a fail-safe timeout (for example the Eaton SBLCP remote handle requires a command refresh within 10 seconds, failing safe otherwise). That is a publisher concern, not a property of this capability.
+
+## Shared switching hardware
+
+One relay can switch several devices at once, in the same way one sensor can measure several: a multi-circuit breaker de-energizes every branch behind it. A publisher in that position declares the group with `shared-with-device-ids` (see [`framework.md`](../framework.md#capability-coverage-and-shared-hardware) for the declaration and its symmetry requirement).
+
+Unlike a shared meter reading, a shared relay state needs no aggregation caveat: `relay = OPEN` is independently **true of every member**, so each device's value can be read as its own. What the declaration carries here is a **control** consequence rather than a measurement one. Commanding one member commands all of them, so a consumer that opens one circuit of a shared group has opened the whole group, and a consumer presenting per-device control tells the operator that before it acts. A publisher MAY reflect a command on one member as a state change on all of them, which is the truth of the hardware rather than an echo.
+
+## Absence semantics
+
+Absence of the `switch` node means the device has no controllable relay, or the publisher does not expose control. A publisher that cannot report relay state does not publish `switch`; publishing it is the claim that a relay is there, which is what licenses `relay` at MUST above.
 
 ## Relationship to load-shed and PCS
 

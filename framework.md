@@ -1,8 +1,8 @@
 # Electrification Bus Specification
 
 **Status:** DRAFT
-**Version:** 0.7
-**Date:** 2026-07-30
+**Version:** 0.9
+**Date:** 2026-08-20
 
 ---
 
@@ -31,6 +31,20 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 The specification is deliberately permissive: it describes what a device **can** and **should** publish, and **how**, rather than a fixed set every device must publish. A publisher publishes the subset of capabilities and properties it supports and omits the rest (design principle 3). It **MAY** publish properties this specification does not define, and it **MAY** publish a property with a wider or differently-partitioned datatype or value set than a capability catalog recommends (for example an open `string` where the catalog suggests an `enum`, per design principle 10). The one standing condition is self-description: a publisher advertises the shape it actually publishes in its Homie 5 `$description` and `$format`, so any consumer can interpret it.
 
 So the keywords above govern **how** a property is published once a device chooses to publish it (so publishers and consumers interoperate), not **whether** a device publishes it. A device's runtime `$description` is the authority for what it actually publishes; this specification is the shared, vendor-neutral vocabulary and guidance a device is published against. The capability catalogs and data-model documents, and their machine-readable [property-JSON](conventions/property-json.md) siblings, are a recommendation and a reference, not a checklist a conformant device must match.
+
+### What a requirement level means, and where
+
+Two kinds of table in this specification carry a requirement level, and the level answers a different question in each.
+
+A **capability-catalog property table** (in `capabilities/`) answers: what does this capability carry, once a publisher publishes it? Its levels are scoped to a node that is already present. MUST is legitimate there for a **constitutive** property: one the capability exists to carry, and without which the node is an empty shell. A publisher that cannot supply a constitutive property omits the whole capability rather than publishing the shell. This is what makes capability presence informative: **publishing a capability is itself the claim.** Publishing `door` claims a monitored door; publishing `switch` claims a controllable relay; a consumer reads the claim from presence alone, and the property MUST is what guarantees the claim has substance behind it.
+
+The escape hatch that licenses a constitutive MUST is the node's absence, so the escape hatch has to be written down next to the requirement. A catalog that sets any property to MUST carries an `## Absence semantics` section stating what absence of the node means. Without that section the MUST reads as unconditional, and an unconditional MUST on a value an OEM may not expose leaves a publisher nothing to do but fabricate it.
+
+A **device-model capability table** (in `devices/`, headed `| Capability | Req |` or `| Capability | Required |`) answers a different question: does this device type have this capability? A level here is about presence, and the specification does not mandate presence. A device model states MAY or SHOULD for a capability its device type typically publishes. It states MUST only where every conformant publisher of that device type can comply, which is true in exactly two cases: the capability has no mandatory contents of its own (`info`, whose catalog makes no property MUST, costs a publisher that knows only a device ID nothing), or the host device is itself omittable, so the device's absence supplies the escape hatch that the node's absence supplies in a catalog (a MID child, a meter child).
+
+The test, in one sentence: a requirement is legitimate when a publisher that cannot meet it has a conformant way to say so, by omitting something this specification allows it to omit; it is illegitimate when the publisher's only conformant options are to fabricate a value or to withhold an otherwise-useful representation. A corollary that can be checked mechanically: an enum whose value set includes `UNKNOWN` can always be published honestly, whereas a bare numeric with no "unknown" member cannot, so a numeric property is a MUST only inside a catalog's constitutive core.
+
+A device model does not raise a catalog property to MUST. It may recommend a subset at SHOULD, which says which properties are worth publishing on that device type without binding a publisher that cannot supply them. MUST in a device model's property table is reserved for the one case a catalog cannot express: a property constitutive of a **role** rather than of a capability, where the catalog holds it at MAY only because another kind of device publishes the same node and is not qualified for that property. `islanding-state` on a MID is the standing example: it is what a MID exists to report, but a utility meter publishes the same `grid` node and is not qualified for it, so the requirement can only be stated device-side. A device model that states such a MUST says why.
 
 ---
 
@@ -152,6 +166,20 @@ The following principles guide the structure of every eBus data model and the fr
 8. **Forward compatibility is a design goal.** The data model defines slots for richer data than current implementations capture. Properties are MAY-level by default; datatypes are chosen for extensibility (open-vocabulary strings, not hardcoded enums where the value space is open); capabilities accept new properties additively. The model serves as a contract for the evolving ecosystem, not as a transcript of any one current feature set.
 9. **Multi-instance from the outset.** Identifying attributes and inter-device relationships are recorded per-device rather than enumerated as class-level properties on a containing parent, so N instances of any class can coexist without model changes (for example, multiple BESSs, PV inverters, or EVSEs in a single distribution enclosure).
 10. **Scalars by default; `json` as the escape hatch.** Homie 5 is scalar-first by design, and eBus follows suit: property values use scalar datatypes (`float`, `integer`, `enum`, `datetime`, and so on) wherever the value can be modelled as one, because scalars are directly readable, chartable, and validatable by generic Homie tooling. The `json` datatype is the deliberate escape hatch, the right tool for the specific job when a value cannot be represented as a scalar, for one of two reasons. **Atomicity:** the value is a compound whose parts must be read or applied as a single unit; splitting it across separately-retained scalar topics would let a consumer observe a torn state (parts from different updates, with no way to tell which belong together, or when each was published). Current atomic-compound uses include the `flex` request, the `doe` / `price` per-direction schedules, the `grid-event` array, and the `voltage-response` curve. **Expressiveness:** the value is an open-ended or structured scheme that no fixed scalar or enum can capture and that different implementations will populate differently; here a `json` property whose shape is advertised as a JSON Schema in `$format` (a forward-compatibility mechanism, principle #8) lets a simple implementation stay on a scalar or enum while a richer one opts into structure with no spec change. Current expressiveness uses include the `shed` policy and the escape-hatch form of `load-shed/priority`. In both cases a `json` value SHOULD carry a JSON Schema `$format` so it remains self-describing.
+
+### Capability coverage and shared hardware
+
+A capability's coverage is defined by **attachment**: a `meter` on a device meters that device, a `switch` on a device switches that device. That is complete and unambiguous wherever the underlying hardware serves one device, which is the ordinary case, and it is why no coverage property exists.
+
+Some hardware serves several devices at once. One current transformer can measure a group of branch circuits; one relay can switch a group of them. The reading and the relay state are then real, but they cover the host device **and others**, which is the one thing attachment cannot express. A publisher facing this may always omit the capability, which stays truthful and self-describing under principle 3. A publisher that would rather publish the value declares the exception instead:
+
+- **`shared-with-device-ids`**, `string`, MAY, on any capability whose catalog defines it. A comma-separated list of the Homie device IDs of the **other** devices the same physical hardware also covers. Omitted when the capability covers only its host device, which is the common case.
+
+The relation is **symmetric and has no owner**: every member of a shared group names all the others, and no member is nominated as the holder of the value. Nominating one would reintroduce the arbitrary choice the declaration exists to remove, and a publisher that names peers asymmetrically has published a defect rather than a shape a consumer must reconcile.
+
+What sharing *means* for the values is capability-specific and each catalog states it, because it genuinely differs: values that describe a whole group must not be aggregated across its members, whereas a state that is independently true of every member can be read per-device as usual. A consumer that encounters `shared-with-device-ids` reads the owning catalog rather than assuming either.
+
+This is a declaration about hardware, not about topology. Which device feeds which is [`connection`](capabilities/connection.md); this says only that one sensor or one actuator stands behind several devices.
 
 ---
 

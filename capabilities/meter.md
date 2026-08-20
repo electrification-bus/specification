@@ -1,8 +1,8 @@
 # Electrification Bus Capability: meter
 
 **Status:** DRAFT
-**Version:** 0.2
-**Date:** 2026-07-31
+**Version:** 0.4
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Identifier
@@ -11,13 +11,13 @@
 
 **Node type:** `energy.ebus.capability.meter`
 
-This document is the canonical property catalog for the `meter` capability. Data-model documents that use it reference this catalog and document only their device-specific conformance (which properties are MUST or SHOULD on that device, the reference direction of `active-power`, and any device-specific notes), rather than restating the properties.
+This document is the canonical property catalog for the `meter` capability. Data-model documents that use it reference this catalog and document only what is device-specific (the reference direction of `active-power`, which subset the device type typically publishes, and any device-specific notes), rather than restating the properties.
 
 ## Overview
 
 The `meter` capability carries electrical measurements at a point in the system: instantaneous power (active, reactive, apparent), voltage, current, frequency, power factor, and cumulative energy. It is the most widely reused capability in eBus. The same node type appears on the distribution enclosure (service-entrance aggregate), on circuits and feed lugs (branch and feed metering), on the utility meter (revenue metering), on a BESS (its external AC boundary), on PV and EVSE proxies, on a water heater (its own draw), and on behind-the-meter sub-meters (published on their host circuit or lugs device). What differs between devices is the *subset* published and the *reference direction* of `active-power`, not the vocabulary.
 
-All properties are MAY at the capability level; a device model tightens specific properties to SHOULD or MUST (for example a utility meter's `imported-energy`, an enclosure's `active-power`). Publishers populate what they measure and omit the rest; consumers tolerate sparse publication and read the device's `$description` for the authoritative property set.
+Every property in this catalog is MAY. None is constitutive of `meter`: a metering point is worth publishing even when a single register is all a publisher has. Publishers populate what they measure and omit the rest; consumers tolerate sparse publication and read the device's `$description` for the authoritative property set. A device model documents the reference direction of `active-power`, which subset is worth publishing on that device type, and any device-specific notes; it does not raise these levels to MUST (see [Conformance Latitude](../framework.md#conformance-latitude)).
 
 ## Per-conductor representation
 
@@ -44,6 +44,7 @@ In US residential split-phase wiring the two hot legs are commonly labelled **L1
 | `exported-reactive-energy` | float | varh | MAY | Cumulative reactive energy exported. |
 | `apparent-energy-imported` | float | VAh | MAY | Cumulative apparent energy imported. |
 | `apparent-energy-exported` | float | VAh | MAY | Cumulative apparent energy exported. |
+| `shared-with-device-ids` | string | — | MAY | Comma-separated Homie device IDs of the other devices this meter's hardware also measures. Omitted when it measures only this device. See §"Shared metering hardware". |
 
 ### Per-conductor (suffix `-a` / `-b` / `-c`, and `-n` for the neutral where present)
 
@@ -68,6 +69,14 @@ A **circuit**'s reference direction is set by its host, not fixed here. A circui
 
 Device models whose natural reference is power flowing *out* invert the default and state so explicitly: a **BESS** publishes `active-power` positive when discharging (out of the device), a **PV** proxy positive when producing, and an **outlet** or **PDU** output positive when delivering to the connected load. A consumer reads the device's model to know the reference direction; the sign is never ambiguous within a given device type.
 
+## Shared metering hardware
+
+One current transformer can measure several devices at once: a multi-circuit breaker occupies a single position and protects several branch circuits through one sensor. The reading is real, but it covers the group rather than any one member, and attachment alone cannot say so (see [`framework.md`](../framework.md#capability-coverage-and-shared-hardware) for the declaration and its symmetry requirement).
+
+A publisher in that position MAY omit `meter` on the affected devices, which is truthful and self-describing. A publisher that instead publishes the reading on each member MUST declare the group with `shared-with-device-ids`.
+
+**The values then describe the whole group, not each member's share, so a consumer MUST NOT aggregate them across members of that group.** Summing `active-power` over three circuits behind one sensor reports three times the real load. The same applies to the energy registers: they accumulate the group's flow once, not once per member. A consumer totalling a site counts each shared group a single time.
+
 ## Encoding notes
 
 Properties use the engineering-unit values listed (no scaling factor or `µ-` prefix). Unit strings follow the IEC 80000-6 symbols: apparent power/energy are `VA` / `VAh`, and reactive power/energy are the lowercase `var` / `varh` (the standardized symbol; not `VAR`), matching the Homie convention's SI-symbol casing. Cumulative energy quantities are floats in Wh / varh / VAh, sufficient for billing-grade energy from a Homie float property; a publisher whose internal representation is integer micro-Wh converts at publish time.
@@ -75,6 +84,10 @@ Properties use the engineering-unit values listed (no scaling factor or `µ-` pr
 ## Forward compatibility
 
 The full 4-quadrant per-phase and system VA matrix (Q1-Q4 by delivered/received, fundamental-only or with-harmonics, arithmetic and vectorial flavors) is not defined here; it can be added additively later when a consumer needs it, without renaming existing properties. Meter-configuration and nameplate metadata (accuracy class, CT/PT ratio, calculation convention, register multiplier, neutral-connected) live on the metering device's `info`, not on `meter`; see [`utility-meter.md`](../devices/utility-meter.md).
+
+## Absence semantics
+
+Absence of the `meter` node means the device is not metered at that point, or the publisher does not expose measurements. Absence of an individual property is the usual "not measured / not reported"; publishers populate the registers they have.
 
 ## Publishers
 

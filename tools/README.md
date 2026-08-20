@@ -54,7 +54,9 @@ python3 tools/check-property-catalogs.py          # regenerate the JSON from the
 python3 tools/check-property-catalogs.py --check  # non-zero if any JSON is stale or structurally invalid
 ```
 
-Needs `jsonschema` (validates the generated JSON against `conventions/schemas/`). The Markdown is the single source of truth; do not hand-edit the generated JSON. `--check` never forces intentionally-illustrative prose into tables; it only fails on stale or malformed JSON, and otherwise emits advisory notes.
+Needs `jsonschema` (validates the generated JSON against `conventions/schemas/`). The Markdown is the single source of truth; do not hand-edit the generated JSON. `--check` never forces intentionally-illustrative prose into tables; it fails on stale or malformed JSON, and otherwise emits advisory notes.
+
+It also enforces one authoring invariant that is not about the JSON: **a capability catalog that sets any property to MUST must carry an `## Absence semantics` section.** Per [`framework.md`](../framework.md#conformance-latitude), a catalog MUST is legitimate only for a *constitutive* property, and what licenses it is that a publisher which cannot supply the value omits the whole node instead. That escape hatch only exists if the catalog says what absence of the node means, so the two must travel together. This fires in both modes, not just `--check`, since authoring the defect should fail immediately. It is scoped to the Req column: value-constraint MUSTs in prose or Notes cells (`MUST be <= installer-max`) govern how a value is published rather than whether, and are out of its scope.
 
 ## Continuous integration
 
