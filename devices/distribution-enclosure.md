@@ -1,8 +1,8 @@
 # Electrification Bus Distribution Enclosure Data Model Specification
 
 **Status:** DRAFT
-**Version:** 0.12
-**Date:** 2026-07-31
+**Version:** 0.13
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Overview
@@ -686,7 +686,9 @@ This install illustrates several aspects of the data model working together:
 
 ### Example 2 (SPAN panel implementation): single panel with Tesla Powerwall on a panel breaker
 
-A simpler single-enclosure scenario for contrast with Example 1. A SPAN MAIN 32 panel with a Tesla Powerwall commissioned to a 100 A dipole panel breaker (circuit 7) and an EVSE landing on a 60 A dipole panel breaker (circuit 5). System is grid-tied at the moment of capture.
+A simpler single-enclosure scenario for contrast with Example 1. A SPAN MAIN 32 panel with a Tesla Powerwall commissioned to a 100 A dipole panel breaker (circuit 7) and an EVSE landing on a 60 A dipole panel breaker (circuit 5). There is no PV on this site; Example 1 carries the PV case. System is grid-tied at the moment of capture.
+
+At this instant the EV is charging and the Powerwall is covering most of it, so the utility supplies only the remainder. The Powerwall discharges 4831.9 W onto its breaker (about 19.9 A at the measured line-to-line voltage), the utility delivers 2145.6 W, and together they serve 5350.0 W of EV charging, 245.3 W in the kitchen, 1000.0 W across the remaining circuits, and 382.2 W leaving through the feedthrough lugs to an uncommissioned subpanel. The example is chosen so both balances close exactly, which is what makes it usable as a reference: every enclosure terminal in the enclosure frame, and the four `power-flows` values in the site frame.
 
 ```
 ebus/5/ab-1234-c5d67/                          energy.ebus.device.distribution-enclosure
@@ -699,10 +701,10 @@ ebus/5/ab-1234-c5d67/                          energy.ebus.device.distribution-e
   meter/active-power                            2145.6
   meter/voltage-a                               121.3
   meter/voltage-b                               121.1
-  power-flows/grid                              -2750.0
-  power-flows/battery                           0.0
-  power-flows/pv                                5530.0
-  power-flows/site                              2740.0
+  power-flows/grid                              -2145.6
+  power-flows/battery                           -4831.9
+  power-flows/pv                                0.0
+  power-flows/site                              6977.5
   breaker/rating                                200
   status/relay                                  CLOSED
   status/cloud-connection                       CONNECTED
@@ -723,7 +725,7 @@ ebus/5/ab-1234-c5d67-lugs-up/             energy.ebus.device.lugs
 
 ebus/5/ab-1234-c5d67-lugs-dn/           energy.ebus.device.lugs
   info/direction                                DOWNSTREAM
-  meter/active-power                            382.2
+  meter/active-power                            -382.2
   meter/imported-energy                         8905683.0
   meter/exported-energy                         6600577.0
   (no connection/feeds-* — no feedthrough feed)
@@ -733,7 +735,7 @@ ebus/5/<circuit-7-id>/                          energy.ebus.device.circuit
   info/spaces                               "7,9"
   breaker/poles                                 2
   breaker/rating                                100
-  meter/active-power                            0.0
+  meter/active-power                            4831.9
   switch/relay                                  CLOSED
   load-shed/priority                        NEVER
   switch/relay-controllable                     true
@@ -766,7 +768,7 @@ ebus/5/<circuit-1-id>/                          energy.ebus.device.circuit
   switch/relay-controllable                     true
   (no connection/feeds-* — mixed-load circuit, no specific commissioned downstream device)
 
-  ... (more circuits, most without connection/feeds-* records)
+  ... (more circuits, most without connection/feeds-* records; -1000.0 W in aggregate)
 
 ebus/5/ab-1234-c5d67-TG123456789/               energy.ebus.device.bess  (proxied)
   info/vendor-name                              "Tesla"
@@ -774,6 +776,7 @@ ebus/5/ab-1234-c5d67-TG123456789/               energy.ebus.device.bess  (proxie
   info/data-model-version                       "1.0"
   soc/soc                                       98.5
   soc/soe                                       80.1
+  meter/active-power                            4831.9
   status/communication-state                          OK
 
 ebus/5/ab-1234-c5d67-TG123456789-mid/           energy.ebus.device.mid  (proxied; synthetic)
@@ -793,7 +796,13 @@ ebus/5/ab-1234-c5d67-SD123456789/                energy.ebus.device.evse  (proxi
 
 Consumer derivation: a scan of enclosure-side connection records finds `<circuit-7-id>/connection/feeds-device-type == energy.ebus.device.bess` → the BESS is IN_PANEL on circuit 7. Same scan finds `<circuit-5-id>/connection/feeds-device-type == energy.ebus.device.evse` → the EVSE is IN_PANEL on circuit 5. Wiring relationships are recorded once, on the connection-owner that physically owns the wiring; no per-DER-class "feed" or "relative-position" property is needed on the DER children.
 
-Note the two sign frames in play (see §"Enclosure-specific: meter reference direction"): each hosted circuit's `meter/active-power` is in the enclosure frame (a consuming load is negative, so the EV Charger circuit reads `-5350.0` and the Kitchen circuit `-245.3`), while the proxied EVSE child's own `meter/active-power` uses the EVSE device frame (positive = charging power delivered into the EV, `5350.0`). The two describe the same physical draw from each device's reference direction.
+Note the three sign frames in play, all correct and none reducible to the others.
+
+**The enclosure frame** (see §"Enclosure-specific: meter reference direction") governs every enclosure terminal: positive is power flowing into the enclosure. A consuming load is negative, so the EV Charger circuit reads `-5350.0` and the Kitchen circuit `-245.3`; a backfeed is positive, so the discharging Powerwall's circuit reads `4831.9`; the service lugs read `2145.6` on import and the feedthrough lugs `-382.2` on delivery out to the subpanel. Because every terminal reports power into the enclosure, the balance closes as a signed sum to zero: `2145.6 - 382.2 + 4831.9 - 5350.0 - 245.3 - 1000.0 = 0`.
+
+**Each proxied DER child's own device frame** governs that child's `meter/active-power`, which is the device's reading of itself, not the enclosure's reading of it. The EVSE reads `5350.0` (positive = charging power delivered into the EV) and the BESS reads `4831.9` (positive = discharging, out of the device, per [`bess.md`](bess.md)). A proxy publishes what the device itself would publish; see [`framework.md`](../framework.md) principle 6.
+
+**The site roll-up frame** governs `power-flows` (see [`capabilities/power-flows.md`](../capabilities/power-flows.md)): positive is power flowing out of the enclosure toward the named entity. Those four also sum to zero, `-2145.6 - 4831.9 + 0.0 + 6977.5 = 0`, and they are the inverse of the frames above rather than a restatement of them. `power-flows/grid` is the negation of the service lugs' reading, and `power-flows/battery` the negation of the BESS child's own meter: `-4831.9` against `4831.9`, one battery, one instant, two reference directions. Publishing either as a copy of its counterpart is a sign inversion, not a shortcut.
 
 ---
 
