@@ -2,8 +2,8 @@
 
 **Type:** Integration Guide (informative)
 **Status:** DRAFT
-**Version:** 0.1
-**Date:** 2026-07-27
+**Version:** 0.2
+**Date:** 2026-08-20
 **Authors:** Don Jackson
 
 ## Overview
@@ -192,7 +192,7 @@ shed(circuit) = (priority == OFF_GRID       and effective islanding-state == OFF
 
 ## Power-flows (brief)
 
-Alongside the two state inputs, the enclosure's site-level `power-flows` capability (`grid` / `battery` / `pv` / `site`, in watts) aggregates the BESS's instantaneous contribution with the rest of the site. The raw input from a premises-wiring grid-forming BESS is its `meter/active-power` (positive = discharging, out of the battery, per [`bess.md`](../devices/bess.md)); the enclosure folds that in with its own and its other children's metering to compute `power-flows/battery` and the site view. (`power-flows` here is an enclosure capability; a centralized BESS supplies the raw power through its `meter`, whereas an all-in-one plug-in BESS MAY instead publish its own `power-flows`, per `bess.md`.) This is a measurement aggregation, not a control interaction, and is independent of the islanding / SOC shedding flow above; it is mentioned only because the same BESS discharge the enclosure folds into `power-flows/battery` is, when off-grid, the backed-up-load draw the `shed-forecast` runs against.
+Alongside the two state inputs, the enclosure's site-level `power-flows` capability (`grid` / `battery` / `pv` / `site`, in watts) aggregates the BESS's instantaneous contribution with the rest of the site. The raw input from a premises-wiring grid-forming BESS is its `meter/active-power` (positive = discharging, out of the battery, per [`bess.md`](../devices/bess.md)); the enclosure folds that in with its own and its other children's metering to compute `power-flows/battery` and the site view. **That fold inverts the sign.** `power-flows` uses the site roll-up frame, positive = power flowing out of the enclosure toward the named entity (per [`power-flows.md`](../capabilities/power-flows.md)), so a battery discharging at 4831.9 W publishes `meter/active-power` of `4831.9` on its own device and `power-flows/battery` of `-4831.9` on the enclosure. Both are correct in their own frame; copying one value into the other rather than negating it is the mistake this sentence exists to prevent. (`power-flows` here is an enclosure capability; a centralized BESS supplies the raw power through its `meter`, whereas an all-in-one plug-in BESS MAY instead publish its own `power-flows`, per `bess.md`.) This is a measurement aggregation, not a control interaction, and is independent of the islanding / SOC shedding flow above; it is mentioned only because the same BESS discharge the enclosure folds into `power-flows/battery` is, when off-grid, the backed-up-load draw the `shed-forecast` runs against.
 
 ---
 
