@@ -1,7 +1,7 @@
 # Electrification Bus Capability: power-flows
 
 **Status:** DRAFT
-**Version:** 0.2
+**Version:** 0.3
 **Date:** 2026-08-20
 **Authors:** Don Jackson
 
@@ -54,11 +54,15 @@ The two are deliberately opposite, and a consumer reading both on the same publi
 
 | This property | is the negation of | which uses |
 |---|---|---|
-| `grid` | the service `lugs` device's `meter/active-power` | the enclosure frame, positive = imported |
+| `grid` | the service `lugs` device's `meter/active-power`, **only where the lugs are the utility connection point** (see below) | the enclosure frame, positive = imported |
 | `battery` | the BESS device's own `meter/active-power` | the BESS device frame, positive = discharging ([`bess.md`](../devices/bess.md)) |
 | `pv` | a backfeeding PV circuit's `meter/active-power` | the enclosure frame, positive = into the busbar |
 
 Publishing any of these as a **copy** of its counterpart rather than its negation is a sign inversion. Both values are correct in their own frame; neither is a substitute for the other.
+
+**The `grid` row is conditional; `battery` and `pv` are not.** `battery` and `pv` describe the same flow as their counterpart in every topology, so the negation holds unconditionally. `grid` holds only where the service lugs *are* the utility connection point. Two common topologies break that: an **upstream DER**, such as a BESS wired between the utility and the main lugs, and an **enclosure chain**, where this enclosure is fed by another rather than by the service. In both cases the lugs measure the flow on the panel side of the intervening device while `grid` measures the flow on the utility side, and the two differ by whatever that device is contributing or absorbing. A publisher in either topology **computes** `grid` from the lugs reading together with the intervening DER; it does not obtain it by negating the lugs. A consumer must not derive one from the other without knowing the topology, which it can read from the lugs device's [`connection`](connection.md) node: `fed-by-device-id` names the intervening device when there is one.
+
+This is not a rare case. See [`distribution-enclosure.md`](../devices/distribution-enclosure.md), whose worked multi-panel example carries exactly this arrangement.
 
 ## Absence semantics
 

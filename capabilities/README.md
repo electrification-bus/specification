@@ -36,7 +36,7 @@ This area is still being populated: [`tools/check-capability-catalogs.py`](../to
 | `energy.ebus.capability.meter` | [`meter.md`](meter.md) | DRAFT v0.4 (2026-08-20) |
 | `energy.ebus.capability.output-island` | [`output-island.md`](output-island.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.pcs` | [`pcs.md`](pcs.md) | DRAFT v0.3 (2026-07-14) |
-| `energy.ebus.capability.power-flows` | [`power-flows.md`](power-flows.md) | DRAFT v0.2 (2026-08-20) |
+| `energy.ebus.capability.power-flows` | [`power-flows.md`](power-flows.md) | DRAFT v0.3 (2026-08-20) |
 | `energy.ebus.capability.power-quality` | [`power-quality.md`](power-quality.md) | DRAFT v0.1 (2026-07-11) |
 | `energy.ebus.capability.price` | [`price.md`](price.md) | DRAFT v0.1 (2026-07-10) |
 | `energy.ebus.capability.shed-forecast` | [`shed-forecast.md`](shed-forecast.md) | DRAFT v0.1 (2026-07-11) |
