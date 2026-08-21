@@ -44,7 +44,7 @@
         },
         "power-flows": {
           "catalog": "energy.ebus.capability.power-flows",
-          "catalog_version": "0.2"
+          "catalog_version": "0.3"
         },
         "price": {
           "catalog": "energy.ebus.capability.price",

@@ -57,7 +57,7 @@
         },
         "power-flows": {
           "catalog": "energy.ebus.capability.power-flows",
-          "catalog_version": "0.2",
+          "catalog_version": "0.3",
           "req": "MAY"
         },
         "soc": {
